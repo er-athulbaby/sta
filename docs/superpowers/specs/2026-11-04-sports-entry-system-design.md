@@ -58,11 +58,11 @@ Hierarchy: **Association → Sports → Events**.
 ### Game setup (admin only)
 - `games`: `name`, `logo`, `start_date`, `end_date`.
 - `game_associations`: `game_id`, `association_id`. These are the invited associations.
-- `game_sports`: `game_id`, `sport_id`, `p2_max_men`, `p2_max_women`, `p4_max_men`, `p4_max_women`.
+- `game_sports`: `game_id`, `sport_id`, `p2_max_men`, `p2_max_women`, `p4_max_men`, `p4_max_women`, `p4_max_officials`.
 - `game_events`: `game_id`, `event_id`, `p2_max_athletes`.
 - `game_phases`: `game_id`, `phase` (1–4), `enabled`, `status` (`draft|open|closed`), `opens_at`, `deadline`.
 
-Team officials are **not** counted against any limit in any phase.
+Phase 2 counts athletes only. Team officials are counted only in Phase 4 (`p4_max_officials`, total per sport).
 
 ### Workflow
 - `submissions`: `game_id`, `association_id`, `phase`, `status` (`draft|awaiting_assoc_admin|submitted`), `submitted_by`, `submitted_at`, `approved_by`, `approved_at`, `pdf_path`, `justification` (Phase 4 only; one text field per submission).
@@ -96,7 +96,7 @@ Grid of sports × events with one number box per event. Hard limits are checked 
 
 ### Phase 4 — Short List
 - Preloaded with a copy of the association's Long List entries. The association unticks people to shorten it.
-- Limits: per sport `p4_max_men` / `p4_max_women` (athletes only).
+- Limits per sport: athletes `p4_max_men` / `p4_max_women`; team officials `p4_max_officials`.
 - If any limit is exceeded, the single `justification` field becomes required before submit. The submission is still allowed.
 - Generates a PDF and appears in the over-limit report.
 
@@ -148,7 +148,7 @@ Sent by email (SES) through queued Laravel notifications:
 | Type | Cases | Behavior |
 |---|---|---|
 | Hard error | Missing required field; Phase 2 count over event or sport limit; gender mismatch; editing a closed or past-deadline phase; more than 2 editors | Blocks save |
-| Warning | Long List differs from Phase 2 numbers; document expires before the game ends; Short List over limit | Saves; flagged in UI and reports (over-limit requires justification) |
+| Warning | Long List differs from Phase 2 numbers; document expires before the game ends; Short List over limit (athletes or officials) | Saves; flagged in UI and reports (over-limit requires justification) |
 
 Concurrency: optimistic locking on submissions via an `updated_at` check. A stale save shows "changed by X, reload" instead of overwriting.
 
