@@ -126,7 +126,7 @@ diagrams['dfd0-context'] = Diagram(1400, 860)
   .node('ae', 'entity', 1120, 650, 220, 80, ['Association Editor'])
   .node('ses', 'entity', 590, 770, 220, 70, ['Email Service', '(Amazon SES)'])
   .node('s3', 'entity', 590, 20, 220, 70, ['File Storage', '(Amazon S3)'])
-  .edge('sa', 'sys', ['Associations, sports, events,', 'games, limits, STA users'], { off: 16, t: 0.22 })
+  .edge('sa', 'sys', ['Associations, sports, events, clothing', 'items, games, limits, STA users'], { off: 16, t: 0.22 })
   .edge('sys', 'sa', ['Status dashboard,', 'reports, exports'], { off: 16, t: 0.22 })
   .edge('sta', 'sys', ['Edits, comments,', 'reminder requests'], { off: -16, t: 0.22 })
   .edge('sys', 'sta', ['Submissions, PDFs,', 'reports'], { off: -16, t: 0.22 })
@@ -135,7 +135,7 @@ diagrams['dfd0-context'] = Diagram(1400, 860)
   .edge('ae', 'sys', ['People, phase entries,', 'submissions'], { off: 16, t: 0.22 })
   .edge('sys', 'ae', ['Open phases, limits,', 'warnings, comments'], { off: 16, t: 0.22 })
   .edge('sys', 'ses', ['Invites, reminders, notifications'])
-  .edge('sys', 's3', ['Photos, logos, PDFs'], { both: true });
+  .edge('sys', 's3', ['Photos, scans, logos, PDFs'], { both: true });
 
 // ---------- DFD 1a: setup & onboarding
 diagrams['dfd1a-setup'] = Diagram(1500, 740)
@@ -146,18 +146,18 @@ diagrams['dfd1a-setup'] = Diagram(1500, 740)
   .node('p2', 'process', 860, 325, 240, 100, ['Invite & Onboard', 'Users'], { num: '2.0' })
   .node('p3', 'process', 400, 580, 240, 100, ['Set Up Game', '& Phases'], { num: '3.0' })
   .node('d1', 'store', 820, 90, 260, 54, ['Associations & Users'], { num: 'D1' })
-  .node('d2', 'store', 390, 265, 260, 54, ['Sports & Events'], { num: 'D2' })
+  .node('d2', 'store', 370, 265, 300, 54, ['Sports, Events & Clothing'], { num: 'D2' })
   .node('d3', 'store', 860, 610, 280, 54, ['Games, Phases & Limits'], { num: 'D3' })
-  .edge('e1', 'p1', ['Association, sport,', 'event details'])
+  .edge('e1', 'p1', ['Associations, sports,', 'events, clothing items'])
   .edge('p1', 'd1', ['Associations'])
-  .edge('p1', 'd2', ['Sports & events'])
+  .edge('p1', 'd2', ['Sports, events,', 'clothing items'])
   .edge('e1', 'p2', ['Invite association admin'], { t: 0.45 })
   .edge('p2', 'd1', ['User accounts,', 'invitations'])
   .edge('p2', 'ses', ['Invitation emails'])
   .edge('ses', 'aa', ['Invitation link'], { dx: 0 })
   .edge('aa', 'p2', ['Accept invite, set password,', 'invite up to 2 editors'], { t: 0.5 })
-  .edge('e1', 'p3', ['Game details, sports, event limits,', 'Phase 2 & 4 limits, phases, deadlines'], { t: 0.45, dx: -40 })
-  .edge('d2', 'p3', ['Sports & events'])
+  .edge('e1', 'p3', ['Game, limits, age range, entry policy,', 'clothing items, phases, deadlines'], { t: 0.45, dx: -40 })
+  .edge('d2', 'p3', ['Sports, events,', 'clothing items'])
   .edge('d1', 'p3', ['Invited associations'], { t: 0.62 })
   .edge('p3', 'd3', ['Game setup &', 'phase status']);
 
@@ -174,9 +174,9 @@ diagrams['dfd1b-submissions'] = Diagram(1500, 800)
   .node('d3', 'store', 860, 250, 280, 54, ['Games, Phases & Limits'], { num: 'D3' })
   .node('d5', 'store', 860, 400, 280, 54, ['Submissions & Entries'], { num: 'D5' })
   .node('d6', 'store', 1230, 400, 220, 54, ['Audit Log'], { num: 'D6' })
-  .edge('ae', 'p4', ['Athletes & officials,', 'photos, Excel import'], { t: 0.45, dy: -30, dx: -20 })
-  .edge('p4', 'd4', ['People records'], { t: 0.45 })
-  .edge('p4', 'd7', ['Photos'], { t: 0.45 })
+  .edge('ae', 'p4', ['Athletes & officials, sizes,', 'photos, scans, Excel import'], { t: 0.45, dy: -30, dx: -20 })
+  .edge('p4', 'd4', ['People records,', 'clothing sizes'], { t: 0.45 })
+  .edge('p4', 'd7', ['Photos, scans'], { t: 0.45 })
   .edge('ae', 'p5', ['Yes/No/Maybe, numbers,', 'event & official selections'], { off: 14, t: 0.5, dx: -105 })
   .edge('p5', 'ae', ['Errors & warnings'], { off: 14, t: 0.5, dx: 85 })
   .edge('d3', 'p5', ['Open phase, limits'], { t: 0.4 })
@@ -209,11 +209,11 @@ diagrams['dfd1c-outputs'] = Diagram(1500, 760)
   .edge('ses', 'assoc', ['Invites, reminders,', 'notifications'])
   .edge('ses', 'sta', ['Notifications'], { via: [[1420, 140], [1420, 600]], t: 0.5 })
   .edge('d5', 'p8', ['Long / Short lists,', 'justifications'], { t: 0.5 })
-  .edge('d4', 'p8', ['Athlete & official', 'details'], { t: 0.45 })
+  .edge('d4', 'p8', ['People details,', 'clothing sizes'], { t: 0.45 })
   .edge('d3', 'p8', ['Limits'], { t: 0.75 })
   .edge('p8', 'd7', ['Generated PDFs'])
-  .edge('p8', 'assoc', ['Long / Short List PDFs'], { t: 0.5 })
-  .edge('p8', 'sta', ['Reports, Excel exports,', 'over-limit report'], { t: 0.5 });
+  .edge('p8', 'assoc', ['Entry by Event, Long /', 'Short List PDFs'], { t: 0.5 })
+  .edge('p8', 'sta', ['Reports, Excel exports,', 'over-limit & clothing reports'], { t: 0.5 });
 
 // ---------- Phase sequence + submission status
 diagrams['workflow'] = Diagram(1460, 500)
@@ -248,7 +248,7 @@ diagrams['architecture'] = Diagram(1400, 720)
   .node('cron', 'process', 615, 300, 205, 100, ['Scheduler (cron)', 'daily reminders'])
   .node('chr', 'process', 380, 440, 440, 90, ['Headless Chrome', '(Browsershot PDF rendering)'])
   .node('rds', 'state', 940, 110, 380, 110, ['Amazon RDS MySQL 8', 'all application data', 'automated backups 35 days'], { fill: C.tealBg, stroke: C.teal })
-  .node('s3', 'state', 940, 300, 380, 110, ['Amazon S3 (private bucket)', 'photos, logos, PDFs, imports', 'presigned URLs (5 min)'], { fill: C.tealBg, stroke: C.teal })
+  .node('s3', 'state', 940, 300, 380, 110, ['Amazon S3 (private bucket)', 'photos, scans, logos, PDFs', 'presigned URLs (5 min)'], { fill: C.tealBg, stroke: C.teal })
   .node('ses', 'state', 940, 480, 380, 100, ['Amazon SES', 'invites, reminders, notifications'], { fill: C.tealBg, stroke: C.teal })
   .edge('br', 'web', ['HTTPS'])
   .edge('web', 'rds', ['SQL (TLS)'])
@@ -267,20 +267,23 @@ const tables = {
   invitations: T(30, 560, 'invitations', ['id', 'association_id', 'email, role', 'token_hash', 'expires_at, accepted_at']),
   sports: T(330, 30, 'sports', ['id', 'association_id', 'name']),
   events: T(330, 250, 'events', ['id', 'sport_id', 'name', 'gender (men/women/mixed)']),
-  people: T(330, 470, 'people', ['id', 'association_id', 'type (athlete/official)', 'first, second, third, last', 'photo_path', 'passport_no (enc), expiry', 'cpr_no (enc), expiry', 'dob, gender, nationality', 'height, weight', 'function (officials)']),
-  games: T(630, 30, 'games', ['id', 'name, logo', 'start_date, end_date']),
+  people: T(330, 470, 'people', ['id', 'association_id', 'type (athlete/official)', 'first, second, third, last', 'photo_path', 'passport_no (enc), expiry', 'cpr_no (enc), expiry', 'passport / cpr scan paths', 'dob, gender, nationality', 'height, weight', 'function, phone, email']),
+  games: T(630, 30, 'games', ['id', 'name, logo', 'start_date, end_date', 'reminder_days']),
   game_associations: T(630, 200, 'game_associations', ['game_id', 'association_id']),
-  game_sports: T(630, 340, 'game_sports', ['id', 'game_id, sport_id', 'p2_max_men, p2_max_women', 'p4_max_men, p4_max_women', 'p4_max_officials']),
-  game_events: T(630, 540, 'game_events', ['id', 'game_id, event_id', 'p2_max_athletes']),
+  game_sports: T(630, 340, 'game_sports', ['id', 'game_id, sport_id', 'p2_max_men, p2_max_women', 'p2_max_total', 'p4_max_men, p4_max_women', 'p4_max_officials', 'dob_from, dob_to', 'entry_policy']),
+  game_events: T(630, 600, 'game_events', ['id', 'game_id, event_id', 'p2_max_athletes']),
   game_phases: T(930, 30, 'game_phases', ['id', 'game_id', 'phase (1-4), enabled', 'status (draft/open/closed)', 'opens_at, deadline']),
-  submissions: T(930, 250, 'submissions', ['id', 'game_id, association_id', 'phase', 'status', 'submitted_by / at', 'approved_by / at', 'justification (Phase 4)', 'pdf_path']),
-  comments: T(930, 560, 'comments', ['id', 'submission_id', 'user_id', 'body']),
+  submissions: T(930, 250, 'submissions', ['id', 'game_id, association_id', 'phase', 'status', 'reference_no', 'deadline_override', 'submitted_by / at', 'approved_by / at', 'justification (Phase 4)', 'pdf_path']),
+  comments: T(930, 600, 'comments', ['id', 'submission_id', 'user_id', 'body']),
   interest_answers: T(1230, 30, 'interest_answers (P1)', ['id', 'submission_id', 'game_sport_id', 'answer (yes/no/maybe)']),
   number_entries: T(1230, 230, 'number_entries (P2)', ['id', 'submission_id', 'game_event_id', 'count']),
   entries: T(1230, 430, 'entries (P3 / P4)', ['id', 'submission_id', 'person_id', 'game_event_id (athlete)', 'game_sport_id (official)']),
+  clothing_items: T(30, 760, 'clothing_items', ['id', 'name (T-Shirt, Suit, ...)', 'sizes (ordered list)', 'applies_to', 'is_active']),
+  person_sizes: T(330, 800, 'person_sizes', ['id', 'person_id', 'clothing_item_id', 'size']),
+  game_clothing_items: T(630, 760, 'game_clothing_items', ['game_id', 'clothing_item_id']),
   activity_log: T(1230, 640, 'activity_log', ['id', 'user_id', 'subject (any table)', 'old / new values', 'created_at']),
 };
-const erd = Diagram(1500, 820);
+const erd = Diagram(1500, 990);
 for (const [id, t] of Object.entries(tables)) erd.node(id, 'table', t.x, t.y, 250, t.h, [t.title, ...t.fields]);
 const g = { color: '#64748B', width: 1.6 };
 erd.edge('users', 'associations', null, g)
@@ -290,13 +293,16 @@ erd.edge('users', 'associations', null, g)
   .edge('people', 'associations', null, { ...g, via: [[305, 600], [305, 140]] })
   .edge('game_associations', 'games', null, g)
   .edge('game_sports', 'games', null, { ...g, via: [[612, 440], [612, 100]] })
-  .edge('game_events', 'events', null, { ...g, via: [[598, 600], [598, 330]] })
+  .edge('game_events', 'events', null, { ...g, via: [[598, 660], [598, 330]] })
   .edge('game_phases', 'games', null, g)
   .edge('submissions', 'games', null, g)
   .edge('comments', 'submissions', null, g)
   .edge('interest_answers', 'submissions', null, g)
   .edge('number_entries', 'submissions', null, g)
-  .edge('entries', 'submissions', null, g);
+  .edge('entries', 'submissions', null, g)
+  .edge('person_sizes', 'people', null, g)
+  .edge('person_sizes', 'clothing_items', null, g)
+  .edge('game_clothing_items', 'clothing_items', null, { ...g, via: [[755, 965], [155, 965]] });
 diagrams['erd'] = erd;
 
 (async () => {
