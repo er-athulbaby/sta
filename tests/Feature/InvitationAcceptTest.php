@@ -2,6 +2,7 @@
 
 use App\Enums\Role;
 use App\Models\Association;
+use App\Models\Invitation;
 use App\Models\User;
 use App\Services\InvitationService;
 use Illuminate\Support\Facades\Mail;
@@ -30,4 +31,22 @@ it('validates the password', function () {
 
 it('shows an invalid page for unknown tokens', function () {
     $this->get('/invitations/not-a-real-token')->assertStatus(410)->assertSee('invalid or has expired');
+});
+
+it('shows the cap error when the association is already full of editors', function () {
+    $assoc = Association::factory()->create();
+    User::factory()->assocEditor($assoc)->count(2)->create();
+    Invitation::create([
+        'association_id' => $assoc->id,
+        'email' => 'late@squash.bh',
+        'role' => Role::AssocEditor,
+        'token_hash' => hash('sha256', 'tok-123'),
+        'expires_at' => now()->addDays(7),
+    ]);
+
+    $this->from('/invitations/tok-123')
+        ->post('/invitations/tok-123', ['name' => 'Late', 'password' => 'a-long-password-1', 'password_confirmation' => 'a-long-password-1'])
+        ->assertSessionHasErrors('email');
+
+    $this->get('/invitations/tok-123')->assertOk()->assertSee('already has 2 editors');
 });

@@ -18,6 +18,7 @@
     <p>You are invited as <strong>{{ $invitation->role->label() }}</strong> with <strong>{{ $invitation->email }}</strong>.</p>
     <form method="post" action="{{ route('invitations.accept', $token) }}">
         @csrf
+        @error('email')<p class="error">{{ $message }}</p>@enderror
         <label for="name">Your full name</label>
         <input id="name" name="name" value="{{ old('name') }}" required autocomplete="name">
         @error('name')<p class="error">{{ $message }}</p>@enderror
