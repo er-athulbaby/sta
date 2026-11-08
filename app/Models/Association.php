@@ -12,6 +12,11 @@ class Association extends Model
 
     protected $fillable = ['name', 'email', 'logo_path', 'phone', 'address', 'website'];
 
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(Invitation::class);
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
