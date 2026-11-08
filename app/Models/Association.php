@@ -22,6 +22,11 @@ class Association extends Model
         return $this->hasMany(User::class);
     }
 
+    public function people(): HasMany
+    {
+        return $this->hasMany(Person::class);
+    }
+
     public function sports(): HasMany
     {
         return $this->hasMany(Sport::class);
