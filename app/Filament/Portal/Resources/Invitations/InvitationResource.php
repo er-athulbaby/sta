@@ -14,6 +14,8 @@ class InvitationResource extends Resource
 {
     protected static ?string $model = Invitation::class;
 
+    protected static ?string $tenantOwnershipRelationshipName = 'association';
+
     public static function canAccess(): bool
     {
         return auth()->user()?->role === Role::AssocAdmin;

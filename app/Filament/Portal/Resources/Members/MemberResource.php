@@ -15,6 +15,8 @@ class MemberResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static ?string $tenantOwnershipRelationshipName = 'association';
+
     protected static ?string $slug = 'members';
 
     protected static ?string $navigationLabel = 'Team';
