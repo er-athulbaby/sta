@@ -7,6 +7,7 @@ use App\Filament\Resources\Associations\Pages\EditAssociation;
 use App\Filament\Resources\Associations\Pages\ListAssociations;
 use App\Filament\Resources\Associations\Schemas\AssociationForm;
 use App\Filament\Resources\Associations\Tables\AssociationsTable;
+use App\Filament\Resources\Associations\RelationManagers;
 use App\Models\Association;
 use App\Enums\StaPermission;
 use App\Filament\Concerns\RequiresStaPermission;
@@ -44,7 +45,8 @@ class AssociationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\UsersRelationManager::class,
+            RelationManagers\InvitationsRelationManager::class,
         ];
     }
 
