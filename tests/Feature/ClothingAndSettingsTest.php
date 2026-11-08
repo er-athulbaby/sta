@@ -1,0 +1,45 @@
+<?php
+
+use App\Enums\AppliesTo;
+use App\Enums\PersonType;
+use App\Filament\Pages\Settings;
+use App\Filament\Resources\ClothingItems\Pages\CreateClothingItem;
+use App\Filament\Resources\ClothingItems\Pages\EditClothingItem;
+use App\Models\ClothingItem;
+use App\Models\Setting;
+use App\Models\User;
+use function Pest\Livewire\livewire;
+
+it('creates a clothing item with an ordered size list', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(CreateClothingItem::class)
+        ->fillForm(['name' => 'T-Shirt', 'sizes' => ['S', 'M', 'L', 'XL'], 'applies_to' => AppliesTo::Both->value, 'is_active' => true])
+        ->call('create')->assertHasNoFormErrors();
+
+    expect(ClothingItem::sole()->sizes)->toBe(['S', 'M', 'L', 'XL']);
+});
+
+it('filters items by person type', function () {
+    ClothingItem::factory()->create(['name' => 'Suit', 'applies_to' => AppliesTo::Official]);
+    ClothingItem::factory()->create(['name' => 'Spikes', 'applies_to' => AppliesTo::Athlete]);
+    ClothingItem::factory()->create(['name' => 'T-Shirt', 'applies_to' => AppliesTo::Both]);
+    ClothingItem::factory()->create(['name' => 'Old', 'applies_to' => AppliesTo::Both, 'is_active' => false]);
+
+    expect(ClothingItem::active()->forType(PersonType::Official)->pluck('name')->sort()->values()->all())->toBe(['Suit', 'T-Shirt']);
+});
+
+it('never offers deleting a clothing item (BR-16)', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+    $item = ClothingItem::factory()->create();
+
+    livewire(EditClothingItem::class, ['record' => $item->getKey()])->assertActionDoesNotExist('delete');
+});
+
+it('saves the declaration text in settings', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(Settings::class)->fillForm(['pdf_declaration' => 'I confirm all information is accurate.'])->call('save')->assertHasNoFormErrors();
+
+    expect(Setting::get(Setting::DECLARATION))->toBe('I confirm all information is accurate.');
+});
