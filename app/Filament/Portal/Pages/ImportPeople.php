@@ -63,8 +63,11 @@ class ImportPeople extends Page
         $file = $this->form->getState()['file'];
         $path = is_array($file) ? array_values($file)[0] : $file;
 
-        $result = $importer->import(Storage::disk('local')->path($path), Filament::getTenant());
-        Storage::disk('local')->delete($path);
+        try {
+            $result = $importer->import(Storage::disk('local')->path($path), Filament::getTenant());
+        } finally {
+            Storage::disk('local')->delete($path);
+        }
         $this->rowErrors = $result->errors;
 
         $result->ok()

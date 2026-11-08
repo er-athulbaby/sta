@@ -57,3 +57,60 @@ it('opens the import page for association users', function () {
     $this->actingAs(\App\Models\User::factory()->assocEditor($assoc)->create())
         ->get("/portal/{$assoc->id}/import-people")->assertOk()->assertSee('Download template');
 });
+
+it('keys errors by the real sheet row when blank rows are present', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([
+        row(), array_fill_keys(PeopleTemplateExport::COLUMNS, ''), row(['passport_no' => 'BH2222222', 'cpr_no' => '070402222']),
+        row(['passport_no' => 'BH3333333', 'cpr_no' => '070402333', 'nationality' => '']),
+    ]), Association::factory()->create());
+
+    expect(array_keys($result->errors))->toBe([5])->and(Person::count())->toBe(0);
+});
+
+it('does not skip rows that lack first name and passport', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([
+        ['last_name' => 'Ali', 'date_of_birth' => '2007-04-02'],
+    ]), Association::factory()->create());
+
+    expect(array_keys($result->errors))->toBe([2]);
+});
+
+it('returns a friendly error for a file that is not a spreadsheet', function () {
+    $path = storage_path('app/testing/bad-'.uniqid().'.xlsx');
+    file_put_contents($path, 'not a spreadsheet');
+    $result = app(PeopleImporter::class)->import($path, Association::factory()->create());
+
+    expect($result->ok())->toBeFalse()->and(array_keys($result->errors))->toBe([1])->and(Person::count())->toBe(0);
+});
+
+it('imports the untouched default template', function () {
+    $path = storage_path('app/testing/tpl-'.uniqid().'.xlsx');
+    (new PeopleTemplateExport())->writeTo($path);
+    $result = app(PeopleImporter::class)->import($path, Association::factory()->create());
+
+    expect($result->errors)->toBe([])->and($result->created)->toBe(1);
+});
+
+it('ignores function for athletes', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['function' => 'whatever'])]), Association::factory()->create());
+
+    expect($result->ok())->toBeTrue()->and(Person::sole()->function)->toBeNull();
+});
+
+it('stores a leading-zero CPR exactly and scopes to the given association', function () {
+    $assoc = Association::factory()->create();
+    app(PeopleImporter::class)->import(xlsxWith([row(['cpr_no' => '012345678'])]), $assoc);
+
+    $p = Person::sole();
+    expect($p->cpr_no)->toBe('012345678')->and($p->association_id)->toBe($assoc->id);
+});
+
+it('rejects files over the row cap', function () {
+    $rows = [];
+    for ($i = 0; $i < 501; $i++) {
+        $rows[] = row(['passport_no' => 'P'.$i, 'cpr_no' => '1'.$i]);
+    }
+    $result = app(PeopleImporter::class)->import(xlsxWith($rows), Association::factory()->create());
+
+    expect($result->ok())->toBeFalse()->and(array_keys($result->errors))->toBe([1])->and(Person::count())->toBe(0);
+});

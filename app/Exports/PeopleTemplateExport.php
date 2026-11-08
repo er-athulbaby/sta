@@ -23,7 +23,7 @@ class PeopleTemplateExport
             'type' => 'athlete', 'first_name' => 'Ahmed', 'second_name' => 'Ali', 'third_name' => '', 'last_name' => 'Hassan',
             'date_of_birth' => '2006-05-20', 'gender' => 'male', 'nationality' => 'Bahrain', 'height_cm' => 180, 'weight_kg' => 75,
             'passport_no' => 'BH0000000', 'passport_expiry' => '2030-12-31', 'cpr_no' => '060520000', 'cpr_expiry' => '2029-12-31',
-            'function' => '(officials only: Coach, Team Manager, Physio...)', 'phone' => '', 'email' => '',
+            'function' => '', 'phone' => '', 'email' => '',
         ]];
 
         return array_map(fn (array $r) => array_map(fn ($c) => $r[$c] ?? '', self::COLUMNS), $rows);

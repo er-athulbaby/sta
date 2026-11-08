@@ -13,6 +13,7 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use OpenSpout\Reader\XLSX\Options;
 use OpenSpout\Reader\XLSX\Reader;
 
 final class PeopleImporter
@@ -22,7 +23,11 @@ final class PeopleImporter
 
     public function import(string $absolutePath, Association $association): ImportResult
     {
-        $rows = array_values(array_filter($this->read($absolutePath), fn (array $r) => filled($r['first_name'] ?? null) || filled($r['passport_no'] ?? null)));
+        try {
+            $rows = $this->read($absolutePath);
+        } catch (\Throwable) {
+            return new ImportResult(0, [1 => ['The file could not be read. Upload the .xlsx template.']]);
+        }
 
         if (count($rows) > self::MAX_ROWS) {
             return new ImportResult(0, [1 => ['The file has more than '.self::MAX_ROWS.' rows. Split it into smaller files.']]);
@@ -32,8 +37,7 @@ final class PeopleImporter
         $clean = [];
         $seen = ['passport_no_hash' => [], 'cpr_no_hash' => []];
 
-        foreach ($rows as $i => $raw) {
-            $rowNumber = $i + 2; // row 1 is the heading
+        foreach ($rows as $rowNumber => $raw) {
             $row = $this->normalise($raw);
             $messages = $this->validate($row);
 
@@ -66,31 +70,41 @@ final class PeopleImporter
         return new ImportResult(count($clean), []);
     }
 
-    /** @return array<int, array<string, mixed>> heading => value, one per data row of the first sheet */
+    /** @return array<int, array<string, mixed>> sheet row number => (heading => value); rows with every cell blank are skipped */
     private function read(string $path): array
     {
-        $reader = new Reader();
+        $options = new Options();
+        $options->SHOULD_PRESERVE_EMPTY_ROWS = true;
+        $reader = new Reader($options);
         $reader->open($path);
-        $headings = null;
-        $out = [];
-        foreach ($reader->getSheetIterator() as $sheet) {
-            foreach ($sheet->getRowIterator() as $r) {
-                $cells = $r->toArray();
-                if ($headings === null) {
-                    $headings = array_map(fn ($h) => strtolower(trim((string) $h)), $cells);
-                    continue;
-                }
-                $row = [];
-                foreach ($headings as $i => $h) {
-                    if ($h !== '') {
-                        $row[$h] = $cells[$i] ?? null;
+        try {
+            $headings = null;
+            $out = [];
+            foreach ($reader->getSheetIterator() as $sheet) {
+                $n = 0;
+                foreach ($sheet->getRowIterator() as $r) {
+                    $n++;
+                    $cells = $r->toArray();
+                    if ($headings === null) {
+                        $headings = array_map(fn ($h) => strtolower(trim((string) $h)), $cells);
+                        continue;
                     }
+                    if (! array_filter($cells, fn ($v) => $v instanceof DateTimeInterface || trim((string) $v) !== '')) {
+                        continue;
+                    }
+                    $row = [];
+                    foreach ($headings as $i => $h) {
+                        if ($h !== '') {
+                            $row[$h] = $cells[$i] ?? null;
+                        }
+                    }
+                    $out[$n] = $row;
                 }
-                $out[] = $row;
+                break; // first sheet only
             }
-            break; // first sheet only
+        } finally {
+            $reader->close();
         }
-        $reader->close();
 
         return $out;
     }
@@ -115,6 +129,9 @@ final class PeopleImporter
         }
         $row['type'] = strtolower((string) $row['type']);
         $row['gender'] = strtolower((string) $row['gender']);
+        if ($row['type'] !== 'official') {
+            $row['function'] = null;
+        }
 
         return $row;
     }
