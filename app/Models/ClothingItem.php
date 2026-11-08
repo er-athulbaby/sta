@@ -7,10 +7,12 @@ use App\Enums\PersonType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class ClothingItem extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $fillable = ['name', 'sizes', 'applies_to', 'is_active'];
 
@@ -32,5 +34,10 @@ class ClothingItem extends Model
     public function hasSize(string $size): bool
     {
         return in_array($size, $this->sizes, true);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
     }
 }

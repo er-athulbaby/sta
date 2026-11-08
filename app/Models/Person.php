@@ -13,10 +13,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Person extends Model
 {
-    use BelongsToAssociation, HasFactory;
+    use BelongsToAssociation, HasFactory, LogsActivity;
 
     public const FILE_COLUMNS = ['photo_path', 'passport_scan_path', 'cpr_scan_path'];
     public const OFFICIAL_ONLY = ['function', 'phone', 'email'];
@@ -123,5 +125,25 @@ class Person extends Model
                 $this->sizes()->updateOrCreate(['clothing_item_id' => $item->id], ['size' => $size]);
             }
         });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logExcept(['passport_no', 'cpr_no'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function tapActivity(\Spatie\Activitylog\Contracts\Activity $activity, string $eventName): void
+    {
+        $changed = array_keys(array_filter([
+            'passport_no' => $this->wasChanged('passport_no_hash'),
+            'cpr_no' => $this->wasChanged('cpr_no_hash'),
+        ]));
+        if ($eventName === 'updated' && $changed) {
+            $activity->properties = $activity->properties->put('documents_changed', $changed);
+        }
     }
 }
