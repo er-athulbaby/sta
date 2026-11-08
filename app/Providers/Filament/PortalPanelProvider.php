@@ -28,6 +28,7 @@ class PortalPanelProvider extends PanelProvider
             ->path('portal')
             ->login()
             ->tenant(\App\Models\Association::class)
+            ->tenantProfile(\App\Filament\Portal\Pages\EditAssociationProfile::class)
             ->passwordReset()
             ->brandName('Association Portal')
             ->colors([
