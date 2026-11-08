@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +49,23 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function actingInAdmin(User $user): User
+{
+    test()->actingAs($user);
+    Filament::setCurrentPanel('admin');
+    Filament::bootCurrentPanel();
+
+    return $user;
+}
+
+function actingInPortal(User $user): User
+{
+    test()->actingAs($user);
+    Filament::setCurrentPanel('portal');
+    Filament::setTenant($user->association);
+    Filament::bootCurrentPanel();
+
+    return $user;
 }
