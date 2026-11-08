@@ -132,8 +132,7 @@ class Person extends Model
         return LogOptions::defaults()
             ->logFillable()
             ->logExcept(['passport_no', 'cpr_no'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->logOnlyDirty();
     }
 
     public function tapActivity(\Spatie\Activitylog\Contracts\Activity $activity, string $eventName): void
