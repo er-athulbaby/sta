@@ -23,3 +23,9 @@ it('blocks inactive users from every panel', function () {
     $user = User::factory()->superAdmin()->inactive()->create();
     $this->actingAs($user)->get('/admin')->assertForbidden();
 });
+
+it('blocks inactive association users from their portal', function () {
+    $assoc = Association::factory()->create();
+    $user = User::factory()->assocEditor($assoc)->inactive()->create();
+    $this->actingAs($user)->get("/portal/{$assoc->id}")->assertForbidden();
+});

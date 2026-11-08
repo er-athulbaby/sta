@@ -18,9 +18,18 @@ class DatabaseSeeder extends Seeder
     {
         // $this->call(PermissionSeeder::class); // restored in Task 3, Step 3
 
+        $password = config('app.super_admin.password');
+
+        if (blank($password)) {
+            if (app()->isProduction()) {
+                throw new \RuntimeException('SUPER_ADMIN_PASSWORD must be set');
+            }
+            $password = 'change-me-now';
+        }
+
         User::query()->firstOrCreate(
-            ['email' => env('SUPER_ADMIN_EMAIL', 'admin@example.com')],
-            ['name' => env('SUPER_ADMIN_NAME', 'Super Admin'), 'password' => env('SUPER_ADMIN_PASSWORD', 'change-me-now'), 'role' => Role::SuperAdmin],
+            ['email' => config('app.super_admin.email')],
+            ['name' => config('app.super_admin.name'), 'password' => $password, 'role' => Role::SuperAdmin],
         );
     }
 }
