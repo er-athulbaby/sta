@@ -24,7 +24,7 @@ class AssociationForm
             TextInput::make('phone')->tel()->maxLength(50),
             TextInput::make('website')->url()->maxLength(255),
             TextInput::make('address')->maxLength(255)->columnSpanFull(),
-            FileUpload::make('logo_path')->label('Logo')->image()->maxSize(2048)
+            FileUpload::make('logo_path')->label('Logo')->image()->acceptedFileTypes(['image/jpeg', 'image/png'])->maxSize(2048)
                 ->disk(config('filesystems.private'))->directory('logos')->visibility('private'),
         ];
     }

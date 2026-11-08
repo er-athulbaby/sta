@@ -3,6 +3,7 @@
 use App\Enums\StaPermission;
 use App\Filament\Portal\Pages\EditAssociationProfile;
 use App\Filament\Resources\Associations\Pages\CreateAssociation;
+use App\Filament\Resources\Associations\Pages\EditAssociation;
 use App\Models\Association;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -50,4 +51,21 @@ it('blocks editors from the profile page', function () {
     $assoc = Association::factory()->create();
     $editor = User::factory()->assocEditor($assoc)->create();
     $this->actingAs($editor)->get("/portal/{$assoc->id}/profile")->assertNotFound();
+});
+
+it('has no delete action on the association edit page', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+    $assoc = Association::factory()->create();
+
+    livewire(EditAssociation::class, ['record' => $assoc->getRouteKey()])->assertActionDoesNotExist('delete');
+});
+
+it('rejects non JPG/PNG logos', function () {
+    Storage::fake(config('filesystems.private'));
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(CreateAssociation::class)
+        ->fillForm(['name' => 'Gif FC', 'email' => 'gif@example.bh', 'logo_path' => UploadedFile::fake()->create('logo.gif', 10, 'image/gif')])
+        ->call('create')
+        ->assertHasFormErrors(['logo_path']);
 });
