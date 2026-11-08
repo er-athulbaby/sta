@@ -67,10 +67,10 @@ class Person extends Model
         return hash_hmac('sha256', strtoupper(preg_replace('/\s+/', '', $number)), config('app.key'));
     }
 
-    /** System-wide check (bypasses the association scope) used by form validation. */
+    /** System-wide check (bypasses the association scope and Filament's tenant scope) used by form validation. */
     public static function documentExists(string $hashColumn, string $number, ?int $ignoreId = null): bool
     {
-        return static::withoutGlobalScope('association')
+        return static::withoutGlobalScopes()
             ->where($hashColumn, self::blindIndex($number))
             ->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))
             ->exists();
