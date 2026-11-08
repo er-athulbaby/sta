@@ -13,6 +13,9 @@ return [
     |
     */
 
+    // Disk for photos, scans, logos and generated PDFs. Never public.
+    'private' => env('PRIVATE_DISK', 'local'),
+
     'default' => env('FILESYSTEM_DISK', 'local'),
 
     /*
