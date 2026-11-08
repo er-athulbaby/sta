@@ -35,7 +35,7 @@ function docUpdate(array $change): array
     test()->actingAs(User::factory()->assocEditor($person->association)->create());
     $before = Activity::where('event', 'updated')->count();
     $hashes = [$person->passport_no_hash, $person->cpr_no_hash];
-    $person->update($change);
+    Person::query()->findOrFail($person->id)->update($change);
     expect(Activity::where('event', 'updated')->count())->toBe($before + 1);
     $log = Activity::where('event', 'updated')->latest('id')->first();
 
