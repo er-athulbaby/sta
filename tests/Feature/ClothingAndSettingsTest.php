@@ -1,6 +1,9 @@
 <?php
 
 use App\Enums\AppliesTo;
+use App\Enums\StaPermission;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use App\Enums\PersonType;
 use App\Filament\Pages\Settings;
 use App\Filament\Resources\ClothingItems\Pages\CreateClothingItem;
@@ -42,4 +45,36 @@ it('saves the declaration text in settings', function () {
     livewire(Settings::class)->fillForm(['pdf_declaration' => 'I confirm all information is accurate.'])->call('save')->assertHasNoFormErrors();
 
     expect(Setting::get(Setting::DECLARATION))->toBe('I confirm all information is accurate.');
+});
+
+it('gates settings and clothing items behind manage_master_data', function () {
+    $sta = User::factory()->sta()->create();
+
+    $this->actingAs($sta)->get('/admin/settings')->assertForbidden();
+    $this->actingAs($sta)->get('/admin/clothing-items')->assertForbidden();
+
+    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    $sta = $sta->fresh();
+
+    $this->actingAs($sta)->get('/admin/settings')->assertOk();
+    $this->actingAs($sta)->get('/admin/clothing-items')->assertOk();
+});
+
+it('stores and clears the NOC logo', function () {
+    Storage::fake(config('filesystems.private'));
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(Settings::class)
+        ->fillForm(['noc_logo_path' => UploadedFile::fake()->image('noc.png'), 'pdf_declaration' => 'Declaration'])
+        ->call('save')->assertHasNoFormErrors();
+
+    $path = Setting::get(Setting::NOC_LOGO);
+    expect($path)->not->toBeEmpty();
+    Storage::disk(config('filesystems.private'))->assertExists($path);
+
+    livewire(Settings::class)
+        ->fillForm(['noc_logo_path' => [], 'pdf_declaration' => 'Declaration'])
+        ->call('save')->assertHasNoFormErrors();
+
+    expect(Setting::get(Setting::NOC_LOGO))->toBeNull();
 });
