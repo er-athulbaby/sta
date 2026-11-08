@@ -21,4 +21,9 @@ class Association extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function sports(): HasMany
+    {
+        return $this->hasMany(Sport::class);
+    }
 }
