@@ -19,6 +19,7 @@ use OpenSpout\Reader\XLSX\Reader;
 final class PeopleImporter
 {
     public const MAX_ROWS = 500;
+
     private const DATE_COLUMNS = ['date_of_birth', 'passport_expiry', 'cpr_expiry'];
 
     public function import(string $absolutePath, Association $association): ImportResult
@@ -73,7 +74,7 @@ final class PeopleImporter
     /** @return array<int, array<string, mixed>> sheet row number => (heading => value); rows with every cell blank are skipped */
     private function read(string $path): array
     {
-        $options = new Options();
+        $options = new Options;
         $options->SHOULD_PRESERVE_EMPTY_ROWS = true;
         $reader = new Reader($options);
         $reader->open($path);
@@ -87,6 +88,7 @@ final class PeopleImporter
                     $cells = $r->toArray();
                     if ($headings === null) {
                         $headings = array_map(fn ($h) => strtolower(trim((string) $h)), $cells);
+
                         continue;
                     }
                     if (! array_filter($cells, fn ($v) => $v instanceof DateTimeInterface || trim((string) $v) !== '')) {

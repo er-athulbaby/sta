@@ -76,7 +76,7 @@ it('lets STA with manage_people see all people, and blocks others', function () 
 
     $sta->givePermissionTo(StaPermission::ManagePeople->value);
     actingInAdmin($sta);
-    livewire(\App\Filament\Resources\People\Pages\ListPeople::class)->assertCountTableRecords(2);
+    livewire(App\Filament\Resources\People\Pages\ListPeople::class)->assertCountTableRecords(2);
 });
 
 it('offers no delete on the portal', function () {
@@ -92,10 +92,10 @@ it('shows admin row delete to super admins only', function () {
     $sta->givePermissionTo(StaPermission::ManagePeople->value);
 
     actingInAdmin($sta);
-    livewire(\App\Filament\Resources\People\Pages\ListPeople::class)->assertTableActionHidden('delete', $person);
+    livewire(App\Filament\Resources\People\Pages\ListPeople::class)->assertTableActionHidden('delete', $person);
 
     actingInAdmin(User::factory()->superAdmin()->create());
-    livewire(\App\Filament\Resources\People\Pages\ListPeople::class)->assertTableActionVisible('delete', $person);
+    livewire(App\Filament\Resources\People\Pages\ListPeople::class)->assertTableActionVisible('delete', $person);
 });
 
 it('edits a person keeping their own passport and syncs sizes', function () {

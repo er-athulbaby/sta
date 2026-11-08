@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogResource extends Resource
@@ -16,8 +17,11 @@ class ActivityLogResource extends Resource
     use RequiresStaPermission;
 
     protected static ?string $model = Activity::class;
+
     protected static ?string $slug = 'activity-logs';
+
     protected static ?string $navigationLabel = 'Audit log';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Access';
 
     protected static function requiredPermission(): StaPermission
@@ -25,7 +29,10 @@ class ActivityLogResource extends Resource
         return StaPermission::ViewAuditLog;
     }
 
-    public static function canCreate(): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function table(Table $table): Table
     {
@@ -44,7 +51,7 @@ class ActivityLogResource extends Resource
             ])
             ->recordActions([
                 Action::make('details')->modalSubmitAction(false)
-                    ->modalContent(fn (Activity $record) => new \Illuminate\Support\HtmlString(
+                    ->modalContent(fn (Activity $record) => new HtmlString(
                         '<pre style="white-space:pre-wrap;font-size:12px">'.e(json_encode($record->properties, JSON_PRETTY_PRINT)).'</pre>'
                     )),
             ]);

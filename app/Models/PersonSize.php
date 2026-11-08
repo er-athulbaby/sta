@@ -9,5 +9,8 @@ class PersonSize extends Model
 {
     protected $fillable = ['person_id', 'clothing_item_id', 'size'];
 
-    public function clothingItem(): BelongsTo { return $this->belongsTo(ClothingItem::class); }
+    public function clothingItem(): BelongsTo
+    {
+        return $this->belongsTo(ClothingItem::class);
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +18,7 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)->use(RefreshDatabase::class)
-    ->beforeEach(fn () => $this->seed(\Database\Seeders\PermissionSeeder::class))
+    ->beforeEach(fn () => $this->seed(PermissionSeeder::class))
     ->in('Feature');
 
 /*

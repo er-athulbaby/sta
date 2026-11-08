@@ -2,15 +2,14 @@
 
 namespace App\Filament\Resources\Associations;
 
+use App\Enums\StaPermission;
+use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\Associations\Pages\CreateAssociation;
 use App\Filament\Resources\Associations\Pages\EditAssociation;
 use App\Filament\Resources\Associations\Pages\ListAssociations;
 use App\Filament\Resources\Associations\Schemas\AssociationForm;
 use App\Filament\Resources\Associations\Tables\AssociationsTable;
-use App\Filament\Resources\Associations\RelationManagers;
 use App\Models\Association;
-use App\Enums\StaPermission;
-use App\Filament\Concerns\RequiresStaPermission;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Portal\Pages\EditAssociationProfile;
+use App\Models\Association;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -27,8 +29,8 @@ class PortalPanelProvider extends PanelProvider
             ->id('portal')
             ->path('portal')
             ->login()
-            ->tenant(\App\Models\Association::class)
-            ->tenantProfile(\App\Filament\Portal\Pages\EditAssociationProfile::class)
+            ->tenant(Association::class)
+            ->tenantProfile(EditAssociationProfile::class)
             ->passwordReset()
             ->brandName('Association Portal')
             ->colors([

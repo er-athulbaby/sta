@@ -53,7 +53,7 @@ class ImportPeople extends Page
     {
         return [
             Action::make('template')->label('Download template')->icon('heroicon-o-arrow-down-tray')
-                ->action(fn () => (new PeopleTemplateExport())->download()),
+                ->action(fn () => (new PeopleTemplateExport)->download()),
             Action::make('import')->label('Validate and import')->action('import'),
         ];
     }

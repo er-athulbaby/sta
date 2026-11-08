@@ -15,6 +15,8 @@ enum AppliesTo: string
 
     public function label(): string
     {
-        return match ($this) { self::Athlete => 'Athletes', self::Official => 'Team officials', self::Both => 'Athletes and officials' };
+        return match ($this) {
+            self::Athlete => 'Athletes', self::Official => 'Team officials', self::Both => 'Athletes and officials'
+        };
     }
 }

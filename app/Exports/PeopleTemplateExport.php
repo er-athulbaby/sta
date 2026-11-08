@@ -31,7 +31,7 @@ class PeopleTemplateExport
 
     public function writeTo(string $absolutePath): void
     {
-        $writer = new Writer();
+        $writer = new Writer;
         $writer->openToFile($absolutePath);
         $writer->addRow(Row::fromValues(self::COLUMNS));
         foreach ($this->data() as $values) {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\StaPermission;
+use App\Filament\Resources\ActivityLogs\Pages\ListActivityLogs;
 use App\Models\Person;
 use App\Models\User;
 use Spatie\Activitylog\Models\Activity;
@@ -79,7 +80,7 @@ it('lets a super admin see audit records', function () {
     $admin = User::factory()->superAdmin()->create();
     Person::factory()->create();
     $this->actingAs($admin)->get('/admin/activity-logs')->assertOk();
-    livewire(\App\Filament\Resources\ActivityLogs\Pages\ListActivityLogs::class)
+    livewire(ListActivityLogs::class)
         ->assertCountTableRecords(Activity::count());
     expect(Activity::count())->toBeGreaterThan(0);
 });

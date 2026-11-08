@@ -6,6 +6,7 @@ use App\Models\Association;
 use App\Models\ClothingItem;
 use App\Models\Person;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -66,8 +67,8 @@ it('syncs sizes and validates them against the item', function () {
 it('clears official-only fields on athletes and computes age', function () {
     $p = Person::factory()->create(['type' => PersonType::Athlete, 'function' => 'Coach', 'dob' => '2008-06-15']);
     expect($p->function)->toBeNull()
-        ->and($p->age(\Carbon\Carbon::parse('2026-06-14')))->toBe(17)
-        ->and($p->age(\Carbon\Carbon::parse('2026-06-15')))->toBe(18);
+        ->and($p->age(Carbon::parse('2026-06-14')))->toBe(17)
+        ->and($p->age(Carbon::parse('2026-06-15')))->toBe(18);
 });
 
 it('deletes the stored files when a person is deleted', function () {

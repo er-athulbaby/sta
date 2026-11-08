@@ -8,6 +8,7 @@ use App\Models\Association;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+
 use function Pest\Livewire\livewire;
 
 it('lets STA with permission create an association with a private logo', function () {

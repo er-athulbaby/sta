@@ -3,6 +3,7 @@
 use App\Exports\PeopleTemplateExport;
 use App\Models\Association;
 use App\Models\Person;
+use App\Models\User;
 use App\Services\PeopleImporter;
 
 function xlsxWith(array $rows): string
@@ -54,7 +55,7 @@ it('accepts Excel serial dates', function () {
 
 it('opens the import page for association users', function () {
     $assoc = Association::factory()->create();
-    $this->actingAs(\App\Models\User::factory()->assocEditor($assoc)->create())
+    $this->actingAs(User::factory()->assocEditor($assoc)->create())
         ->get("/portal/{$assoc->id}/import-people")->assertOk()->assertSee('Download template');
 });
 
@@ -85,7 +86,7 @@ it('returns a friendly error for a file that is not a spreadsheet', function () 
 
 it('imports the untouched default template', function () {
     $path = storage_path('app/testing/tpl-'.uniqid().'.xlsx');
-    (new PeopleTemplateExport())->writeTo($path);
+    (new PeopleTemplateExport)->writeTo($path);
     $result = app(PeopleImporter::class)->import($path, Association::factory()->create());
 
     expect($result->errors)->toBe([])->and($result->created)->toBe(1);

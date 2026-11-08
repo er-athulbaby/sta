@@ -15,9 +15,15 @@ class Event extends Model
 
     protected $fillable = ['sport_id', 'name', 'gender', 'is_active'];
 
-    protected function casts(): array { return ['gender' => EventGender::class, 'is_active' => 'boolean']; }
+    protected function casts(): array
+    {
+        return ['gender' => EventGender::class, 'is_active' => 'boolean'];
+    }
 
-    public function sport(): BelongsTo { return $this->belongsTo(Sport::class); }
+    public function sport(): BelongsTo
+    {
+        return $this->belongsTo(Sport::class);
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

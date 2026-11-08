@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,8 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Gate::before(
-            fn (\App\Models\User $user) => $user->isSuperAdmin() ? true : null
+        Gate::before(
+            fn (User $user) => $user->isSuperAdmin() ? true : null
         );
     }
 }

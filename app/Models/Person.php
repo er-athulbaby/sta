@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -21,6 +22,7 @@ class Person extends Model
     use BelongsToAssociation, HasFactory, LogsActivity;
 
     public const FILE_COLUMNS = ['photo_path', 'passport_scan_path', 'cpr_scan_path'];
+
     public const OFFICIAL_ONLY = ['function', 'phone', 'email'];
 
     protected $fillable = [
@@ -116,6 +118,7 @@ class Person extends Model
             foreach ($sizes as $itemId => $size) {
                 if (blank($size)) {
                     $this->sizes()->where('clothing_item_id', $itemId)->delete();
+
                     continue;
                 }
                 $item = $items->get((int) $itemId);
@@ -135,7 +138,7 @@ class Person extends Model
             ->logOnlyDirty();
     }
 
-    public function tapActivity(\Spatie\Activitylog\Contracts\Activity $activity, string $eventName): void
+    public function tapActivity(Activity $activity, string $eventName): void
     {
         $changed = array_keys(array_filter([
             'passport_no' => $this->wasChanged('passport_no_hash'),

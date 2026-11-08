@@ -20,7 +20,9 @@ class InvitationsRelationManager extends RelationManager
                 TextColumn::make('email'),
                 TextColumn::make('role')->formatStateUsing(fn ($state) => $state->label()),
                 TextColumn::make('status')->state(fn (Invitation $record) => $record->status())->badge()
-                    ->color(fn (string $state) => match ($state) { 'pending' => 'warning', 'accepted' => 'success', default => 'gray' }),
+                    ->color(fn (string $state) => match ($state) {
+                        'pending' => 'warning', 'accepted' => 'success', default => 'gray'
+                    }),
                 TextColumn::make('expires_at')->dateTime('d M Y'),
             ])
             ->recordActions([InvitationActions::resend(), InvitationActions::revoke()]);

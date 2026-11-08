@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StaUsers\Pages;
 
+use App\Enums\Role;
 use App\Filament\Resources\StaUsers\StaUserResource;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -11,6 +12,6 @@ class CreateStaUser extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        return [...$data, 'role' => \App\Enums\Role::Sta, 'association_id' => null];
+        return [...$data, 'role' => Role::Sta, 'association_id' => null];
     }
 }

@@ -15,11 +15,20 @@ class Sport extends Model
 
     protected $fillable = ['association_id', 'name', 'is_active'];
 
-    protected function casts(): array { return ['is_active' => 'boolean']; }
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
 
-    public function association(): BelongsTo { return $this->belongsTo(Association::class); }
+    public function association(): BelongsTo
+    {
+        return $this->belongsTo(Association::class);
+    }
 
-    public function events(): HasMany { return $this->hasMany(Event::class); }
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

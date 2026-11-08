@@ -1,16 +1,17 @@
 <?php
 
 use App\Enums\AppliesTo;
-use App\Enums\StaPermission;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use App\Enums\PersonType;
+use App\Enums\StaPermission;
 use App\Filament\Pages\Settings;
 use App\Filament\Resources\ClothingItems\Pages\CreateClothingItem;
 use App\Filament\Resources\ClothingItems\Pages\EditClothingItem;
 use App\Models\ClothingItem;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+
 use function Pest\Livewire\livewire;
 
 it('creates a clothing item with an ordered size list', function () {

@@ -10,6 +10,7 @@ use App\Models\Invitation;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Mail;
+
 use function Pest\Livewire\livewire;
 
 beforeEach(fn () => Mail::fake());

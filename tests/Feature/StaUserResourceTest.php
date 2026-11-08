@@ -4,12 +4,14 @@ use App\Enums\Role;
 use App\Enums\StaPermission;
 use App\Filament\Resources\StaUsers\Pages\CreateStaUser;
 use App\Models\User;
+use Spatie\Permission\Models\Permission;
+
 use function Pest\Livewire\livewire;
 
 it('lets super admin create an STA user with permissions', function () {
     actingInAdmin(User::factory()->superAdmin()->create());
 
-    $permissionIds = \Spatie\Permission\Models\Permission::whereIn('name', [
+    $permissionIds = Permission::whereIn('name', [
         StaPermission::ManageAssociations->value, StaPermission::ViewReports->value,
     ])->pluck('id')->all();
 
