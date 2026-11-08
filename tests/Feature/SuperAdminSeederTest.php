@@ -3,6 +3,7 @@
 use App\Enums\Role;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Support\Facades\Hash;
 
 it('creates the super admin from config', function () {
     config(['app.super_admin' => ['name' => 'Boss', 'email' => 'boss@example.com', 'password' => 'secret-pass-1']]);
@@ -19,4 +20,14 @@ it('refuses to seed in production without a password', function () {
 
     expect(fn () => (new DatabaseSeeder)->run())
         ->toThrow(RuntimeException::class, 'SUPER_ADMIN_PASSWORD must be set');
+});
+
+it('falls back to the dev password outside production', function () {
+    config(['app.super_admin' => ['name' => 'Boss', 'email' => 'boss@example.com', 'password' => null]]);
+
+    (new DatabaseSeeder)->run();
+
+    $user = User::where('email', 'boss@example.com')->firstOrFail();
+    expect($user->role)->toBe(Role::SuperAdmin)
+        ->and(Hash::check('change-me-now', $user->password))->toBeTrue();
 });
