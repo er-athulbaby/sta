@@ -122,3 +122,14 @@ it('rolls back earlier size changes when a later one is invalid', function () {
     expect(fn () => $athlete->syncSizes([$shirt->id => 'L', $suit->id => '48']))->toThrow(ValidationException::class)
         ->and($athlete->sizesMap())->toBe([$shirt->id => 'M']);
 });
+
+it('prunes sizes that no longer apply when the type changes', function () {
+    $shirt = ClothingItem::factory()->create(['sizes' => ['S', 'M'], 'applies_to' => AppliesTo::Both]);
+    $kit = ClothingItem::factory()->create(['sizes' => ['S', 'M'], 'applies_to' => AppliesTo::Athlete]);
+    $person = Person::factory()->create(['type' => PersonType::Athlete]);
+    $person->syncSizes([$shirt->id => 'M', $kit->id => 'S']);
+
+    $person->update(['type' => PersonType::Official]);
+
+    expect($person->sizesMap())->toBe([$shirt->id => 'M']);
+});

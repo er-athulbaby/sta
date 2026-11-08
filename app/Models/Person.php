@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AppliesTo;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Models\Concerns\BelongsToAssociation;
@@ -52,6 +53,13 @@ class Person extends Model
                 foreach (self::OFFICIAL_ONLY as $column) {
                     $person->{$column} = null;
                 }
+            }
+        });
+
+        // Sizes of items that no longer apply to the new type go stale; deactivated items are kept on purpose.
+        static::saved(function (Person $person) {
+            if ($person->wasChanged('type')) {
+                $person->sizes()->whereHas('clothingItem', fn ($q) => $q->whereNotIn('applies_to', [AppliesTo::Both->value, $person->type->value]))->delete();
             }
         });
 

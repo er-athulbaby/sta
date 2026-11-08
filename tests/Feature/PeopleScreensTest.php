@@ -108,3 +108,24 @@ it('edits a person keeping their own passport and syncs sizes', function () {
 
     expect($mine->refresh()->first_name)->toBe('Changed')->and($mine->sizesMap())->toBe([$this->shirt->id => 'L']);
 });
+
+it('removes athlete-only sizes when editing a person to official', function () {
+    $kit = ClothingItem::factory()->create(['sizes' => ['S', 'M'], 'applies_to' => AppliesTo::Athlete]);
+    $mine = Person::factory()->create(['association_id' => $this->assoc->id]);
+    $mine->syncSizes([$this->shirt->id => 'M', $kit->id => 'S']);
+
+    livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
+        ->fillForm(['type' => PersonType::Official->value, 'function' => 'Coach'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($mine->refresh()->sizesMap())->toBe([$this->shirt->id => 'M']);
+});
+
+it('creates no person when a size is invalid', function () {
+    // Filament's Select rule rejects it first; the DB transaction in SavesPersonSizes is the backstop for syncSizes failures.
+    livewire(CreatePerson::class)->fillForm(athleteData(["sizes.{$this->shirt->id}" => 'XXL']))->call('create')
+        ->assertHasFormErrors(["sizes.{$this->shirt->id}"]);
+
+    expect(Person::count())->toBe(0);
+});
