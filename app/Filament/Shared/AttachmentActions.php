@@ -16,7 +16,8 @@ final class AttachmentActions
     {
         return ActionGroup::make(collect(self::LABELS)->map(fn (string $label, string $column) => Action::make('view_'.$column)
             ->label('View '.$label)->icon('heroicon-o-eye')
-            ->visible(fn (Person $record) => filled($record->{$column}))
+            ->visible(fn (Person $record) => filled($record->{$column})
+                && ($column !== 'wada_certificate_path' || Person::canViewMedical(auth()->user())))
             ->url(fn (Person $record) => self::url($record->{$column}), shouldOpenInNewTab: true))->values()->all())
             ->label('Attachments')->icon('heroicon-o-paper-clip');
     }

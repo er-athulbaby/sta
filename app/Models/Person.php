@@ -34,6 +34,9 @@ class Person extends Model
     /** Encrypted, unlogged columns. */
     public const MEDICAL = ['blood_group', 'insurance_policy_no', 'allergies', 'chronic_conditions', 'medication'];
 
+    /** Everything hidden from STA without view_medical: kept out of the audit log and the form fill. */
+    public const MEDICAL_GATED = [...self::MEDICAL, 'medical_clearance_expiry', 'meal_requirement', 'wada_certificate_path'];
+
     public const CONSENTS = ['consent_data', 'consent_media', 'consent_medical', 'decl_conduct', 'decl_antidoping', 'decl_data_sharing'];
 
     public const REQUIRED_FOR_COMPLETE = [
@@ -232,7 +235,7 @@ class Person extends Model
     {
         return LogOptions::defaults()
             ->logFillable()
-            ->logExcept(['passport_no', 'cpr_no', ...self::MEDICAL])
+            ->logExcept(['passport_no', 'cpr_no', ...self::MEDICAL_GATED])
             ->logOnlyDirty();
     }
 
@@ -245,7 +248,7 @@ class Person extends Model
         if ($eventName === 'updated' && $changed) {
             $activity->properties = $activity->properties->put('documents_changed', $changed);
         }
-        if ($eventName === 'updated' && collect(self::MEDICAL)->contains(fn ($c) => $this->wasChanged($c))) {
+        if ($eventName === 'updated' && collect(self::MEDICAL_GATED)->contains(fn ($c) => $this->wasChanged($c))) {
             $activity->properties = $activity->properties->put('medical_changed', true);
         }
     }

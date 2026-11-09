@@ -123,3 +123,26 @@ it('refuses a tampered visa copy path', function () {
 
     expect($person->visas()->count())->toBe(0);
 });
+
+it('deletes the visa copy file when the visa model or its row is removed', function () {
+    Storage::fake(config('filesystems.private'));
+    $disk = Storage::disk(config('filesystems.private'));
+    actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+    $person = Person::factory()->official()->create(['association_id' => $this->assoc->id]);
+    $a = $person->visas()->create(['country' => 'Japan', 'status' => 'Applied', 'copy_path' => 'visas/a.pdf']);
+    $b = $person->visas()->create(['country' => 'China', 'status' => 'Applied', 'copy_path' => 'visas/b.pdf']);
+    $disk->put('visas/a.pdf', 'a');
+    $disk->put('visas/b.pdf', 'b');
+
+    $a->delete();
+    $disk->assertMissing('visas/a.pdf');
+
+    livewire(EditPerson::class, ['record' => $person->getRouteKey()])->fillForm(['visas' => []])->call('save')->assertHasNoFormErrors();
+    $disk->assertMissing('visas/b.pdf');
+    expect($person->visas()->count())->toBe(0);
+
+    $c = $person->visas()->create(['country' => 'Peru', 'status' => 'Applied', 'copy_path' => 'visas/c.pdf']);
+    $disk->put('visas/c.pdf', 'c');
+    $person->delete();
+    $disk->assertMissing('visas/c.pdf');
+});

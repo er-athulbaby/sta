@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Mrz\MrzReader;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Storage;
 
 use function Pest\Livewire\livewire;
@@ -103,4 +104,21 @@ it('reads the record\'s own stored passport scan on edit and removes the temp co
         ->assertSchemaStateSet(['passport_no' => 'BH1234567', 'last_name' => 'Alsayed']);
 
     expect($seen)->toHaveCount(1)->and(file_exists($seen[0]))->toBeFalse();
+});
+
+it('treats a throwing reader as unreadable and reports it', function () {
+    app()->instance(MrzReader::class, new class implements MrzReader
+    {
+        public function read(string $absolutePath): ?array
+        {
+            throw new RuntimeException('tesseract missing');
+        }
+    });
+    Exceptions::fake();
+
+    livewire(CreatePerson::class)
+        ->fillForm(['passport_scan_path' => UploadedFile::fake()->image('passport.jpg')])
+        ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
+        ->assertNotified("Couldn't read the passport. Try a clearer, flat scan.");
+    Exceptions::assertReported(fn (RuntimeException $e) => $e->getMessage() === 'tesseract missing');
 });

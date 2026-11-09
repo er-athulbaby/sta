@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\RenamesAttachments;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class PersonVisa extends Model
 {
@@ -17,6 +18,16 @@ class PersonVisa extends Model
     protected function casts(): array
     {
         return ['valid_until' => 'date'];
+    }
+
+    protected static function booted(): void
+    {
+        // A removed row would otherwise orphan its copy. (Person deletion cascades in the DB and cleans up itself.)
+        static::deleted(function (PersonVisa $visa) {
+            if (filled($visa->copy_path)) {
+                Storage::disk(config('filesystems.private'))->delete($visa->copy_path);
+            }
+        });
     }
 
     protected function attachmentColumns(): array

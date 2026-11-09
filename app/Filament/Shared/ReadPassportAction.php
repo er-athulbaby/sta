@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use InvalidArgumentException;
+use Throwable;
 
 final class ReadPassportAction
 {
@@ -30,6 +31,9 @@ final class ReadPassportAction
                 $path = PassportScanFile::localPath($state);
                 try {
                     $lines = $path ? app(MrzReader::class)->read($path) : null;
+                } catch (Throwable $e) {
+                    report($e); // missing binary / process failure: show the normal "couldn't read" notice
+                    $lines = null;
                 } finally {
                     PassportScanFile::release($state, $path);
                 }

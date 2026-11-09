@@ -157,6 +157,8 @@ final class PersonForm
      * guard would reject the item's own new path. Trust only paths stored from a temporary upload by this Livewire
      * component in this request (the schema is rebuilt mid-save, so the list is keyed by the component, not a closure).
      */
+    // ponytail: replaces Filament's internal beforeStateDehydrated for visa copy uploads. Re-check against vendor/filament/forms
+    // BaseFileUpload on every Filament upgrade; the visa upload tests fail if it breaks.
     private static function trustFreshUploads(FileUpload $upload): FileUpload
     {
         return $upload

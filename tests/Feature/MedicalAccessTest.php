@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\StaPermission;
+use App\Filament\Resources\People\Pages\ListPeople;
 use App\Models\Person;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -27,4 +28,37 @@ it('decides who may see medical data', function () {
         ->and(Person::canViewMedical($sta))->toBeFalse()
         ->and(Person::canViewMedical($medic))->toBeTrue()
         ->and(Person::canViewMedical(User::factory()->superAdmin()->create()))->toBeTrue();
+});
+
+it('keeps every medical-gated value out of the audit log', function () {
+    $p = Person::factory()->official()->create(['meal_requirement' => 'Vegan', 'medical_clearance_expiry' => '2027-01-01']);
+    Person::query()->findOrFail($p->id)->update(['meal_requirement' => 'Halal', 'medical_clearance_expiry' => '2028-02-02']);
+    $log = Activity::where('subject_type', Person::class)->where('event', 'updated')->latest('id')->first();
+
+    expect(json_encode($log->properties))->not->toContain('Halal')->not->toContain('Vegan')->not->toContain('2028-02-02')->not->toContain('2027-01-01')
+        ->and($log->properties['medical_changed'] ?? null)->toBeTrue();
+});
+
+it('has no medical_changed marker when nothing medical changed', function () {
+    $p = Person::factory()->create();
+    Person::query()->findOrFail($p->id)->update(['first_name' => 'Renamed']);
+    $log = Activity::where('subject_type', Person::class)->where('event', 'updated')->latest('id')->first();
+
+    expect($log->properties->has('medical_changed'))->toBeFalse();
+});
+
+it('denies medical access to nobody', function () {
+    expect(Person::canViewMedical(null))->toBeFalse();
+});
+
+it('hides the WADA certificate link from STA without view_medical', function () {
+    $person = Person::factory()->create(['wada_certificate_path' => 'wada/x.pdf']);
+    $sta = User::factory()->sta()->create();
+    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    actingInAdmin($sta);
+    Livewire\Livewire::test(ListPeople::class)->assertTableActionHidden('view_wada_certificate_path', $person);
+
+    $sta->givePermissionTo(StaPermission::ViewMedical->value);
+    actingInAdmin($sta->fresh());
+    Livewire\Livewire::test(ListPeople::class)->assertTableActionVisible('view_wada_certificate_path', $person);
 });
