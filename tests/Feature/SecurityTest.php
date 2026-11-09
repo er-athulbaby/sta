@@ -15,3 +15,9 @@ it('hides the MFA secret from serialisation', function () {
     $user->forceFill(['app_authentication_secret' => 'SECRET'])->save();
     expect($user->fresh()->toArray())->not->toHaveKey('app_authentication_secret');
 });
+
+it('never defaults a user without a role to STA', function () {
+    expect(fn () => User::create(['name' => 'No Role', 'email' => 'norole@example.com', 'password' => 'a-long-password-1']))
+        ->toThrow(Illuminate\Database\QueryException::class);
+    expect(User::where('email', 'norole@example.com')->exists())->toBeFalse();
+});
