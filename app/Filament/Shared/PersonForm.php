@@ -6,58 +6,139 @@ use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Models\ClothingItem;
 use App\Models\Person;
+use App\Models\PersonInjury;
+use App\Models\PersonVisa;
 use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use WeakMap;
 
 final class PersonForm
 {
-    public const FUNCTIONS = ['Coach', 'Assistant Coach', 'Team Manager', 'Team Admin', 'Physio', 'Doctor', 'Other'];
+    public const FUNCTIONS = ['Head of Delegation', 'Team Manager', 'Administrator', 'Head Coach', 'Assistant Coach', 'Goalkeeper Coach',
+        'Fitness Coach', 'Performance Analyst', 'Team Doctor', 'Physiotherapist', 'Massage Therapist', 'Kit Manager', 'Media Officer',
+        'Security Officer', 'Interpreter', 'Other'];
+
+    /** @var ?WeakMap<object, array<int, string>> Livewire component => paths it stored from temporary uploads this request */
+    private static ?WeakMap $freshUploads = null;
 
     public static function configure(Schema $schema, bool $withAssociation = false): Schema
     {
         $isOfficial = fn (Get $get) => $get('type') === PersonType::Official->value;
+        $isAthlete = fn (Get $get) => $get('type') !== PersonType::Official->value;
+        $medical = fn () => Person::canViewMedical(auth()->user());
+        $countries = array_combine(array_values(config('countries')), array_values(config('countries')));
+        $scanTypes = ['application/pdf', 'image/jpeg', 'image/png'];
 
         return $schema->components([
             Section::make('Person')->columns(2)->schema([
                 ...($withAssociation ? [Select::make('association_id')->relationship('association', 'name')->searchable()->preload()->required()] : []),
                 Select::make('type')->options(self::options(PersonType::cases()))->required()->live()->default(PersonType::Athlete->value),
+                TextInput::make('full_name')->label('Full name (as in passport)')->maxLength(200)->columnSpanFull(),
                 TextInput::make('first_name')->required()->maxLength(100),
                 TextInput::make('second_name')->maxLength(100),
                 TextInput::make('third_name')->maxLength(100),
                 TextInput::make('last_name')->required()->maxLength(100),
                 DatePicker::make('dob')->label('Date of birth')->required()->maxDate(now()),
                 Select::make('gender')->options(self::options(PersonGender::cases()))->required(),
-                TextInput::make('nationality')->required()->maxLength(100),
+                Select::make('nationality')->options($countries)->searchable()->required(),
                 TextInput::make('height_cm')->label('Height (cm)')->numeric()->minValue(50)->maxValue(250),
                 TextInput::make('weight_kg')->label('Weight (kg)')->numeric()->minValue(20)->maxValue(250),
+                self::upload('photo_path', 'Photo', 'photos', ['image/jpeg', 'image/png'], 2048),
                 Toggle::make('is_active')->default(true),
             ]),
-            Section::make('Team official details')->columns(3)->visible($isOfficial)->schema([
-                Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->required($isOfficial),
-                TextInput::make('phone')->label('Mobile')->tel()->maxLength(50),
-                TextInput::make('email')->email()->maxLength(255),
-            ]),
-            Section::make('Documents')->columns(3)->schema([
+            Section::make('Passport')->columns(3)->schema([
+                self::upload('passport_scan_path', 'Passport scan', 'scans', $scanTypes, 5120)->columnSpanFull()
+                    ->hintAction(ReadPassportAction::make()),
                 TextInput::make('passport_no')->label('Passport number')->required()->maxLength(30)
                     ->rule(fn (?Model $record) => self::uniqueDocument('passport_no_hash', 'passport', $record)),
-                DatePicker::make('passport_expiry')->required(),
-                self::upload('passport_scan_path', 'Passport scan', 'scans', ['application/pdf', 'image/jpeg', 'image/png'], 5120),
+                Select::make('passport_issuing_country')->label('Issuing country')->options($countries)->searchable(),
+                DatePicker::make('passport_issue_date')->label('Issue date')->maxDate(now()),
+                DatePicker::make('passport_expiry')->label('Expiry date')->required(),
+            ]),
+            Section::make('CPR')->columns(3)->schema([
                 TextInput::make('cpr_no')->label('CPR number')->maxLength(30)
                     ->rule(fn (?Model $record) => self::uniqueDocument('cpr_no_hash', 'CPR', $record)),
                 DatePicker::make('cpr_expiry')->requiredWith('cpr_no'),
-                self::upload('cpr_front_path', 'CPR front', 'scans', ['application/pdf', 'image/jpeg', 'image/png'], 5120),
-                self::upload('photo_path', 'Photo', 'photos', ['image/jpeg', 'image/png'], 2048),
+                self::upload('cpr_front_path', 'CPR front', 'scans', $scanTypes, 5120),
+                self::upload('cpr_back_path', 'CPR back', 'scans', $scanTypes, 5120),
+                self::upload('cpr_reader_path', 'CPR reader copy', 'scans', $scanTypes, 5120),
             ]),
-            Section::make('Clothing sizes')->columns(3)
-                ->schema(fn (Get $get) => self::sizeFields(PersonType::tryFrom((string) $get('type')) ?? PersonType::Athlete)),
+            Section::make('Contact')->columns(2)->schema([
+                // The label sits on the number input; a label on the wrapping Grid would not render.
+                PhoneField::make('phone', fn (Get $get) => $isOfficial($get) ? 'Mobile' : 'Player Mobile'),
+                Toggle::make('whatsapp_same')->label('WhatsApp is the same as mobile')->live(),
+                PhoneField::make('whatsapp', 'WhatsApp')->hidden(fn (Get $get) => (bool) $get('whatsapp_same')),
+                TextInput::make('email')->label(fn (Get $get) => $isOfficial($get) ? 'Email' : 'Player Email')->email()->maxLength(255),
+                TextInput::make('address')->label('Player Address')->maxLength(255)->visible($isAthlete),
+                TextInput::make('emergency_name')->label('Emergency contact name')->maxLength(200),
+                TextInput::make('emergency_relationship')->label('Relationship')->maxLength(100),
+                PhoneField::make('emergency_phone', 'Emergency phone'),
+            ]),
+            Section::make('Guardian')->description('For athletes under 18')->columns(2)->visible($isAthlete)->schema([
+                TextInput::make('guardian_name')->maxLength(200),
+                Select::make('guardian_relationship')->options(array_combine($g = ['Father', 'Mother', 'Legal guardian'], $g)),
+                PhoneField::make('guardian_phone', 'Guardian phone'),
+                TextInput::make('guardian_email')->email()->maxLength(255),
+            ]),
+            Section::make('Team official details')->columns(2)->visible($isOfficial)->schema([
+                Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->required($isOfficial),
+                TextInput::make('languages')->label('Languages spoken')->maxLength(255),
+                Repeater::make('visas')->relationship()->columnSpanFull()->defaultItems(0)->addActionLabel('Add visa')->columns(3)->schema([
+                    Select::make('country')->options($countries)->searchable()->required(),
+                    Select::make('status')->options(array_combine(PersonVisa::STATUSES, PersonVisa::STATUSES))->required(),
+                    TextInput::make('visa_no')->label('Visa number')->maxLength(50),
+                    DatePicker::make('valid_until'),
+                    self::trustFreshUploads(self::upload('copy_path', 'Visa copy', 'visas', $scanTypes, 5120))->columnSpan(2),
+                ]),
+            ]),
+            Section::make('Clothing')->columns(3)->schema([
+                Select::make('fit')->options(array_combine($f = ["Men's", "Women's", 'Youth'], $f)),
+                TextInput::make('chest_cm')->label('Chest (cm)')->numeric()->minValue(40)->maxValue(200),
+                TextInput::make('waist_cm')->label('Waist (cm)')->numeric()->minValue(40)->maxValue(200),
+                Grid::make(3)->columnSpanFull()
+                    ->schema(fn (Get $get) => self::sizeFields(PersonType::tryFrom((string) $get('type')) ?? PersonType::Athlete)),
+            ]),
+            // One section for both types (field names must be unique in a schema); title and type-only fields switch on type.
+            // The whole section is left out of the schema (->hidden, not just invisible) for STA users without view_medical.
+            Section::make(fn (Get $get) => $isOfficial($get) ? 'Health' : 'Medical')->columns(2)->hidden(fn () => ! $medical())->schema([
+                Select::make('blood_group')->options(array_combine($b = ['A+', 'A−', 'B+', 'B−', 'AB+', 'AB−', 'O+', 'O−', 'Unknown'], $b)),
+                Select::make('meal_requirement')->visible($isOfficial)
+                    ->options(array_combine($m = ['Halal', 'Vegetarian', 'Vegan', 'Gluten-free', 'No restriction'], $m)),
+                DatePicker::make('medical_clearance_expiry')->visible($isAthlete),
+                TextInput::make('insurance_policy_no')->label('Insurance policy number')->maxLength(100)->visible($isAthlete),
+                self::upload('wada_certificate_path', 'WADA certificate', 'scans', $scanTypes, 5120)->visible($isAthlete),
+                Textarea::make('allergies')->rows(2),
+                Textarea::make('chronic_conditions')->label(fn (Get $get) => $isOfficial($get) ? 'Medical conditions' : 'Chronic conditions')->rows(2),
+                Textarea::make('medication')->label('Current medication')->rows(2),
+                Repeater::make('injuries')->relationship()->visible($isAthlete)->columnSpanFull()->defaultItems(0)->addActionLabel('Add injury')->columns(3)->schema([
+                    DatePicker::make('injury_date')->required(),
+                    Select::make('status')->options(array_combine(PersonInjury::STATUSES, PersonInjury::STATUSES))->required(),
+                    Textarea::make('description')->required()->rows(2)->columnSpanFull(),
+                ]),
+            ]),
+            Section::make('Consents')->visible($isAthlete)->schema([
+                Toggle::make('consent_data')->label('Consent to store personal data'),
+                Toggle::make('consent_media')->label('Consent to use photos in media'),
+                Toggle::make('consent_medical')->label('Consent for emergency medical treatment'),
+            ]),
+            Section::make('Declarations')->visible($isOfficial)->schema([
+                Toggle::make('decl_conduct')->label('Accepts the delegation code of conduct'),
+                Toggle::make('decl_antidoping')->label('Will follow anti-doping and integrity rules'),
+                Toggle::make('decl_data_sharing')->label('Consents to data being shared with organisers, airline and hotel'),
+            ]),
         ]);
     }
 
@@ -67,6 +148,25 @@ final class PersonForm
             // image() (if wanted) must come before acceptedFileTypes(), or it widens the list to image/* (SVG).
             ->acceptedFileTypes($types)->maxSize($maxKb)
             ->disk(config('filesystems.private'))->directory($dir)->visibility('private')->openable()->downloadable();
+    }
+
+    /**
+     * A relationship Repeater re-validates each item after the form has already stored its uploads, so the tamper
+     * guard would reject the item's own new path. Trust only paths stored from a temporary upload by this Livewire
+     * component in this request (the schema is rebuilt mid-save, so the list is keyed by the component, not a closure).
+     */
+    private static function trustFreshUploads(FileUpload $upload): FileUpload
+    {
+        return $upload
+            ->beforeStateDehydrated(function (FileUpload $component) {
+                $temporary = array_filter(Arr::wrap($component->getRawState()), fn ($f) => $f instanceof TemporaryUploadedFile);
+                $component->saveUploadedFiles();
+                $livewire = $component->getLivewire();
+                self::$freshUploads ??= new WeakMap;
+                self::$freshUploads[$livewire] = [...self::$freshUploads[$livewire] ?? [],
+                    ...array_values(array_intersect_key(Arr::wrap($component->getRawState()), $temporary))];
+            }, shouldUpdateValidatedStateAfter: true)
+            ->preventFilePathTampering(allowFilePathUsing: fn (string $file, FileUpload $component) => in_array($file, self::$freshUploads[$component->getLivewire()] ?? [], true));
     }
 
     private static function uniqueDocument(string $hashColumn, string $label, ?Model $record): Closure

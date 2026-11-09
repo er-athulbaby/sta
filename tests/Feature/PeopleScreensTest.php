@@ -115,7 +115,7 @@ it('removes athlete-only sizes when editing a person to official', function () {
     $mine->syncSizes([$this->shirt->id => 'M', $kit->id => 'S']);
 
     livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
-        ->fillForm(['type' => PersonType::Official->value, 'function' => 'Coach'])
+        ->fillForm(['type' => PersonType::Official->value, 'function' => 'Head Coach'])
         ->call('save')
         ->assertHasNoFormErrors();
 

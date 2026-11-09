@@ -30,7 +30,7 @@ class PersonFactory extends Factory
 
     public function official(): static
     {
-        return $this->state(['type' => PersonType::Official, 'function' => 'Coach', 'phone' => '+97333000000', 'email' => fake()->safeEmail()]);
+        return $this->state(['type' => PersonType::Official, 'function' => 'Head Coach', 'phone' => '33000000', 'email' => fake()->safeEmail()]);
     }
 
     public function complete(): static
