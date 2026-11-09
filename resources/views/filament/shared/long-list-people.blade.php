@@ -33,7 +33,7 @@
                                     @if ($d->insurance_certificate_path)
                                         <a href="{{ \App\Filament\Shared\AttachmentActions::url($d->insurance_certificate_path) }}" target="_blank" class="text-primary-600 underline">Certificate</a>
                                     @endif
-                                    @if ($d->vaccinations)<div>Vaccinations: {{ $d->vaccinations }}</div>@endif
+                                    @if ($d->vaccinations && ($showMedical ?? false))<div>Vaccinations: {{ $d->vaccinations }}</div>@endif
                                 </div>
                             @elseif ($row['detail'])
                                 <div class="text-xs text-gray-500">Insurance: {{ $row['detail']->insurance_company ?? '–' }}</div>

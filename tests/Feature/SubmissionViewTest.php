@@ -34,7 +34,7 @@ beforeEach(function () {
     $this->sub = Submission::for($this->game, $this->assoc, 3);
     $this->actingAs(User::factory()->assocAdmin($this->assoc)->create(['name' => 'Fatima Admin']));
     Entry::create(['submission_id' => $this->sub->id, 'person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
-    LongListDetail::create(['submission_id' => $this->sub->id, 'person_id' => $this->ali->id, 'insurance_company' => 'AXA Gulf', 'insurance_policy_no' => 'POL-777']);
+    LongListDetail::create(['submission_id' => $this->sub->id, 'person_id' => $this->ali->id, 'insurance_company' => 'AXA Gulf', 'insurance_policy_no' => 'POL-777', 'vaccinations' => 'Yellow fever']);
     $this->viewer = User::factory()->sta()->create();
     $this->viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
 });
@@ -43,13 +43,13 @@ it('shows the submission, its long list and its audit trail', function () {
     actingInAdmin($this->viewer);
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])
         ->assertSee('Bahrain Judo Federation')->assertSee('Long List')->assertSee('Ali Hasan')->assertSee('Judo · Men -60kg')
-        ->assertSee('AXA Gulf')->assertDontSee('POL-777')->assertSee('Fatima Admin')->assertSee('Entry created');
+        ->assertSee('AXA Gulf')->assertDontSee('POL-777')->assertDontSee('Yellow fever')->assertSee('Fatima Admin')->assertSee('Entry created');
 });
 
 it('shows the policy number only with view_medical', function () {
     $this->viewer->givePermissionTo(StaPermission::ViewMedical->value);
     actingInAdmin($this->viewer);
-    livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])->assertSee('POL-777');
+    livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])->assertSee('POL-777')->assertSee('Yellow fever');
 });
 
 it('shows phase 2 numbers', function () {
