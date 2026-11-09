@@ -20,7 +20,7 @@ final class PeopleImporter
 {
     public const MAX_ROWS = 500;
 
-    private const DATE_COLUMNS = ['date_of_birth', 'passport_expiry', 'cpr_expiry'];
+    private const DATE_COLUMNS = ['date_of_birth', 'passport_issue_date', 'passport_expiry', 'cpr_expiry'];
 
     public function import(string $absolutePath, Association $association): ImportResult
     {
@@ -124,7 +124,7 @@ final class PeopleImporter
                     $value = (new DateTimeImmutable('1899-12-30'))->modify('+'.(int) $value.' days')->format('Y-m-d');
                 }
             }
-            if (in_array($column, ['passport_no', 'cpr_no'], true) && $value !== null && $value !== '') {
+            if (in_array($column, ['passport_no', 'cpr_no', 'mobile'], true) && $value !== null && $value !== '') {
                 $value = (string) $value;
             }
             $row[$column] = $value === '' ? null : $value;
@@ -147,7 +147,11 @@ final class PeopleImporter
             'last_name' => ['required', 'string', 'max:100'],
             'date_of_birth' => ['required', 'date_format:Y-m-d', 'before:today'],
             'gender' => ['required', Rule::enum(PersonGender::class)],
-            'nationality' => ['required', 'string', 'max:100'],
+            'full_name' => ['nullable', 'string', 'max:200'],
+            'nationality' => ['required', Rule::in(array_values(config('countries')))],
+            'passport_issuing_country' => ['nullable', Rule::in(array_values(config('countries')))],
+            'passport_issue_date' => ['nullable', 'date_format:Y-m-d'],
+            'mobile' => ['nullable', 'regex:/^[0-9 ]{4,20}$/'],
             'height_cm' => ['nullable', 'numeric', 'between:50,250'],
             'weight_kg' => ['nullable', 'numeric', 'between:20,250'],
             'passport_no' => ['required', 'string', 'max:30'],
@@ -162,12 +166,13 @@ final class PeopleImporter
     private function toAttributes(array $row): array
     {
         return [
-            'type' => $row['type'], 'first_name' => $row['first_name'], 'second_name' => $row['second_name'],
+            'type' => $row['type'], 'full_name' => $row['full_name'], 'first_name' => $row['first_name'], 'second_name' => $row['second_name'],
             'third_name' => $row['third_name'], 'last_name' => $row['last_name'], 'dob' => $row['date_of_birth'],
             'gender' => $row['gender'], 'nationality' => $row['nationality'], 'height_cm' => $row['height_cm'],
             'weight_kg' => $row['weight_kg'], 'passport_no' => (string) $row['passport_no'], 'passport_expiry' => $row['passport_expiry'],
             'cpr_no' => $row['cpr_no'] !== null ? (string) $row['cpr_no'] : null, 'cpr_expiry' => $row['cpr_expiry'],
-            'function' => $row['function'], 'phone' => $row['phone'], 'email' => $row['email'],
+            'function' => $row['function'], 'phone' => $row['mobile'], 'phone_cc' => '+973', 'email' => $row['email'],
+            'passport_issuing_country' => $row['passport_issuing_country'], 'passport_issue_date' => $row['passport_issue_date'],
         ];
     }
 }

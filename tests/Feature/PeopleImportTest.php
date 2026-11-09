@@ -24,10 +24,10 @@ function xlsxWith(array $rows): string
 function row(array $overrides = []): array
 {
     return array_merge([
-        'type' => 'athlete', 'first_name' => 'Sara', 'second_name' => '', 'third_name' => '', 'last_name' => 'Ali',
+        'type' => 'athlete', 'full_name' => 'Sara Ali', 'first_name' => 'Sara', 'second_name' => '', 'third_name' => '', 'last_name' => 'Ali',
         'date_of_birth' => '2007-04-02', 'gender' => 'female', 'nationality' => 'Bahrain', 'height_cm' => 165, 'weight_kg' => 55,
-        'passport_no' => 'BH1111111', 'passport_expiry' => '2029-01-01', 'cpr_no' => '070402111', 'cpr_expiry' => '2028-01-01',
-        'function' => '', 'phone' => '', 'email' => '',
+        'passport_no' => 'BH1111111', 'passport_issuing_country' => 'Bahrain', 'passport_issue_date' => '2023-01-01', 'passport_expiry' => '2029-01-01', 'cpr_no' => '070402111', 'cpr_expiry' => '2028-01-01',
+        'function' => '', 'mobile' => '', 'email' => '',
     ], $overrides);
 }
 
@@ -148,4 +148,29 @@ it('refuses a tampered file path and never deletes or imports that file', functi
 
     Storage::disk('local')->assertExists('scans/victim.pdf');
     expect(Person::count())->toBe(0);
+});
+
+it('imports the v1.2 columns and assigns codes', function () {
+    $assoc = Association::factory()->create(['code' => 'BWF']);
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['full_name' => 'Sara Ali', 'passport_issuing_country' => 'Bahrain',
+        'passport_issue_date' => '2024-01-10', 'mobile' => '33445566', 'email' => 'sara@x.bh'])]), $assoc);
+
+    $p = Person::sole();
+    expect($result->ok())->toBeTrue()->and($p->code)->toBe('BWF-AT-0001')->and($p->full_name)->toBe('Sara Ali')
+        ->and($p->passport_issuing_country)->toBe('Bahrain')->and($p->phone)->toBe('33445566')->and($p->phone_cc)->toBe('+973');
+});
+
+it('rejects an unknown issuing country', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['passport_issuing_country' => 'Atlantis'])]), Association::factory()->create());
+    expect($result->ok())->toBeFalse();
+});
+
+it('rejects a nationality that is not in the country list', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['nationality' => 'Bahraini'])]), Association::factory()->create());
+    expect($result->ok())->toBeFalse()->and(Person::count())->toBe(0);
+});
+
+it('rejects an official function outside the form list', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['type' => 'official', 'function' => 'Coach'])]), Association::factory()->create());
+    expect($result->ok())->toBeFalse();
 });
