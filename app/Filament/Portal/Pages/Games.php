@@ -33,7 +33,8 @@ class Games extends Page
                     ->where(['game_id' => $g->id, 'association_id' => $tenant->id, 'phase' => $p->phase])->first();
                 $page = match ($p->phase) {
                     1 => Phase1Entry::class,
-                    2 => class_exists(Phase2Entry::class) ? Phase2Entry::class : null,
+                    2 => Phase2Entry::class,
+                    3 => Phase3Entry::class,
                     default => null,
                 };
 
