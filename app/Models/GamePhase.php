@@ -14,6 +14,8 @@ class GamePhase extends Model
 {
     use HasFactory, LogsActivity;
 
+    public const NAMES = [1 => 'Entry by Sport', 2 => 'Entry by Number', 3 => 'Long List', 4 => 'Short List'];
+
     protected $fillable = ['game_id', 'phase', 'enabled', 'status', 'opens_at', 'deadline'];
 
     protected function casts(): array
