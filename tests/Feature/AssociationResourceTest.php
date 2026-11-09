@@ -70,3 +70,19 @@ it('rejects non JPG/PNG logos', function () {
         ->call('create')
         ->assertHasFormErrors(['logo_path']);
 });
+
+it('keeps the association\'s own stored logo when saving in admin and portal', function () {
+    Storage::fake(config('filesystems.private'));
+    Storage::disk(config('filesystems.private'))->put('logos/own.png', 'png');
+    $assoc = Association::factory()->create(['logo_path' => 'logos/own.png']);
+
+    actingInAdmin(User::factory()->superAdmin()->create());
+    livewire(EditAssociation::class, ['record' => $assoc->getRouteKey()])
+        ->fillForm(['phone' => '111'])->call('save')->assertHasNoFormErrors();
+    expect($assoc->fresh()->logo_path)->toBe('logos/own.png');
+
+    actingInPortal(User::factory()->assocAdmin($assoc)->create());
+    livewire(EditAssociationProfile::class)
+        ->fillForm(['phone' => '222'])->call('save')->assertHasNoFormErrors();
+    expect($assoc->fresh()->logo_path)->toBe('logos/own.png')->and($assoc->fresh()->phone)->toBe('222');
+});

@@ -79,3 +79,18 @@ it('stores and clears the NOC logo', function () {
 
     expect(Setting::get(Setting::NOC_LOGO))->toBeNull();
 });
+
+it('keeps the stored NOC logo on save and refuses a tampered logo path', function () {
+    Storage::fake(config('filesystems.private'));
+    Storage::disk(config('filesystems.private'))->put('settings/noc.png', 'png');
+    Storage::disk(config('filesystems.private'))->put('scans/victim.pdf', 'secret');
+    Setting::put(Setting::NOC_LOGO, 'settings/noc.png');
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(Settings::class)->fillForm(['pdf_declaration' => 'Changed'])->call('save')->assertHasNoFormErrors();
+    expect(Setting::get(Setting::NOC_LOGO))->toBe('settings/noc.png');
+
+    livewire(Settings::class)->set('data.noc_logo_path', ['x' => 'scans/victim.pdf'])->call('save')
+        ->assertHasFormErrors(['noc_logo_path']);
+    expect(Setting::get(Setting::NOC_LOGO))->toBe('settings/noc.png');
+});

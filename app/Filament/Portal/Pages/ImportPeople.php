@@ -14,7 +14,8 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ImportPeople extends Page
 {
@@ -35,7 +36,8 @@ class ImportPeople extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-            FileUpload::make('file')->label('Excel file (.xlsx)')->required()->disk('local')->directory('imports')
+            // storeFiles(false): state keeps the TemporaryUploadedFile, so no client-supplied path is ever trusted.
+            FileUpload::make('file')->label('Excel file (.xlsx)')->required()->storeFiles(false)
                 ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])->maxSize(5120),
         ])->statePath('data');
     }
@@ -61,12 +63,15 @@ class ImportPeople extends Page
     public function import(PeopleImporter $importer): void
     {
         $file = $this->form->getState()['file'];
-        $path = is_array($file) ? array_values($file)[0] : $file;
+        $file = is_array($file) ? array_values($file)[0] : $file;
+        if (! $file instanceof TemporaryUploadedFile) {
+            throw ValidationException::withMessages(['data.file' => 'Please upload the Excel file again.']);
+        }
 
         try {
-            $result = $importer->import(Storage::disk('local')->path($path), Filament::getTenant());
+            $result = $importer->import($file->getRealPath(), Filament::getTenant());
         } finally {
-            Storage::disk('local')->delete($path);
+            $file->delete();
         }
         $this->rowErrors = $result->errors;
 

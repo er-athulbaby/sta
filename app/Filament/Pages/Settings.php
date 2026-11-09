@@ -39,7 +39,9 @@ class Settings extends Page
     {
         return $schema->components([
             FileUpload::make('noc_logo_path')->label('NOC logo (printed on PDFs)')->image()->maxSize(2048)
-                ->disk(config('filesystems.private'))->directory('settings')->visibility('private'),
+                ->disk(config('filesystems.private'))->directory('settings')->visibility('private')
+                // No record backs this page, so allow exactly the currently stored logo path.
+                ->preventFilePathTampering(allowFilePathUsing: fn (string $file) => $file === Setting::get(Setting::NOC_LOGO)),
             Textarea::make('pdf_declaration')->label('Declaration printed above signatures')->required()->rows(4),
         ])->statePath('data');
     }

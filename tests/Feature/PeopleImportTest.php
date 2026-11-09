@@ -1,10 +1,15 @@
 <?php
 
 use App\Exports\PeopleTemplateExport;
+use App\Filament\Portal\Pages\ImportPeople;
 use App\Models\Association;
 use App\Models\Person;
 use App\Models\User;
 use App\Services\PeopleImporter;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+
+use function Pest\Livewire\livewire;
 
 function xlsxWith(array $rows): string
 {
@@ -114,4 +119,33 @@ it('rejects files over the row cap', function () {
     $result = app(PeopleImporter::class)->import(xlsxWith($rows), Association::factory()->create());
 
     expect($result->ok())->toBeFalse()->and(array_keys($result->errors))->toBe([1])->and(Person::count())->toBe(0);
+});
+
+it('imports an uploaded file through the page and removes the upload afterwards', function () {
+    Storage::fake('local');
+    $assoc = Association::factory()->create();
+    actingInPortal(User::factory()->assocEditor($assoc)->create());
+
+    livewire(ImportPeople::class)
+        ->set('data.file', UploadedFile::fake()->createWithContent('people.xlsx', file_get_contents(xlsxWith([row()]))))
+        ->call('import')
+        ->assertHasNoFormErrors();
+
+    expect(Person::where('association_id', $assoc->id)->count())->toBe(1)
+        ->and(Storage::disk('local')->allFiles())->toBe([]);
+});
+
+it('refuses a tampered file path and never deletes or imports that file', function () {
+    Storage::fake('local');
+    Storage::disk('local')->put('scans/victim.pdf', 'secret');
+    $assoc = Association::factory()->create();
+    actingInPortal(User::factory()->assocEditor($assoc)->create());
+
+    livewire(ImportPeople::class)
+        ->set('data.file', ['x' => 'scans/victim.pdf'])
+        ->call('import')
+        ->assertHasFormErrors(['file']);
+
+    Storage::disk('local')->assertExists('scans/victim.pdf');
+    expect(Person::count())->toBe(0);
 });

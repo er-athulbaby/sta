@@ -129,3 +129,31 @@ it('creates no person when a size is invalid', function () {
 
     expect(Person::count())->toBe(0);
 });
+
+it('refuses a tampered passport scan path pointing at another association\'s file', function () {
+    Storage::disk(config('filesystems.private'))->put('scans/victim.pdf', 'secret');
+    foreignPerson(['passport_scan_path' => 'scans/victim.pdf']);
+    $mine = Person::factory()->create(['association_id' => $this->assoc->id, 'passport_scan_path' => null]);
+
+    livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
+        ->set('data.passport_scan_path', ['x' => 'scans/victim.pdf'])
+        ->call('save')
+        ->assertHasFormErrors(['passport_scan_path']);
+
+    expect($mine->refresh()->passport_scan_path)->toBeNull();
+    Storage::disk(config('filesystems.private'))->assertExists('scans/victim.pdf');
+});
+
+it('keeps a person\'s own stored files when saving', function () {
+    $disk = Storage::disk(config('filesystems.private'));
+    $disk->put('scans/mine.pdf', 'pdf');
+    $disk->put('photos/mine.png', 'png');
+    $mine = Person::factory()->create(['association_id' => $this->assoc->id, 'passport_scan_path' => 'scans/mine.pdf', 'photo_path' => 'photos/mine.png']);
+
+    livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
+        ->fillForm(['first_name' => 'Changed'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($mine->refresh()->passport_scan_path)->toBe('scans/mine.pdf')->and($mine->photo_path)->toBe('photos/mine.png');
+});
