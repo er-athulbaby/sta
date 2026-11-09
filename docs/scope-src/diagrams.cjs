@@ -262,12 +262,12 @@ diagrams['architecture'] = Diagram(1400, 720)
 // ---------- Entity relationship diagram
 const T = (x, y, title, fields) => ({ x, y, title, fields, h: 30 + fields.length * 20 + 12 });
 const tables = {
-  associations: T(30, 30, 'associations', ['id', 'name *', 'email *', 'logo, phone', 'address, website']),
+  associations: T(30, 30, 'associations', ['id', 'name *, code *', 'email *', 'logo, phone', 'address, website', 'is_active']),
   users: T(30, 290, 'users', ['id', 'association_id (null = STA)', 'name, email, password', 'role', 'is_active']),
   invitations: T(30, 560, 'invitations', ['id', 'association_id', 'email, role', 'token_hash', 'expires_at, accepted_at']),
   sports: T(330, 30, 'sports', ['id', 'association_id', 'name']),
   events: T(330, 250, 'events', ['id', 'sport_id', 'name', 'gender (men/women/mixed)']),
-  people: T(330, 470, 'people', ['id', 'association_id', 'type (athlete/official)', 'first, second, third, last', 'photo_path', 'passport_no (enc), expiry', 'cpr_no (enc), expiry', 'passport / cpr scan paths', 'dob, gender, nationality', 'height, weight', 'function, phone, email']),
+  people: T(330, 470, 'people', ['id, code, association_id', 'type, full_name', 'first, second, third, last', 'passport_no (enc), country', 'passport issue/expiry, scan', 'cpr_no (enc), expiry', 'cpr front / back / reader', 'dob, gender, nationality', 'height, weight, fit, chest', 'phones (+973), email', 'emergency, guardian, role', 'medical (enc), wada, consents']),
   games: T(630, 30, 'games', ['id', 'name, logo', 'start_date, end_date', 'reminder_days']),
   game_associations: T(630, 200, 'game_associations', ['game_id', 'association_id']),
   game_sports: T(630, 340, 'game_sports', ['id', 'game_id, sport_id', 'p2_max_men, p2_max_women', 'p2_max_total', 'p4_max_men, p4_max_women', 'p4_max_officials', 'dob_from, dob_to', 'entry_policy']),
@@ -281,9 +281,11 @@ const tables = {
   clothing_items: T(30, 760, 'clothing_items', ['id', 'name (T-Shirt, Suit, ...)', 'sizes (ordered list)', 'applies_to', 'is_active']),
   person_sizes: T(330, 800, 'person_sizes', ['id', 'person_id', 'clothing_item_id', 'size']),
   game_clothing_items: T(630, 760, 'game_clothing_items', ['game_id', 'clothing_item_id']),
+  person_visas: T(930, 760, 'person_visas', ['id', 'person_id', 'country, status', 'visa_no, valid_until', 'copy_path']),
+  person_injuries: T(1230, 830, 'person_injuries', ['id', 'person_id', 'injury_date, status', 'description (enc)']),
   activity_log: T(1230, 640, 'activity_log', ['id', 'user_id', 'subject (any table)', 'old / new values', 'created_at']),
 };
-const erd = Diagram(1500, 990);
+const erd = Diagram(1500, 1000);
 for (const [id, t] of Object.entries(tables)) erd.node(id, 'table', t.x, t.y, 250, t.h, [t.title, ...t.fields]);
 const g = { color: '#64748B', width: 1.6 };
 erd.edge('users', 'associations', null, g)

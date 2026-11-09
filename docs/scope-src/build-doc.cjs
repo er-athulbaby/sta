@@ -58,7 +58,7 @@ function image(name, maxWpx, maxHpx, caption) {
 const landImg = (name, caption, maxH = 520) => image(name, 960, maxH, caption);
 
 const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'Sports Entry Management System – Scope & Design  |  Page ', size: 16, color: '64748B' }), new TextRun({ children: [PageNumber.CURRENT], size: 16, color: '64748B' })] })] });
-const header = new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'DRAFT FOR REVIEW – v1.1', size: 16, color: '94A3B8' })] })] });
+const header = new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'DRAFT FOR REVIEW – v1.2', size: 16, color: '94A3B8' })] })] });
 const portrait = { page: { size: { width: 11906, height: 16838 }, margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } };
 const landscape = { page: { size: { width: 11906, height: 16838, orientation: PageOrientation.LANDSCAPE }, margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } };
 
@@ -69,7 +69,7 @@ const cover = [
   new Paragraph({ children: [new TextRun({ text: 'Project Scope, Data Flow & Solution Design', size: 32, color: '475569' })], spacing: { after: 600 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: NAVY, space: 8 } } }),
   ...table(['Item', 'Detail'], [
-    ['Document version', '1.1 (Draft for review)'],
+    ['Document version', '1.2 (Draft for review)'],
     ['Date', '4 November 2026'],
     ['Prepared for', 'STA management, Super Admin and project sponsors'],
     ['Status', 'Awaiting stakeholder sign-off before implementation'],
@@ -80,6 +80,7 @@ const cover = [
     ['0.1', '04-Nov-2026', 'Solution Architect', 'Initial design workshop output'],
     ['1.0', '04-Nov-2026', 'Solution Architect', 'Complete scope, data flow diagrams, data model and delivery plan'],
     ['1.1', '04-Nov-2026', 'Solution Architect', 'Open questions resolved; clothing sizes; officials phone and email; Phase 2 total limit, age eligibility, entry policy and Entry by Event PDF; PDF layouts aligned to the samples received'],
+    ['1.2', '09-Nov-2026', 'Solution Architect', 'Registry update: fields chosen from the player and official designs, association and person codes, file naming, CPR front/back/reader copy, visas list, medical data with its own permission, completeness rules, passport reader (MRZ)'],
   ], [0.15, 0.2, 0.25, 0.4]),
   H2('Sign-off'),
   ...table(['Role', 'Name', 'Signature', 'Date'], [
@@ -212,6 +213,7 @@ const partA = [
     ['send_reminders', 'Use "Remind pending"'],
     ['view_reports', 'View reports and export Excel'],
     ['view_audit_log', 'View the change history'],
+    ['view_medical', 'View athletes\' medical data and officials\' health data (hidden from everyone else in /admin)'],
   ], [0.3, 0.7]),
 
   H1('4. Functional Requirements'),
@@ -314,6 +316,33 @@ const partA = [
     ['FR-93', 'Reports listed in section 11, each exportable to Excel.', 'M'],
     ['FR-94', 'Association home page shows each invited game, the open phase, its deadline and status.', 'M'],
   ], [0.1, 0.78, 0.12]),
+  H2('4.11 Registry update (v1.2)'),
+  P('Decided on 9 November 2026 from the player and team-official design drafts. Where this section differs from 4.3, this section applies.'),
+  ...table(['ID', 'Requirement', 'Priority'], [
+    ['FR-100', 'STA enters a unique association code (2–10 letters/digits, e.g. BWF) when creating an association.', 'M'],
+    ['FR-101', 'Each person gets a code on creation: {association code}-AT-0001 for athletes, {association code}-TO-0001 for team officials, numbered per association and type, never reused.', 'M'],
+    ['FR-102', 'Every attachment is stored as {code}_{kind}.{ext} (e.g. BWF-AT-0001_passport.pdf) and has a View action that opens a 5-minute secure link.', 'M'],
+    ['FR-103', 'Common fields: first, second, third and last name; full name (filled from the passport); date of birth; age (automatic); gender; nationality; photo; height; weight.', 'M'],
+    ['FR-104', 'Passport (common): number, issuing country, issue date, expiry and passport scan.', 'M'],
+    ['FR-105', 'CPR (common): number and expiry, with three attachments: CPR front, CPR back and CPR reader copy (smart-card reader printout).', 'M'],
+    ['FR-106', 'Clothing (common): fit, chest (cm), waist (cm) on the person; T-shirt, suit and shoe size chosen from STA clothing items (seeded: T-Shirt, Suit, Shoes).', 'M'],
+    ['FR-107', 'Every phone field has a country code that defaults to +973. A "WhatsApp same as mobile" tick box copies the mobile number.', 'M'],
+    ['FR-108', 'Athletes: Player Mobile, Player Email, Player Address; emergency contact (name, relationship, phone); guardian (name, relationship, phone, email); WADA certificate attachment.', 'M'],
+    ['FR-109', 'Athletes: medical data — blood group, medical clearance expiry, insurance policy number, allergies, chronic conditions, current medication and injury history records.', 'M'],
+    ['FR-110', 'Athletes: consents to store personal data, to use photos in media and for emergency medical treatment, each with the date given.', 'M'],
+    ['FR-111', 'Officials: function from the expanded role list (Head of Delegation to Interpreter), languages spoken, mobile, WhatsApp, email and emergency contact.', 'M'],
+    ['FR-112', 'Officials: any number of visas, each with country, status, visa number, valid until and a visa copy.', 'M'],
+    ['FR-113', 'Officials: health data — blood group, meal requirement, allergies, medical conditions / medication; declarations for code of conduct, anti-doping and data sharing, each with the date given.', 'M'],
+    ['FR-114', 'A person can be saved with gaps. The list shows Complete or Incomplete with the missing fields; incomplete people cannot be submitted in a Long List.', 'M'],
+    ['FR-115', 'Medical and health fields are encrypted, never written to the audit log, and visible in /admin only to STA users with the "View medical & health data" permission.', 'M'],
+    ['FR-116', '"Read details from passport" reads the passport scan\'s machine-readable zone on the server (no AI service), checks its check digits and fills names, full name, passport number, issuing country, nationality, date of birth, gender and expiry for the user to confirm.', 'M'],
+    ['FR-117', 'Travel insurance, insurance certificate and vaccinations are recorded per game in the Long List (Milestone 3), not on the person.', 'S'],
+  ], [0.1, 0.78, 0.12]),
+  H2('4.12 Required fields (v1.2)'),
+  ...table(['Person', 'Required to save (Excel import keeps working)', 'Required to be complete (checked before Long List)'], [
+    ['Athlete', 'Type, first name, last name, date of birth, gender, nationality, passport number, passport expiry', 'Full name, photo, passport issuing country, passport issue date, passport scan, CPR number'],
+    ['Team official', 'Same as athlete, plus function', 'Full name, photo, passport issuing country, issue date and scan, mobile, WhatsApp, email, emergency contact name, relationship and phone'],
+  ], [0.18, 0.41, 0.41]),
 ];
 
 const partB = [
@@ -383,14 +412,16 @@ const partB = [
   ...landImg('erd', 'Figure 6 – Entity relationship diagram (arrows point from child to parent)', 590),
   H2pb('7.1 Data dictionary'),
   ...table(['Table', 'Purpose', 'Key fields and rules'], [
-    ['associations', 'National sports association', 'name and email required and unique; logo, phone, address, website optional'],
+    ['associations', 'National sports association', 'name and email required and unique; code (2–10 letters/digits, unique, used in person codes); is_active; logo, phone, address, website optional'],
     ['users', 'All login accounts', 'role: super_admin, sta, assoc_admin, assoc_editor; association_id required for association roles; max 2 active editors per association'],
     ['invitations', 'Pending invites', 'token stored hashed; single use; expires_at = sent + 7 days'],
     ['sports', 'Sport owned by an association', 'association_id, name; unique name'],
     ['events', 'Event within a sport', 'sport_id, name, gender (men / women / mixed); unique (sport, name, gender)'],
     ['clothing_items', 'Kit item defined by admin', 'name (e.g. T-Shirt, Suit), sizes (ordered list), applies_to (athlete / official / both), is_active'],
-    ['people', 'Athlete or team official', 'type; four name parts; photo; passport_no and cpr_no encrypted, unique; expiry dates; passport_scan_path and cpr_scan_path (optional); phone and email (officials); dob; gender; height cm; weight kg; nationality; function (officials only)'],
+    ['people', 'Athlete or team official', 'code (e.g. BWF-AT-0001, unique); type; full_name + four name parts; photo; passport_no (encrypted, unique), issuing country, issue date, expiry, scan; cpr_no (encrypted, unique), expiry, CPR front / back / reader copy; dob, gender, nationality, height, weight; fit, chest, waist; phone fields with country code (+973) and WhatsApp; email, address; emergency contact; guardian (athletes); function, languages (officials); WADA certificate; medical / health fields (encrypted); consents / declarations with dates'],
     ['person_sizes', 'Clothing size of a person', 'person_id, clothing_item_id, size (must be in the item\'s size list); unique (person, item)'],
+    ['person_visas', 'Visas held by a person (officials)', 'person_id, country, status, visa_no, valid_until, copy_path; any number per person'],
+    ['person_injuries', 'Athlete injury history', 'person_id, injury_date, description (encrypted), status'],
     ['games', 'Multi-sport event', 'name, logo, start_date ≤ end_date; reminder_days (e.g. 7,3,0)'],
     ['game_associations', 'Associations invited to a game', 'unique (game, association)'],
     ['game_sports', 'Sport offered in a game + limits', 'p2_max_men, p2_max_women, p2_max_total, p4_max_men, p4_max_women, p4_max_officials (all ≥ 0); dob_from, dob_to (age eligibility, optional); entry_policy (text)'],
@@ -526,6 +557,14 @@ const partC = [
     ['10', 'Phase 1: Yes / No / Maybe or Men / Women per sport?', 'Yes / No / Maybe per sport', 'FR-40'],
     ['11', 'Clothing items: all active items, or chosen per game?', 'Admin chooses the items per game; sizes stored on the person', 'FR-14, FR-21a, FR-32b'],
     ['12', 'Athlete outside the sport age eligibility?', 'Warn only (flagged for STA)', 'FR-64, BR-10'],
+    ['13', 'Which athlete and official fields are needed?', 'Selected by the user from both design drafts (sections 4.11 and 4.12)', 'FR-103–FR-115'],
+    ['14', 'When are required fields enforced?', 'Minimum to save; the rest before Long List submission (Complete / Incomplete badge)', 'FR-114'],
+    ['15', 'Clothing: measurements or garment sizes?', 'Both: fit, chest, waist on the person; T-shirt, suit and shoe sizes from clothing items', 'FR-106'],
+    ['16', 'Who sees medical and health data?', 'Own association, plus STA users with the new view_medical permission', 'FR-115'],
+    ['17', 'Where are visas stored?', 'On the person, as a list (an official may hold several)', 'FR-112'],
+    ['18', 'Where are travel insurance and vaccinations stored?', 'Per game in the Long List', 'FR-117'],
+    ['19', 'Person code format?', 'Association code (entered by STA) + AT/TO + running number, e.g. BWF-AT-0001', 'FR-100, FR-101'],
+    ['20', 'Can details be read from the passport without an AI service?', 'Yes: machine-readable zone read with Tesseract on the server, checked with check digits', 'FR-116'],
   ], [0.05, 0.4, 0.37, 0.18]),
   H2('15.1 Open actions'),
   ...table(['Action', 'Owner', 'Needed by'], [

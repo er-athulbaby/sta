@@ -220,3 +220,62 @@ Pest feature tests for:
    - submit flow, status matrix, reminders
 3. **Phase 3 Long List:** assignments, flags, warnings, Long List PDF, STA comments and edits.
 4. **Phase 4 and Reports:** Short List, justification, over-limit and clothing reports, Excel exports.
+
+Milestone 1.1, the registry update in section 13, comes before Milestone 2.
+
+## 13. Registry update v1.2 (decided 2026-11-09)
+
+The user chose the fields from the player and team-official design drafts, then commented on the selection. This section overrides anything earlier in this spec where they conflict.
+
+### Codes and file names
+- `associations.code`: entered by STA when creating the association (2–10 characters, letters and digits, upper case, unique). The admin form requires it. Existing associations get it filled in by STA before go-live.
+- `people.code`: generated on create as `{association code}-AT-{0001}` for athletes and `{association code}-TO-{0001}` for team officials. There is a running number per association and type, which is never reused and stays the same if the person changes later. It is unique system-wide.
+- Every uploaded attachment is stored as `{code}_{kind}.{ext}`, for example `BWF-AT-0001_passport.pdf` or `BWF-AT-0001_cpr_front.jpg`. A replaced file overwrites the old name, and the old file is deleted.
+- Every attachment has a **View** action in the form and in the people list. It opens a 5-minute temporary URL on the private disk.
+
+### Common fields (athletes and team officials)
+- **Names:** first, second, third and last name, plus **full name**, which replaces "preferred name". The passport reader fills full name; it can still be edited.
+- **Personal details:** date of birth, age (automatic, at the game start date), gender, nationality, photo, height and weight.
+- **Passport:** number, **issuing country**, **issue date**, expiry and passport scan.
+- **CPR:** number and expiry, plus three attachments: **CPR front**, **CPR back**, and the **CPR reader copy** (the printout from the smart-card reader). The earlier single `cpr_scan_path` becomes `cpr_front_path`.
+- **Clothing:** fit (Men's, Women's or Youth), chest in cm and waist in cm on the person. **T-shirt, suit and shoe sizes** come from the STA clothing items. The items "T-Shirt", "Suit" and "Shoes" are seeded, with `applies_to = both`. Per-game clothing item selection stays as it is.
+- **Phone numbers:** every phone field has a country-code select defaulting to **+973**, stored as E.164-style `country_code` + `number`. There is a **"WhatsApp same as mobile"** checkbox, which copies the mobile number on save.
+
+### Athletes only
+- **Contact:** Player Mobile, Player Email, Player Address.
+- **Emergency contact:** name, relationship and phone.
+- **Guardian:** name, relationship (Father, Mother or Legal guardian), phone and email.
+- **WADA certificate:** an attachment, renamed from "medical certificate".
+- **Medical:** blood group, medical clearance expiry, insurance policy number, allergies, chronic conditions and current medication, plus **injury history** records (date, description and status) in a separate `person_injuries` table.
+- **Consents:** to store personal data, to use photos in media, and for emergency medical treatment. Each is a boolean with an `_at` timestamp.
+
+### Team officials only
+- **Function:** the expanded role list. Head of Delegation, Team Manager, Administrator, Head Coach, Assistant Coach, Goalkeeper Coach, Fitness Coach, Performance Analyst, Team Doctor, Physiotherapist, Massage Therapist, Kit Manager, Media Officer, Security Officer, Interpreter and Other.
+- **Languages spoken**.
+- **Contact:** mobile, WhatsApp, email, and emergency contact (name, relationship and phone).
+- **Visas:** a separate list of zero or more visas in `person_visas`. Each visa has country, status (Not started, Applied, Approved, Rejected or Visa on arrival/e-Visa), visa number, valid until and a visa copy attachment. Visas are stored on the person, not per game, and an official may hold several.
+- **Health:** blood group, meal requirement (Halal, Vegetarian, Vegan, Gluten-free or No restriction), allergies, and medical conditions / medication.
+- **Declarations:** accept the code of conduct, follow anti-doping and integrity rules, and consent to share data with organisers, airline and hotel. Each is a boolean with an `_at` timestamp.
+
+### Per game (Long List, Milestone 3)
+Travel insurance company, policy number and valid-until date, the insurance certificate, and vaccinations for the destination. These are recorded per game entry, not on the person.
+
+### Required fields and completeness
+- **Required to save:** the minimum stays what Milestone 1 enforces. That is type, first name, last name, date of birth, gender, nationality, passport number and passport expiry, plus function for officials. The Excel import keeps working.
+- **Required to be complete:** everything else the user marked required. This is checked by `Person::missingFields(): array`.
+  - **Athlete:** full name, photo, passport issuing country, passport issue date, passport scan and CPR number.
+  - **Official:** full name, photo, passport issuing country, issue date and scan, mobile, WhatsApp, email, and emergency contact name, relationship and phone.
+- The people list shows a **Complete** or **Incomplete** badge with the missing fields. Milestone 3 blocks Long List submission for incomplete people.
+
+### Sensitive data
+- **Encryption:** the medical and health fields are encrypted at rest. That covers blood group, allergies, conditions, medication, insurance policy number and injury descriptions.
+- **Who sees them:** they are visible in the portal to the person's own association. In `/admin` they are visible only to STA users with the new permission **`view_medical` ("View medical & health data")**, and to the Super Admin. For everyone else the medical and health sections are hidden in forms and lists.
+- **Audit log:** these fields are excluded from the audit log, the same way passport and CPR numbers are. Only a `medical_changed` marker is recorded.
+
+### Passport reader (MRZ)
+- **How it reads:** a "Read details from passport" action on the person form. It reads the passport scan's machine-readable zone on the server, using Tesseract restricted to `A–Z0–9<`. PDFs are converted to an image with `pdftoppm`.
+- **Parsing and checks:** the result is parsed by a pure-PHP `MrzParser` with ICAO 9303 check digits.
+- **What it fills:** full name, last name (the surname), first/second/third name (the given names split on spaces, with extras joined into third), passport number, issuing country, nationality, date of birth, gender and passport expiry. Issue date is not in the MRZ and stays manual.
+- **On failure:** a field whose check digit fails is not filled, and is flagged.
+- **Nothing is saved automatically:** the user reviews and saves.
+- **Server requirement:** Tesseract and poppler-utils on the server.
