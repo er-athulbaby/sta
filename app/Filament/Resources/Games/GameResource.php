@@ -6,6 +6,7 @@ use App\Enums\StaPermission;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\Games\Pages\CreateGame;
 use App\Filament\Resources\Games\Pages\EditGame;
+use App\Filament\Resources\Games\Pages\GameDashboard;
 use App\Filament\Resources\Games\Pages\ListGames;
 use App\Filament\Resources\Games\RelationManagers\GameSportsRelationManager;
 use App\Filament\Resources\Games\RelationManagers\PhasesRelationManager;
@@ -56,6 +57,7 @@ class GameResource extends Resource
             'index' => ListGames::route('/'),
             'create' => CreateGame::route('/create'),
             'edit' => EditGame::route('/{record}/edit'),
+            'dashboard' => GameDashboard::route('/{record}/dashboard'),
         ];
     }
 }

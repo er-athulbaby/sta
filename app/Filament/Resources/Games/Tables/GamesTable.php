@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Games\Tables;
 
+use App\Filament\Resources\Games\GameResource;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -19,6 +21,10 @@ class GamesTable
                 TextColumn::make('associations_count')->counts('associations')->label('Associations'),
             ])
             ->defaultSort('start_date', 'desc')
-            ->recordActions([EditAction::make()]);
+            ->recordActions([
+                Action::make('dashboard')->icon('heroicon-o-table-cells')
+                    ->url(fn ($record) => GameResource::getUrl('dashboard', ['record' => $record])),
+                EditAction::make(),
+            ]);
     }
 }

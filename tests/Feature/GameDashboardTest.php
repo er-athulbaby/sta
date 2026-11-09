@@ -1,0 +1,68 @@
+<?php
+
+use App\Enums\PhaseStatus;
+use App\Enums\StaPermission;
+use App\Enums\SubmissionStatus;
+use App\Filament\Resources\Games\Pages\GameDashboard;
+use App\Models\Association;
+use App\Models\Game;
+use App\Models\Submission;
+use App\Models\User;
+use App\Notifications\DeadlineChanged;
+use App\Notifications\PhaseReminder;
+use Illuminate\Support\Facades\Notification;
+
+use function Pest\Livewire\livewire;
+
+beforeEach(function () {
+    Notification::fake();
+    $this->game = Game::factory()->create();
+    $this->game->phase(2)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addDays(3)]);
+    $this->done = Association::factory()->create(['name' => 'Done Fed', 'code' => 'DON']);
+    $this->late = Association::factory()->create(['name' => 'Late Fed', 'code' => 'LAT']);
+    $this->game->associations()->attach([$this->done->id, $this->late->id]);
+    Submission::for($this->game, $this->done, 2)->update(['status' => SubmissionStatus::Submitted, 'reference_no' => 'DON-G001-P2-R1']);
+    $this->lateAdmin = User::factory()->assocAdmin($this->late)->create();
+    actingInAdmin(User::factory()->superAdmin()->create());
+});
+
+it('shows the status matrix', function () {
+    livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
+        ->assertSee('Done Fed')->assertSee('Submitted')->assertSee('Late Fed')->assertSee('No response');
+    expect(Submission::withoutGlobalScopes()->where('association_id', $this->late->id)->count())->toBe(0);
+});
+
+it('hides fully submitted rows when pending only', function () {
+    livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
+        ->set('pendingOnly', true)->assertDontSee('Done Fed')->assertSee('Late Fed');
+});
+
+it('reminds only pending associations', function () {
+    livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->callAction('remindPending', ['phase' => 2]);
+    Notification::assertSentTo($this->lateAdmin, PhaseReminder::class);
+    Notification::assertSentTimes(PhaseReminder::class, 1);
+});
+
+it('extends and re-opens for one association', function () {
+    $page = livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()]);
+    $page->call('extend', $this->late->id, 2, now()->addDays(10)->format('Y-m-d H:i'));
+    expect(Submission::withoutGlobalScopes()->where('association_id', $this->late->id)->sole()->deadline_override)->not->toBeNull();
+
+    $page->call('reopen', $this->done->id, 2);
+    expect(Submission::withoutGlobalScopes()->where('association_id', $this->done->id)->sole()->status)->toBe(SubmissionStatus::Draft);
+    Notification::assertSentTo($this->lateAdmin, DeadlineChanged::class);
+});
+
+it('shows workflow errors as a notification instead of failing', function () {
+    livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
+        ->call('extend', $this->done->id, 2, now()->addDays(10)->format('Y-m-d H:i'))
+        ->assertNotified();
+});
+
+it('needs view_submissions to see and manage_games to extend', function () {
+    $sta = User::factory()->sta()->create();
+    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    actingInAdmin($sta);
+    livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertOk()
+        ->call('extend', $this->late->id, 2, now()->addDays(10)->format('Y-m-d H:i'))->assertForbidden();
+});
