@@ -49,7 +49,7 @@ class GenerateEntryByEventPdfs implements ShouldQueue
         $s->forceFill(['pdf_paths' => $paths])->saveQuietly();
     }
 
-    private static function dataUri(?string $path): ?string
+    public static function dataUri(?string $path): ?string
     {
         $disk = Storage::disk(config('filesystems.private'));
         if (! $path || ! $disk->exists($path)) {

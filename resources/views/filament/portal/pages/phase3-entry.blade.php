@@ -14,6 +14,12 @@
         $selectClass = 'w-full rounded border-gray-300 text-sm dark:bg-white/5';
     @endphp
 
+    @php $paths = $this->submission->pdf_paths ?? []; @endphp
+    @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['long_list']))
+        <a class="text-sm text-primary-600 underline" target="_blank"
+           href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths['long_list'], now()->addMinutes(5)) }}">Download Long List PDF</a>
+    @endif
+
     @forelse ($this->visibleSports() as $gs)
         <x-filament::section :heading="$gs->sport->name">
             <div class="grid gap-4 md:grid-cols-2">

@@ -6,6 +6,7 @@ use App\Enums\PhaseStatus;
 use App\Enums\Role;
 use App\Enums\SubmissionStatus;
 use App\Jobs\GenerateEntryByEventPdfs;
+use App\Jobs\GenerateLongListPdf;
 use App\Models\Submission;
 use App\Models\User;
 use App\Notifications\DeadlineChanged;
@@ -115,6 +116,9 @@ final class SubmissionWorkflow
         Notification::send(Recipients::sta(), new SubmissionReceived($s));
         if ($s->phase === 2) {
             GenerateEntryByEventPdfs::dispatch($s);
+        }
+        if ($s->phase === 3) {
+            GenerateLongListPdf::dispatch($s);
         }
 
         return $s;
