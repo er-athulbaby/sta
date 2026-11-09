@@ -135,15 +135,15 @@ trait EditsPhase3
             ])
             ->action(function (array $data, array $arguments) {
                 $personId = (int) ($arguments['person'] ?? 0);
-                if (! $this->submission->entries()->where('person_id', $personId)->exists()) {
-                    Notification::make()->danger()->title('Save the Long List with this person first.')->send();
-
-                    return;
-                }
                 $cert = $data['insurance_certificate_path'] ?? null;
                 $data['insurance_certificate_path'] = is_array($cert) ? (array_values($cert)[0] ?? null) : $cert;
                 try {
                     $this->guardEditable();
+                    if (! $this->submission->entries()->where('person_id', $personId)->exists()) {
+                        Notification::make()->danger()->title('Save the Long List with this person first.')->send();
+
+                        return;
+                    }
                     DB::transaction(function () use ($data, $personId) {
                         $this->claimOrHalt();
                         LongListDetail::updateOrCreate(['submission_id' => $this->submission->id, 'person_id' => $personId], $data);

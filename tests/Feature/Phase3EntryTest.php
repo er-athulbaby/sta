@@ -149,3 +149,28 @@ it('returns 404 for a game the association is not invited to', function () {
 it('links phase 3 from the games page', function () {
     livewire(Games::class)->assertSeeHtml(Phase3Entry::getUrl(['game' => $this->game->id]));
 });
+
+it('drops entries and travel details of a sport hidden after it was saved', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->call('save');
+    LongListDetail::create(['submission_id' => Submission::sole()->id, 'person_id' => $this->ali->id, 'insurance_company' => 'AXA']);
+    expect(Entry::count())->toBe(1);
+
+    $this->game->phase(1)->update(['enabled' => true]);
+    InterestAnswer::create(['submission_id' => Submission::for($this->game, $this->assoc, 1)->id, 'game_sport_id' => $this->judo->id, 'answer' => 'no']);
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])->call('save')->assertHasNoErrors();
+
+    expect(Entry::count())->toBe(0)->and(LongListDetail::count())->toBe(0);
+});
+
+it('refuses a stale travel save', function () {
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->call('save');
+    $s = Submission::sole();
+    $s->claimVersion($s->fresh()->lock_version);
+
+    $page->callAction('travel', ['insurance_company' => 'AXA'], ['person' => $this->ali->id])
+        ->assertNotified('This entry was changed by someone else — reload to see the latest.');
+    expect(LongListDetail::count())->toBe(0);
+});
