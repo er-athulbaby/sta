@@ -2,6 +2,7 @@
 
 namespace App\Filament\Shared;
 
+use App\Models\Person;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +47,12 @@ trait SavesPersonSizes
 
             return $record;
         });
+    }
+
+    /** Uploads are renamed after save; resync the form so it doesn't keep the stale temp path (Create pages never call this). */
+    protected function afterSave(): void
+    {
+        $this->refreshFormData(array_keys(Person::FILE_COLUMNS));
     }
 
     private function pullSizes(array $data): array

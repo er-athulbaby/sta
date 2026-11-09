@@ -168,3 +168,18 @@ it('rejects unsafe or oversized uploads', function (string $field, Closure $file
     'photo over 2 MB' => ['photo_path', fn () => UploadedFile::fake()->image('big.png')->size(3000)],
     'exe passport scan' => ['passport_scan_path', fn () => UploadedFile::fake()->create('x.exe', 5, 'application/x-msdownload')],
 ]);
+
+it('can save twice on the edit page after an upload is renamed', function () {
+    $mine = Person::factory()->create(['association_id' => $this->assoc->id, 'passport_scan_path' => null]);
+
+    $page = livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
+        ->fillForm(['passport_scan_path' => UploadedFile::fake()->create('p.pdf', 5, 'application/pdf')])
+        ->call('save')
+        ->assertHasNoFormErrors();
+    $stored = "scans/{$mine->refresh()->code}_passport.pdf";
+    expect($mine->passport_scan_path)->toBe($stored);
+
+    $page->call('save')->assertHasNoFormErrors();
+    expect($mine->refresh()->passport_scan_path)->toBe($stored);
+    Storage::disk(config('filesystems.private'))->assertExists($stored);
+});
