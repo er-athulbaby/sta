@@ -7,12 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /** Per game, per person travel and insurance details of a Long List (spec 13 "Per game"). */
 class LongListDetail extends Model
 {
     use LogsActivity, RenamesAttachments;
+
+    public const MEDICAL = ['insurance_policy_no', 'vaccinations'];
 
     protected $fillable = ['submission_id', 'person_id', 'insurance_company', 'insurance_policy_no', 'insurance_valid_until',
         'insurance_certificate_path', 'vaccinations'];
@@ -54,6 +57,13 @@ class LongListDetail extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->useLogName('submission-'.$this->submission_id)
-            ->logFillable()->logExcept(['insurance_policy_no'])->logOnlyDirty()->dontSubmitEmptyLogs();
+            ->logFillable()->logExcept(self::MEDICAL)->logOnlyDirty();
+    }
+
+    public function tapActivity(Activity $activity, string $eventName): void
+    {
+        if ($eventName === 'updated' && collect(self::MEDICAL)->contains(fn ($c) => $this->wasChanged($c))) {
+            $activity->properties = $activity->properties->put('medical_changed', true);
+        }
     }
 }

@@ -105,3 +105,27 @@ it('offers the download on the phase 3 page once submitted', function () {
 
     livewire(Phase3Entry::class, ['game' => $this->game->id])->assertSee('Download Long List PDF');
 });
+
+it('leaves out people of another association and entries in sports hidden by a Phase 1 no', function () {
+    $other = Person::factory()->create(['association_id' => Association::factory()->create()->id, 'first_name' => 'Zed', 'last_name' => 'Stranger']);
+    Entry::create(['submission_id' => $this->sub->id, 'person_id' => $other->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+
+    $this->game->associations()->attach($this->assoc);
+    $this->game->phase(1)->update(['enabled' => true]);
+    $karate = GameSport::factory()->create(['game_id' => $this->game->id,
+        'sport_id' => Sport::factory()->create(['association_id' => $this->assoc->id, 'name' => 'Karate'])->id]);
+    $kumite = GameEvent::factory()->create(['game_id' => $this->game->id, 'game_sport_id' => $karate->id,
+        'event_id' => Event::factory()->create(['sport_id' => $karate->sport_id, 'name' => 'Kumite', 'gender' => EventGender::Men])->id]);
+    $hidden = Person::factory()->create(['association_id' => $this->assoc->id, 'first_name' => 'Hidden', 'last_name' => 'Karateka']);
+    Entry::create(['submission_id' => $this->sub->id, 'person_id' => $hidden->id, 'game_event_id' => $kumite->id, 'game_sport_id' => $karate->id]);
+    Submission::for($this->game, $this->assoc, 1)->answers()->create(['game_sport_id' => $karate->id, 'answer' => 'no']);
+
+    $captured = null;
+    view()->composer('pdf.long-list', function ($v) use (&$captured) {
+        $captured = $v->getData();
+    });
+    (new GenerateLongListPdf($this->sub))->handle();
+
+    expect(collect($captured['athletes'])->pluck('name')->all())->toBe(['Ali Hasan'])
+        ->and(json_encode($captured['athletes']).json_encode($captured['officials']))->not->toContain('Zed')->not->toContain('Hidden')->not->toContain('Kumite');
+});

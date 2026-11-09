@@ -74,7 +74,7 @@ class SubmissionView extends Page
     /** @return Collection<int, Activity> */
     public function auditTrail(): Collection
     {
-        return Activity::where('log_name', 'submission-'.$this->submission->id)->with('causer')->latest('id')->get();
+        return Activity::where('log_name', 'submission-'.$this->submission->id)->with('causer')->latest('id')->limit(200)->get();
     }
 
     protected function getHeaderActions(): array

@@ -115,7 +115,7 @@ trait EditsPhase3
                     return [];
                 }
                 // The policy number is only ever sent to the browser for users allowed to see it.
-                $keys = ['insurance_company', 'vaccinations', ...(Person::canViewMedical(auth()->user()) ? ['insurance_policy_no'] : [])];
+                $keys = ['insurance_company', ...(Person::canViewMedical(auth()->user()) ? ['insurance_policy_no', 'vaccinations'] : [])];
 
                 return [...$d->only($keys), 'insurance_valid_until' => $d->insurance_valid_until?->toDateString(),
                     'insurance_certificate_path' => $d->insurance_certificate_path ? [$d->insurance_certificate_path] : []];
@@ -131,7 +131,8 @@ trait EditsPhase3
                     // No record backs this modal, so accept exactly the stored certificate of the person being edited.
                     ->preventFilePathTampering(allowFilePathUsing: fn (string $file) => $file === $this->travelDetail(
                         (int) ($this->getMountedAction()?->getArguments()['person'] ?? 0))?->insurance_certificate_path),
-                Textarea::make('vaccinations')->label('Vaccinations for the destination')->rows(3)->maxLength(2000),
+                Textarea::make('vaccinations')->label('Vaccinations for the destination')->rows(3)->maxLength(2000)
+                    ->visible(fn () => Person::canViewMedical(auth()->user())),
             ])
             ->action(function (array $data, array $arguments) {
                 $personId = (int) ($arguments['person'] ?? 0);

@@ -18,6 +18,7 @@ use App\Models\Person;
 use App\Models\Sport;
 use App\Models\Submission;
 use App\Models\User;
+use Spatie\Activitylog\Models\Activity;
 
 use function Pest\Livewire\livewire;
 
@@ -82,4 +83,11 @@ it('links dashboard cells to the submission and counts entries as in progress, w
         ->assertSeeHtml(GameResource::getUrl('submission', ['record' => $this->game, 'submission' => $this->sub]))
         ->assertSee('In progress');
     expect(Submission::withoutGlobalScopes()->count())->toBe(1);
+});
+
+it('logs the long list detail in the trail without policy number or vaccinations', function () {
+    $a = Activity::where('log_name', 'submission-'.$this->sub->id)->where('subject_type', LongListDetail::class)->sole();
+    expect($a->properties['attributes'])->toHaveKey('insurance_company')
+        ->and(json_encode($a->properties))->not->toContain('insurance_policy_no')->not->toContain('POL-777')
+        ->not->toContain('vaccinations')->not->toContain('Yellow fever');
 });

@@ -155,3 +155,18 @@ it('is read-only for STA when the phase is disabled', function () {
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->call('save');
     expect(Entry::count())->toBe(0);
 });
+
+it('never lets STA without view_medical read or overwrite vaccinations', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $s->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+    LongListDetail::create(['submission_id' => $s->id, 'person_id' => $this->ali->id, 'vaccinations' => 'Yellow fever']);
+
+    livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->mountAction('travel', ['person' => $this->ali->id])->assertDontSee('Yellow fever');
+
+    livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->callAction('travel', ['insurance_company' => 'X', 'vaccinations' => 'HACK'], ['person' => $this->ali->id])->assertHasNoActionErrors();
+
+    $d = LongListDetail::where('submission_id', $s->id)->sole();
+    expect($d->vaccinations)->toBe('Yellow fever')->and($d->insurance_company)->toBe('X');
+});

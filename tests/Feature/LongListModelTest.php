@@ -41,10 +41,11 @@ it('links entries, details and comments to the submission', function () {
 
 it('encrypts the insurance policy number and keeps it out of the audit log', function () {
     $d = LongListDetail::create(['submission_id' => $this->sub->id, 'person_id' => $this->athlete->id, 'insurance_policy_no' => 'POL-12345']);
+    $row = Activity::where('subject_type', LongListDetail::class)->sole();
 
     expect(DB::table('long_list_details')->where('id', $d->id)->value('insurance_policy_no'))->not->toContain('POL-12345')
         ->and($d->fresh()->insurance_policy_no)->toBe('POL-12345')
-        ->and(json_encode(Activity::where('subject_type', LongListDetail::class)->get()->pluck('properties')))->not->toContain('POL-12345');
+        ->and($row->event)->toBe('created')->and(json_encode($row->properties))->not->toContain('POL-12345');
 });
 
 it('writes the audit trail of one submission under one log name', function () {
@@ -74,4 +75,18 @@ it('renames the certificate to the person code and deletes it with the row', fun
     $disk->assertExists($target);
     $d->delete();
     $disk->assertMissing($target);
+});
+
+it('logs medical changes of a detail without their values', function () {
+    $d = LongListDetail::create(['submission_id' => $this->sub->id, 'person_id' => $this->athlete->id, 'insurance_company' => 'AXA']);
+    $d->update(['insurance_policy_no' => 'POL-12345', 'vaccinations' => 'Yellow fever']);
+
+    $a = Activity::where('log_name', 'submission-'.$this->sub->id)->where('subject_type', LongListDetail::class)->where('event', 'updated')->sole();
+    expect($a->properties['medical_changed'])->toBeTrue()
+        ->and(json_encode($a->properties))->not->toContain('insurance_policy_no')->not->toContain('POL-12345')
+        ->not->toContain('vaccinations')->not->toContain('Yellow fever');
+
+    $d->update(['insurance_company' => 'Allianz']);
+    $b = Activity::where('subject_type', LongListDetail::class)->where('event', 'updated')->latest('id')->first();
+    expect($b->properties->has('medical_changed'))->toBeFalse()->and(json_encode($b->properties))->toContain('Allianz');
 });

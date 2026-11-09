@@ -64,3 +64,15 @@ it('shows comments read-only on the association\'s phase page, escaped', functio
         ->assertSee('Comments from STA')->assertSee('Please upload the passport scans.')->assertSee('Huda STA')->assertDontSee('Add comment')
         ->assertDontSeeHtml('<b>x</b>');
 });
+
+it('refuses a comment from STA with view_submissions only', function () {
+    $viewer = User::factory()->sta()->create();
+    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    actingInAdmin($viewer);
+
+    livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])
+        ->call('mountAction', 'comment')->set('mountedActions.0.data.body', 'x')->call('callMountedAction');
+
+    expect(Comment::count())->toBe(0);
+    Notification::assertNothingSent();
+});
