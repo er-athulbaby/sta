@@ -157,3 +157,14 @@ it('keeps a person\'s own stored files when saving', function () {
 
     expect($mine->refresh()->passport_scan_path)->toBe('scans/mine.pdf')->and($mine->photo_path)->toBe('photos/mine.png');
 });
+
+it('rejects unsafe or oversized uploads', function (string $field, Closure $file) {
+    livewire(CreatePerson::class)->fillForm(athleteData([$field => $file()]))->call('create')
+        ->assertHasFormErrors([$field]);
+
+    expect(Person::count())->toBe(0);
+})->with([
+    'svg photo' => ['photo_path', fn () => UploadedFile::fake()->create('x.svg', 5, 'image/svg+xml')],
+    'photo over 2 MB' => ['photo_path', fn () => UploadedFile::fake()->image('big.png')->size(3000)],
+    'exe passport scan' => ['passport_scan_path', fn () => UploadedFile::fake()->create('x.exe', 5, 'application/x-msdownload')],
+]);

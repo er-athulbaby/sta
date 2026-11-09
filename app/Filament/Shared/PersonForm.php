@@ -54,7 +54,7 @@ final class PersonForm
                     ->rule(fn (?Model $record) => self::uniqueDocument('cpr_no_hash', 'CPR', $record)),
                 DatePicker::make('cpr_expiry')->requiredWith('cpr_no'),
                 self::upload('cpr_scan_path', 'CPR scan', 'scans', ['application/pdf', 'image/jpeg', 'image/png'], 5120),
-                self::upload('photo_path', 'Photo', 'photos', ['image/jpeg', 'image/png'], 2048)->image(),
+                self::upload('photo_path', 'Photo', 'photos', ['image/jpeg', 'image/png'], 2048),
             ]),
             Section::make('Clothing sizes')->columns(3)
                 ->schema(fn (Get $get) => self::sizeFields(PersonType::tryFrom((string) $get('type')) ?? PersonType::Athlete)),
@@ -63,7 +63,9 @@ final class PersonForm
 
     private static function upload(string $name, string $label, string $dir, array $types, int $maxKb): FileUpload
     {
-        return FileUpload::make($name)->label($label)->acceptedFileTypes($types)->maxSize($maxKb)
+        return FileUpload::make($name)->label($label)
+            // image() (if wanted) must come before acceptedFileTypes(), or it widens the list to image/* (SVG).
+            ->acceptedFileTypes($types)->maxSize($maxKb)
             ->disk(config('filesystems.private'))->directory($dir)->visibility('private');
     }
 

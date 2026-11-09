@@ -94,3 +94,14 @@ it('keeps the stored NOC logo on save and refuses a tampered logo path', functio
         ->assertHasFormErrors(['noc_logo_path']);
     expect(Setting::get(Setting::NOC_LOGO))->toBe('settings/noc.png');
 });
+
+it('rejects an SVG NOC logo', function () {
+    Storage::fake(config('filesystems.private'));
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(Settings::class)
+        ->fillForm(['noc_logo_path' => UploadedFile::fake()->create('noc.svg', 5, 'image/svg+xml'), 'pdf_declaration' => 'Declaration'])
+        ->call('save')->assertHasFormErrors(['noc_logo_path']);
+
+    expect(Setting::get(Setting::NOC_LOGO))->toBeNull();
+});
