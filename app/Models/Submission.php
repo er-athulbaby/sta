@@ -21,7 +21,23 @@ class Submission extends Model
     protected function casts(): array
     {
         return ['status' => SubmissionStatus::class, 'deadline_override' => 'datetime', 'submitted_at' => 'datetime',
-            'approved_at' => 'datetime', 'pdf_paths' => 'array'];
+            'approved_at' => 'datetime', 'pdf_paths' => 'array', 'lock_version' => 'integer'];
+    }
+
+    /**
+     * Atomically claims the next version: succeeds only if the row still holds $loaded.
+     * One conditional UPDATE, so concurrent saves cannot both pass.
+     */
+    public function claimVersion(int $loaded): bool
+    {
+        $n = static::withoutGlobalScope('association')->whereKey($this->id)
+            ->where('lock_version', $loaded)->increment('lock_version');
+
+        if ($n === 1) {
+            $this->lock_version = $loaded + 1;
+        }
+
+        return $n === 1;
     }
 
     public function game(): BelongsTo

@@ -39,12 +39,25 @@ it('lets an extension override the phase deadline', function () {
     expect(app(PhaseGate::class)->canEdit($s, Carbon::parse('2026-12-03')))->toBeTrue();
 });
 
-it('refuses a stale save', function () {
+it('refuses a stale save and claims the version on success', function () {
     $s = gatedSubmission();
-    $loaded = $s->updated_at->toIso8601String();
-    $this->travel(5)->seconds();
-    $s->touch();
+    $gate = app(PhaseGate::class);
+    $other = Submission::find($s->id);
 
-    expect(fn () => app(PhaseGate::class)->assertFresh($s->fresh(), $loaded))->toThrow(StaleSubmission::class);
-    app(PhaseGate::class)->assertFresh($s->fresh(), $s->fresh()->updated_at->toIso8601String());
+    $gate->assertFresh($other, 0);
+    expect($other->fresh()->lock_version)->toBe(1);
+
+    expect(fn () => $gate->assertFresh($s, 0))->toThrow(StaleSubmission::class);
+    expect($s->fresh()->lock_version)->toBe(1);
+
+    $gate->assertFresh($s->fresh(), 1);
+    expect($s->fresh()->lock_version)->toBe(2);
+});
+
+it('lets only one of two saves from the same loaded version through, within the same second', function () {
+    $s = gatedSubmission();
+    $gate = app(PhaseGate::class);
+
+    $gate->assertFresh($s, 0);
+    expect(fn () => $gate->assertFresh($s, 0))->toThrow(StaleSubmission::class);
 });

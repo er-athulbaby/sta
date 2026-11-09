@@ -30,9 +30,14 @@ final class PhaseGate
         return $this->denialReason($s, $now) === null;
     }
 
-    public function assertFresh(Submission $s, string $loadedUpdatedAt): void
+    /**
+     * Checks and claims in one atomic step: throws StaleSubmission unless the row still holds
+     * $loadedVersion, and on success moves it to $loadedVersion + 1. Call it inside the save
+     * transaction, right before writing.
+     */
+    public function assertFresh(Submission $s, int $loadedVersion): void
     {
-        if ($s->updated_at?->toIso8601String() !== $loadedUpdatedAt) {
+        if (! $s->claimVersion($loadedVersion)) {
             throw new StaleSubmission;
         }
     }
