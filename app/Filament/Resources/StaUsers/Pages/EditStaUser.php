@@ -9,4 +9,10 @@ use Filament\Resources\Pages\EditRecord;
 class EditStaUser extends EditRecord
 {
     protected static string $resource = StaUserResource::class;
+
+    /** The permissions relationship is saved during getState(), before this hook. */
+    protected function afterSave(): void
+    {
+        CreateStaUser::logPermissions($this->record);
+    }
 }
