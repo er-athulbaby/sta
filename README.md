@@ -18,6 +18,7 @@ Excel import/export uses openspout (no Laravel Excel). Admin panel users can opt
 - Set a strong, unique `SUPER_ADMIN_PASSWORD` before the first `migrate --seed` (it is blank by default and the seeder refuses blank or `change-me-now`). Change it after the first login, and enable MFA at `/admin/profile`.
 - `PRIVATE_DISK=s3`, `AWS_DEFAULT_REGION=me-south-1`, `AWS_BUCKET=<private bucket>`; the bucket must block public access.
 - `MAIL_MAILER=ses`, `QUEUE_CONNECTION=database` with Supervisor running `queue:work`; cron runs `schedule:run`.
+- Passport reader: install Tesseract OCR and poppler on the server (`sudo dnf install -y tesseract poppler-utils`, or `apt install tesseract-ocr poppler-utils`). Optional `.env`: `TESSERACT_PATH`, `PDFTOPPM_PATH`. Locally on Windows, install Tesseract (UB Mannheim build) and poppler and set both paths. Tests do not need them.
 - Never rotate `APP_KEY` without re-encrypting people documents and recomputing `passport_no_hash` / `cpr_no_hash`.
 
 Design: `docs/superpowers/specs/2026-11-04-sports-entry-system-design.md`, scope: `docs/Sports-Entry-System-Scope-and-Design.docx`.

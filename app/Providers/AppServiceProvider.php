@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Services\Mrz\MrzReader;
+use App\Services\Mrz\TesseractMrzReader;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -14,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(MrzReader::class, TesseractMrzReader::class);
     }
 
     /**

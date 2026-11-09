@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\Mrz\MrzParser;
+use App\Services\Mrz\TesseractMrzReader;
 use Carbon\Carbon;
 
 const BHR_L1 = 'P<BHRALSAYED<<NOOR<KHALID<AHMED<<<<<<<<<<<<<';
@@ -40,4 +41,10 @@ it('tolerates OCR spaces and lower case, and rejects non-TD3 input', function ()
 
 it('computes ICAO check digits', function () {
     expect(MrzParser::checkDigit('L898902C3'))->toBe(6)->and(MrzParser::checkDigit('<<<<<<<<<<<<<<'))->toBe(0);
+});
+
+it('picks the last two MRZ-like lines from OCR text', function () {
+    $ocr = "REPUBLIC OF BAHRAIN\nPASSPORT\nP<BHRALSAYED<<NOOR<KHALID<AHMED<<<<<<<<<<<<<\nBH12345676BHR0605276F3101159<<<<<<<<<<<<<<00\n";
+    expect(TesseractMrzReader::pickLines($ocr))->toBe([
+        'P<BHRALSAYED<<NOOR<KHALID<AHMED<<<<<<<<<<<<<', 'BH12345676BHR0605276F3101159<<<<<<<<<<<<<<00']);
 });
