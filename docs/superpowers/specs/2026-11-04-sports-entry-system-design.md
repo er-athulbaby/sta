@@ -19,7 +19,7 @@ on one screen, and reminders are automatic.
 | App shape | One Laravel app, two Filament panels: `/admin` (Super Admin + STA), `/portal` (associations) |
 | Hosting | AWS `me-south-1` (Bahrain): EC2 (Nginx + PHP-FPM 8.5), RDS MySQL 8, S3 (presigned URLs), SES email |
 | Background | Laravel queue (database driver) under Supervisor; Laravel scheduler via cron |
-| PDF | Browsershot (headless Chrome). Phase 2 "Entry by Event" PDF per sport (layout from the Weightlifting sample), plus Long List and Short List PDFs (layout from the Phase 3 sample). Every PDF has the NOC and game logos, a declaration, signature/stamp boxes and a `reference_no` |
+| PDF | dompdf (`barryvdh/laravel-dompdf`, pure PHP, table layouts; decided 2026-11-09 instead of Browsershot so no Chrome/Node is needed on EC2 or dev machines). Phase 2 "Entry by Event" PDF per sport (layout from the Weightlifting sample), plus Long List and Short List PDFs (layout from the Phase 3 sample). Every PDF has the NOC and game logos, a declaration, signature/stamp boxes and a `reference_no` |
 | Excel | `maatwebsite/excel` (or Filament import/export actions) for people import and report export |
 | Language | English only |
 | Registry | Permanent per association; reused across games |
@@ -191,7 +191,7 @@ Concurrency: optimistic locking on submissions via an `updated_at` check. A stal
 
 - EC2 (Amazon Linux 2023, Nginx, PHP-FPM 8.5), RDS MySQL 8, S3, SES, all in `me-south-1`.
 - Supervisor runs `queue:work`; cron runs `schedule:run` every minute.
-- Headless Chrome is installed on EC2 for Browsershot.
+- PDFs are rendered with dompdf (pure PHP); no headless Chrome is needed.
 - RDS automated backups, 35-day retention. S3 versioning on the files bucket.
 
 ## 11. Testing
