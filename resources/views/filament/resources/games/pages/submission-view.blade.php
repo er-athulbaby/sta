@@ -51,6 +51,8 @@
         </x-filament::section>
     @endif
 
+    @include('filament.partials.comments', ['comments' => $s->commentsNewestFirst()])
+
     <x-filament::section heading="Audit trail">
         <table class="w-full text-sm">
             <thead><tr class="text-left text-gray-500"><th class="py-1">When</th><th>Who</th><th>What</th><th>Changed</th></tr></thead>

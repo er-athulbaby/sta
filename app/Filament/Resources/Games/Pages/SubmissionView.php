@@ -6,10 +6,16 @@ use App\Enums\StaPermission;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\GamePhase;
 use App\Models\Submission;
+use App\Notifications\NewComment;
 use App\Services\Phases\LongListChecks;
+use App\Services\Phases\Recipients;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Spatie\Activitylog\Models\Activity;
 
 class SubmissionView extends Page
@@ -73,6 +79,15 @@ class SubmissionView extends Page
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            Action::make('comment')->label('Add comment')
+                ->visible(fn () => (bool) auth()->user()->can(StaPermission::EditSubmissions->value))
+                ->schema([Textarea::make('body')->label('Comment (emailed to the association)')->required()->rows(4)->maxLength(5000)])
+                ->action(function (array $data) {
+                    $comment = $this->submission->comments()->create(['user_id' => auth()->id(), 'body' => $data['body']]);
+                    NotificationFacade::send(Recipients::association($this->submission->association), new NewComment($comment));
+                    Notification::make()->success()->title('Comment added and emailed to the association')->send();
+                }),
+        ];
     }
 }

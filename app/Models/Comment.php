@@ -17,6 +17,7 @@ class Comment extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        // STA authors sit outside the association's tenant scope
+        return $this->belongsTo(User::class)->withoutGlobalScopes();
     }
 }

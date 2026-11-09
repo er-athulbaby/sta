@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\SubmissionStatus;
 use App\Models\Concerns\BelongsToAssociation;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -68,6 +69,12 @@ class Submission extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    /** @return Collection<int, Comment> newest first, author loaded */
+    public function commentsNewestFirst(): Collection
+    {
+        return $this->comments()->with('user')->latest('id')->get();
     }
 
     public function gamePhase(): GamePhase
