@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Services\PeopleImporter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Writer\XLSX\Writer;
 
 use function Pest\Livewire\livewire;
 
@@ -173,4 +175,18 @@ it('rejects a nationality that is not in the country list', function () {
 it('rejects an official function outside the form list', function () {
     $result = app(PeopleImporter::class)->import(xlsxWith([row(['type' => 'official', 'function' => 'Coach'])]), Association::factory()->create());
     expect($result->ok())->toBeFalse();
+});
+
+it('accepts the legacy phone header as mobile', function () {
+    $path = storage_path('app/testing/legacy-'.uniqid().'.xlsx');
+    $columns = array_map(fn ($c) => $c === 'mobile' ? 'phone' : $c, PeopleTemplateExport::COLUMNS);
+    $writer = new Writer;
+    $writer->openToFile($path);
+    $writer->addRow(Row::fromValues($columns));
+    $writer->addRow(Row::fromValues(array_map(fn ($c) => row(['mobile' => '33445566'])[$c === 'phone' ? 'mobile' : $c] ?? '', $columns)));
+    $writer->close();
+
+    $result = app(PeopleImporter::class)->import($path, Association::factory()->create());
+
+    expect($result->ok())->toBeTrue()->and(Person::sole()->phone)->toBe('33445566');
 });

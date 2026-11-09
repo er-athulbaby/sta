@@ -115,7 +115,7 @@ final class PeopleImporter
     {
         $row = [];
         foreach (PeopleTemplateExport::COLUMNS as $column) {
-            $value = $raw[$column] ?? null;
+            $value = $raw[$column] ?? ($column === 'mobile' ? $raw['phone'] ?? null : null); // old templates used 'phone'
             $value = is_string($value) ? trim($value) : $value;
             if (in_array($column, self::DATE_COLUMNS, true)) {
                 if ($value instanceof DateTimeInterface) {
