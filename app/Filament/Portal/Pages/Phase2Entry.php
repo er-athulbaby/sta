@@ -60,14 +60,7 @@ class Phase2Entry extends Page
     /** @return Collection<int, GameSport> */
     public function visibleSports(): Collection
     {
-        $sports = $this->gameModel->sportsFor(Filament::getTenant());
-        if (! $this->gameModel->phase(1)->enabled) {
-            return $sports;
-        }
-        $p1 = Submission::withoutGlobalScopes()->where(['game_id' => $this->gameModel->id, 'association_id' => Filament::getTenant()->id, 'phase' => 1])->first();
-        $no = $p1 ? $p1->answers()->where('answer', 'no')->pluck('game_sport_id')->all() : [];
-
-        return $sports->reject(fn ($gs) => in_array($gs->id, $no, true))->values();
+        return $this->gameModel->phase2SportsFor(Filament::getTenant());
     }
 
     /** @return array<string, string> keyed counts.{gameEventId} or sport.{gameSportId}.{men|women|total} */
@@ -75,8 +68,16 @@ class Phase2Entry extends Page
     {
         $errors = [];
         foreach ($this->visibleSports() as $gs) {
-            foreach (app(Phase2Limits::class)->errors($gs, $this->counts) as $key => $message) {
-                $errors[str_starts_with($key, 'event.') ? 'counts.'.substr($key, 6) : "sport.{$gs->id}.".substr($key, 6)] = $message;
+            $valid = $this->counts;
+            foreach ($gs->gameEvents as $ge) {
+                $raw = $this->counts[$ge->id] ?? null;
+                if ($raw !== null && $raw !== '' && ! preg_match('/^\d{1,3}$/', trim((string) $raw))) {
+                    $errors['counts.'.$ge->id] = "{$ge->event->name}: enter a whole number from 0 to 999.";
+                    unset($valid[$ge->id]);
+                }
+            }
+            foreach (app(Phase2Limits::class)->errors($gs, $valid) as $key => $message) {
+                $errors[str_starts_with($key, 'event.') ? 'counts.'.substr($key, 6) : "sport.{$gs->id}.".substr($key, 6)] ??= $message;
             }
         }
 

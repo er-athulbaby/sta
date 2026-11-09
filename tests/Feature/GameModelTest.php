@@ -87,3 +87,15 @@ it('refuses Submission::for across associations for association users only', fun
     auth()->logout();
     expect(Submission::for($game, $b, 3)->association_id)->toBe($b->id);
 });
+
+it('phase2SportsFor drops sports answered No when phase 1 is enabled', function () {
+    $a = Association::factory()->create();
+    $game = Game::factory()->create();
+    $game->associations()->attach($a);
+    $gs = GameSport::factory()->create(['game_id' => $game->id, 'sport_id' => Sport::factory()->create(['association_id' => $a->id])->id]);
+    Submission::for($game, $a, 1)->answers()->create(['game_sport_id' => $gs->id, 'answer' => 'no']);
+
+    expect($game->phase2SportsFor($a))->toHaveCount(1);
+    $game->phase(1)->update(['enabled' => true]);
+    expect($game->fresh()->phase2SportsFor($a))->toHaveCount(0);
+});

@@ -89,3 +89,17 @@ it('groups phase 1 radios per sport with an accessible label', function () {
     livewire(Phase1Entry::class, ['game' => $this->game->id])
         ->assertSeeHtml('role="radiogroup"')->assertSeeHtml('aria-label="Judo"')->assertSeeHtml('name="answer-'.$this->judo->id.'"');
 });
+
+it('rejects non whole-number or out of range counts and stores nothing', function (string $bad) {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("counts.{$this->m60->id}", $bad)->assertSee('Men -60kg: enter a whole number from 0 to 999.')
+        ->call('save')->assertHasErrors(["counts.{$this->m60->id}"]);
+    expect(NumberEntry::count())->toBe(0);
+})->with(['1e9', 'abc', '1.5', '1000']);
+
+it('accepts 999 as a whole number when no limit applies', function () {
+    $this->m60->update(['p2_max_athletes' => null]);
+    $this->judo->update(['p2_max_men' => null]);
+    livewire(Phase2Entry::class, ['game' => $this->game->id])->set("counts.{$this->m60->id}", '999')->call('save')->assertHasNoErrors();
+    expect(NumberEntry::sole()->count)->toBe(999);
+});

@@ -85,7 +85,7 @@ it('extends one association\'s deadline', function () {
     Notification::assertSentTo($this->admin, DeadlineChanged::class);
 });
 
-function overLimit($t): void
+function overLimit($t): GameSport
 {
     $gs = GameSport::factory()->create([
         'game_id' => $t->game->id, 'sport_id' => Sport::factory()->create(['association_id' => $t->assoc->id])->id,
@@ -93,7 +93,17 @@ function overLimit($t): void
     ]);
     $ge = GameEvent::factory()->create(['game_id' => $t->game->id, 'game_sport_id' => $gs->id, 'p2_max_athletes' => null]);
     $t->sub->numbers()->create(['game_event_id' => $ge->id, 'count' => 2]);
+
+    return $gs;
 }
+
+it('ignores stored numbers for sports answered No in phase 1', function () {
+    $gs = overLimit($this);
+    $this->game->associations()->attach($this->assoc);
+    $this->game->phase(1)->update(['enabled' => true]);
+    Submission::for($this->game, $this->assoc, 1)->answers()->create(['game_sport_id' => $gs->id, 'answer' => 'no']);
+    expect($this->wf->submit($this->sub, $this->admin)->status)->toBe(SubmissionStatus::Submitted);
+});
 
 it('blocks submit and approve over the Phase 2 limits', function () {
     overLimit($this);

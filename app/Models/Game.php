@@ -78,6 +78,19 @@ class Game extends Model
             ->with(['sport', 'gameEvents.event'])->get()->sortBy('sport.name')->values();
     }
 
+    /** sportsFor() minus sports answered "no" in the association's Phase 1 (when Phase 1 is enabled). */
+    public function phase2SportsFor(Association $a): Collection
+    {
+        $sports = $this->sportsFor($a);
+        if (! $this->phase(1)->enabled) {
+            return $sports;
+        }
+        $p1 = Submission::withoutGlobalScope('association')->where(['game_id' => $this->id, 'association_id' => $a->getKey(), 'phase' => 1])->first();
+        $no = $p1 ? $p1->answers()->where('answer', 'no')->pluck('game_sport_id')->all() : [];
+
+        return $sports->reject(fn ($gs) => in_array($gs->id, $no, true))->values();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();

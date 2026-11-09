@@ -118,7 +118,7 @@ final class SubmissionWorkflow
             return;
         }
         $counts = $s->numbers()->pluck('count', 'game_event_id')->all();
-        foreach ($s->game->sportsFor($s->association) as $gs) {
+        foreach ($s->game->phase2SportsFor($s->association) as $gs) {
             if ($errors = app(Phase2Limits::class)->errors($gs, $counts)) {
                 $this->fail(reset($errors));
             }
