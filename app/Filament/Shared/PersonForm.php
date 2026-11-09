@@ -53,7 +53,7 @@ final class PersonForm
                 TextInput::make('cpr_no')->label('CPR number')->maxLength(30)
                     ->rule(fn (?Model $record) => self::uniqueDocument('cpr_no_hash', 'CPR', $record)),
                 DatePicker::make('cpr_expiry')->requiredWith('cpr_no'),
-                self::upload('cpr_scan_path', 'CPR scan', 'scans', ['application/pdf', 'image/jpeg', 'image/png'], 5120),
+                self::upload('cpr_front_path', 'CPR front', 'scans', ['application/pdf', 'image/jpeg', 'image/png'], 5120),
                 self::upload('photo_path', 'Photo', 'photos', ['image/jpeg', 'image/png'], 2048),
             ]),
             Section::make('Clothing sizes')->columns(3)

@@ -79,7 +79,7 @@ it('deletes the stored files when a person is deleted', function () {
         Storage::disk($disk)->put($f, 'x');
     }
     $p = Person::factory()->create([
-        'photo_path' => $files[0], 'passport_scan_path' => $files[1], 'cpr_scan_path' => $files[2],
+        'photo_path' => $files[0], 'passport_scan_path' => $files[1], 'cpr_front_path' => $files[2],
     ]);
 
     $p->delete();

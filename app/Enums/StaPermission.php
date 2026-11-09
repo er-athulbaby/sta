@@ -13,6 +13,7 @@ enum StaPermission: string
     case SendReminders = 'send_reminders';
     case ViewReports = 'view_reports';
     case ViewAuditLog = 'view_audit_log';
+    case ViewMedical = 'view_medical';
 
     public function label(): string
     {
@@ -26,6 +27,7 @@ enum StaPermission: string
             self::SendReminders => 'Send "Remind pending"',
             self::ViewReports => 'View reports and export Excel',
             self::ViewAuditLog => 'View the audit log',
+            self::ViewMedical => 'View medical & health data',
         };
     }
 }
