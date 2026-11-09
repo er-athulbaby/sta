@@ -20,6 +20,11 @@ final class PersonTable
         return $table
             ->columns([
                 ImageColumn::make('photo_path')->label('')->circular()->disk(config('filesystems.private'))->visibility('private'),
+                TextColumn::make('code')->searchable()->sortable(),
+                TextColumn::make('completeness')->badge()
+                    ->state(fn (Person $record) => $record->isComplete() ? 'Complete' : 'Incomplete')
+                    ->color(fn (string $state) => $state === 'Complete' ? 'success' : 'warning')
+                    ->tooltip(fn (Person $record) => $record->isComplete() ? null : 'Missing: '.implode(', ', $record->missingFields())),
                 TextColumn::make('last_name')->label('Name')->formatStateUsing(fn (Person $record) => $record->fullName())
                     ->searchable(['first_name', 'last_name'])->sortable(),
                 ...($withAssociation ? [TextColumn::make('association.name')->searchable()] : []),
@@ -35,6 +40,7 @@ final class PersonTable
                 ...($withAssociation ? [SelectFilter::make('association')->relationship('association', 'name')] : []),
             ])
             ->recordActions([
+                AttachmentActions::group(),
                 EditAction::make(),
                 ...($withAssociation ? [DeleteAction::make()->visible(fn () => (bool) auth()->user()?->isSuperAdmin())] : []),
             ]);

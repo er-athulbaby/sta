@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(PermissionSeeder::class);
+        $this->call(ClothingItemSeeder::class);
 
         $password = config('app.super_admin.password');
 
