@@ -55,6 +55,21 @@ class Submission extends Model
         return $this->hasMany(NumberEntry::class);
     }
 
+    public function entries(): HasMany
+    {
+        return $this->hasMany(Entry::class);
+    }
+
+    public function details(): HasMany
+    {
+        return $this->hasMany(LongListDetail::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     public function gamePhase(): GamePhase
     {
         return $this->game->phase($this->phase);
@@ -79,6 +94,6 @@ class Submission extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
+        return LogOptions::defaults()->useLogName('submission-'.$this->id)->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
     }
 }
