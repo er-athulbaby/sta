@@ -18,6 +18,7 @@ class AssociationsTable
         return $table
             ->columns([
                 ImageColumn::make('logo_path')->label('')->disk(config('filesystems.private'))->visibility('private')->circular(),
+                TextColumn::make('code')->searchable()->sortable(),
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('users_count')->counts('users')->label('Users'),

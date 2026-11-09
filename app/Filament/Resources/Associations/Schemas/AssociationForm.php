@@ -13,6 +13,11 @@ class AssociationForm
     {
         return $schema->components([
             TextInput::make('name')->required()->maxLength(255)->unique(ignoreRecord: true),
+            TextInput::make('code')->label('Association code')->required()->maxLength(10)
+                ->helperText('Used in athlete and official codes, e.g. BWF → BWF-AT-0001')
+                ->dehydrateStateUsing(fn (?string $state) => strtoupper(trim((string) $state)))
+                ->rule('regex:/^[A-Za-z0-9]{2,10}$/')
+                ->unique(ignoreRecord: true),
             TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
             ...self::profileFields(),
             // Associations are never deleted, only deactivated (blocks portal access and new invitations).

@@ -10,6 +10,6 @@ it('requires a unique name and email', function () {
 });
 
 it('keeps profile fields optional', function () {
-    $a = Association::create(['name' => 'Squash', 'email' => 's@x.bh']);
+    $a = Association::create(['name' => 'Squash', 'code' => 'SQ', 'email' => 's@x.bh']);
     expect($a->logo_path)->toBeNull()->and($a->phone)->toBeNull();
 });

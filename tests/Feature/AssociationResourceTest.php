@@ -19,7 +19,7 @@ it('lets STA with permission create an association with a private logo', functio
     actingInAdmin($sta);
 
     livewire(CreateAssociation::class)
-        ->fillForm(['name' => 'Bahrain Athletics', 'email' => 'info@bah-athletics.bh', 'logo_path' => UploadedFile::fake()->image('logo.png')])
+        ->fillForm(['name' => 'Bahrain Athletics', 'code' => 'BAF', 'email' => 'info@bah-athletics.bh', 'logo_path' => UploadedFile::fake()->image('logo.png')])
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -67,7 +67,7 @@ it('rejects non JPG/PNG logos', function () {
     actingInAdmin(User::factory()->superAdmin()->create());
 
     livewire(CreateAssociation::class)
-        ->fillForm(['name' => 'Gif FC', 'email' => 'gif@example.bh', 'logo_path' => UploadedFile::fake()->create('logo.gif', 10, 'image/gif')])
+        ->fillForm(['name' => 'Gif FC', 'code' => 'GIF', 'email' => 'gif@example.bh', 'logo_path' => UploadedFile::fake()->create('logo.gif', 10, 'image/gif')])
         ->call('create')
         ->assertHasFormErrors(['logo_path']);
 });

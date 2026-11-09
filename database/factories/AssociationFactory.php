@@ -10,6 +10,7 @@ class AssociationFactory extends Factory
     {
         return [
             'name' => 'Bahrain '.fake()->unique()->word().' Association',
+            'code' => strtoupper(fake()->unique()->bothify('??##')),
             'email' => fake()->unique()->safeEmail(),
         ];
     }
