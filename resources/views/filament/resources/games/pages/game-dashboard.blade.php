@@ -46,7 +46,9 @@
                                 @endif
                                 @if ($this->canManage())
                                     <div class="flex gap-2">
-                                        <x-filament::link tag="button" size="xs" wire:click="mountAction('extend', { association: {{ $a->id }}, phase: {{ $p->phase }} })">Extend</x-filament::link>
+                                        @if ($c['status'] !== 'submitted')
+                                            <x-filament::link tag="button" size="xs" wire:click="mountAction('extend', { association: {{ $a->id }}, phase: {{ $p->phase }} })">Extend</x-filament::link>
+                                        @endif
                                         @if (in_array($c['status'], ['submitted', 'awaiting']))
                                             <x-filament::link tag="button" size="xs" color="danger" wire:click="mountAction('reopen', { association: {{ $a->id }}, phase: {{ $p->phase }} })">Re-open</x-filament::link>
                                         @endif

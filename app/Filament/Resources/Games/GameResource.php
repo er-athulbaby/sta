@@ -18,6 +18,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 
 class GameResource extends Resource
 {
@@ -34,6 +37,28 @@ class GameResource extends Resource
     protected static function requiredPermission(): StaPermission
     {
         return StaPermission::ManageGames;
+    }
+
+    public static function canAccess(): bool
+    {
+        $u = auth()->user();
+
+        return (bool) ($u?->can(StaPermission::ManageGames->value) || $u?->can(StaPermission::ViewSubmissions->value));
+    }
+
+    public static function getCreateAuthorizationResponse(): Response
+    {
+        return static::manageResponse();
+    }
+
+    public static function getEditAuthorizationResponse(Model $record): Response
+    {
+        return static::manageResponse();
+    }
+
+    private static function manageResponse(): Response
+    {
+        return Gate::inspect(StaPermission::ManageGames->value);
     }
 
     public static function form(Schema $schema): Schema

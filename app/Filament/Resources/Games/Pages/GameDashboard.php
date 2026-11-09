@@ -42,9 +42,6 @@ class GameDashboard extends Page
         return (bool) auth()->user()?->can(StaPermission::ViewSubmissions->value);
     }
 
-    /** The resource requires ManageGames; this page needs only ViewSubmissions (see canAccess). */
-    public static function authorizeResourceAccess(): void {}
-
     public function mount(int|string $record): void
     {
         $this->record = $this->resolveRecord($record);
@@ -119,7 +116,9 @@ class GameDashboard extends Page
     public function extend(int $associationId, int $phase, string $deadline): void
     {
         abort_unless($this->canManage(), 403);
-        $a = $this->record->associations()->findOrFail($associationId);
+        abort_unless($this->phases()->contains('phase', $phase), 404);
+        $a = $this->record->associations()->find($associationId);
+        abort_unless($a, 404);
         $this->guarded(fn () => app(SubmissionWorkflow::class)->extend(
             Submission::for($this->record, $a, $phase), auth()->user(), Carbon::parse($deadline, 'Asia/Bahrain')));
     }
@@ -127,7 +126,9 @@ class GameDashboard extends Page
     public function reopen(int $associationId, int $phase, ?string $deadline = null): void
     {
         abort_unless($this->canManage(), 403);
-        $a = $this->record->associations()->findOrFail($associationId);
+        abort_unless($this->phases()->contains('phase', $phase), 404);
+        $a = $this->record->associations()->find($associationId);
+        abort_unless($a, 404);
         $this->guarded(fn () => app(SubmissionWorkflow::class)->reopen(
             Submission::for($this->record, $a, $phase), auth()->user(), $deadline ? Carbon::parse($deadline, 'Asia/Bahrain') : null));
     }
