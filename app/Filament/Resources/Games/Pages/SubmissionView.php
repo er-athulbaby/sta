@@ -80,6 +80,9 @@ class SubmissionView extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('edit')->label('Edit as STA')
+                ->visible(fn () => auth()->user()->can(StaPermission::EditSubmissions->value) && in_array($this->submission->phase, [1, 2, 3], true))
+                ->url(fn () => GameResource::getUrl('submission-edit-'.$this->submission->phase, ['record' => $this->record, 'submission' => $this->submission])),
             Action::make('comment')->label('Add comment')
                 ->visible(fn () => (bool) auth()->user()->can(StaPermission::EditSubmissions->value))
                 ->schema([Textarea::make('body')->label('Comment (emailed to the association)')->required()->rows(4)->maxLength(5000)])

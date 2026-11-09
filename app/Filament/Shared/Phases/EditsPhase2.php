@@ -80,6 +80,7 @@ trait EditsPhase2
         } catch (Halt) {
             return; // notification already sent; loadedVersion unchanged so submit knows nothing was saved
         }
+        $this->resetValidation();
         $this->liveErrors = [];
         $this->refreshLoadedAt();
         Notification::make()->success()->title('Saved')->send();
