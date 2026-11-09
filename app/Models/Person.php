@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AppliesTo;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
+use App\Enums\StaPermission;
 use App\Models\Concerns\BelongsToAssociation;
 use App\Models\Concerns\RenamesAttachments;
 use Carbon\CarbonInterface;
@@ -241,5 +242,13 @@ class Person extends Model
         if ($eventName === 'updated' && $changed) {
             $activity->properties = $activity->properties->put('documents_changed', $changed);
         }
+        if ($eventName === 'updated' && collect(self::MEDICAL)->contains(fn ($c) => $this->wasChanged($c))) {
+            $activity->properties = $activity->properties->put('medical_changed', true);
+        }
+    }
+
+    public static function canViewMedical(?User $user): bool
+    {
+        return $user !== null && ($user->role->isAssociationRole() || $user->can(StaPermission::ViewMedical->value));
     }
 }
