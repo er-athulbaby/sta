@@ -15,6 +15,7 @@ use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
 use App\Models\Sport;
+use App\Models\Submission;
 use App\Models\User;
 use App\Notifications\PhaseOpened;
 use Filament\Actions\Testing\TestAction;
@@ -138,4 +139,38 @@ it('syncs events added to the sport later without duplicating', function () {
         ->callAction(TestAction::make('syncEvents')->table());
 
     expect($gs->gameEvents()->count())->toBe(2);
+});
+
+it('never deletes or creates game events through the edit form', function () {
+    $gs = GameSport::factory()->create();
+    $ge = GameEvent::factory()->create(['game_id' => $gs->game_id, 'game_sport_id' => $gs->id]);
+    $ge2 = GameEvent::factory()->create(['game_id' => $gs->game_id, 'game_sport_id' => $gs->id]);
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $gs->game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('edit')->table($gs), ['gameEvents' => [
+            "record-{$ge->id}" => ['p2_max_athletes' => 4],
+            'new-1' => ['p2_max_athletes' => 9],
+        ]]);
+
+    expect($gs->gameEvents()->count())->toBe(2)->and($ge->fresh()->p2_max_athletes)->toBe(4)->and($ge2->fresh())->not->toBeNull();
+});
+
+it('will not add an inactive sport', function () {
+    $game = Game::factory()->create();
+    $a = Association::factory()->create();
+    $game->associations()->attach($a);
+    $off = Sport::factory()->create(['association_id' => $a->id, 'is_active' => false]);
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('create')->table(), ['sport_id' => $off->id])
+        ->assertHasFormErrors(['sport_id']);
+});
+
+it('hides delete once the game has a submission', function () {
+    $gs = GameSport::factory()->create();
+    $manager = fn () => livewire(GameSportsRelationManager::class, ['ownerRecord' => $gs->game, 'pageClass' => EditGame::class]);
+
+    $manager()->assertActionVisible(TestAction::make('delete')->table($gs));
+    Submission::factory()->create(['game_id' => $gs->game_id]);
+    $manager()->assertActionHidden(TestAction::make('delete')->table($gs));
 });

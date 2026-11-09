@@ -38,7 +38,7 @@ class GameSportsRelationManager extends RelationManager
                     ->with('association')->get()->mapWithKeys(fn (Sport $s) => [$s->id => "{$s->name} ({$s->association->code})"]))
                 ->in(fn (RelationManager $livewire, ?GameSport $record) => $record ? [$record->sport_id] : Sport::query()
                     ->whereIn('association_id', $livewire->getOwnerRecord()->associations()->pluck('associations.id'))
-                    ->pluck('id')->all())
+                    ->where('is_active', true)->pluck('id')->all())
                 ->unique(ignoreRecord: true, modifyRuleUsing: fn ($rule, RelationManager $livewire) => $rule->where('game_id', $livewire->getOwnerRecord()->id)),
             Fieldset::make('Phase 2 – Entry by Number (athletes)')->columns(3)->schema([
                 TextInput::make('p2_max_men')->label('Max men')->integer()->minValue(0),
@@ -56,7 +56,16 @@ class GameSportsRelationManager extends RelationManager
             ]),
             Textarea::make('entry_policy')->rows(3)->columnSpanFull(),
             Repeater::make('gameEvents')->relationship()->label('Events')->visibleOn('edit')->addable(false)->deletable(false)
-                ->reorderable(false)->columns(3)->columnSpanFull()->schema([
+                ->reorderable(false)->columns(3)->columnSpanFull()
+                // Never create or delete game events here (deletes cascade to entries): only update known ones.
+                ->saveRelationshipsUsing(function (Repeater $component, ?GameSport $record) {
+                    foreach ($component->getState() as $key => $item) {
+                        if (str_starts_with($key, 'record-')) {
+                            $record->gameEvents()->whereKey(substr($key, 7))->update(['p2_max_athletes' => $item['p2_max_athletes'] ?? null]);
+                        }
+                    }
+                })
+                ->schema([
                     TextEntry::make('event')->state(fn (?GameEvent $record) => $record?->event?->name),
                     TextEntry::make('gender')->state(fn (?GameEvent $record) => $record?->event?->gender?->label()),
                     TextInput::make('p2_max_athletes')->label('Phase 2 max athletes')->integer()->minValue(0),
