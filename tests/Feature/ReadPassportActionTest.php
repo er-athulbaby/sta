@@ -1,7 +1,9 @@
 <?php
 
 use App\Filament\Portal\Resources\People\Pages\CreatePerson;
+use App\Filament\Portal\Resources\People\Pages\EditPerson;
 use App\Models\Association;
+use App\Models\Person;
 use App\Models\User;
 use App\Services\Mrz\MrzReader;
 use Filament\Actions\Testing\TestAction;
@@ -59,4 +61,46 @@ it('says when the passport cannot be read', function () {
         ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
         ->assertSchemaStateSet(['first_name' => 'Keep'])
         ->assertNotified("Couldn't read the passport. Try a clearer, flat scan.");
+});
+
+it('never reads a stored path that does not belong to the record', function () {
+    Storage::disk(config('filesystems.private'))->put('scans/OTHER_ASSOC.jpg', 'secret');
+    app()->instance(MrzReader::class, new class implements MrzReader
+    {
+        public function read(string $absolutePath): ?array
+        {
+            throw new RuntimeException('reader must not be called');
+        }
+    });
+
+    livewire(CreatePerson::class)
+        ->set('data.passport_scan_path', ['k' => 'scans/OTHER_ASSOC.jpg'])
+        ->set('data.first_name', 'Keep')
+        ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
+        ->assertSchemaStateSet(['first_name' => 'Keep'])
+        ->assertNotified("Couldn't read the passport. Try a clearer, flat scan.");
+});
+
+it('reads the record\'s own stored passport scan on edit and removes the temp copy', function () {
+    Storage::disk(config('filesystems.private'))->put('scans/own.jpg', 'img');
+    $person = Person::factory()->create(['association_id' => Association::first()->id, 'passport_scan_path' => 'scans/own.jpg']);
+    $seen = new ArrayObject;
+    app()->instance(MrzReader::class, new class($seen) implements MrzReader
+    {
+        public function __construct(private ArrayObject $seen) {}
+
+        public function read(string $absolutePath): ?array
+        {
+            $this->seen[] = $absolutePath;
+            expect(file_get_contents($absolutePath))->toBe('img');
+
+            return ['P<BHRALSAYED<<NOOR<KHALID<AHMED<<<<<<<<<<<<<', 'BH12345676BHR0605276F3101159<<<<<<<<<<<<<<00'];
+        }
+    });
+
+    livewire(EditPerson::class, ['record' => $person->getRouteKey()])
+        ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
+        ->assertSchemaStateSet(['passport_no' => 'BH1234567', 'last_name' => 'Alsayed']);
+
+    expect($seen)->toHaveCount(1)->and(file_exists($seen[0]))->toBeFalse();
 });

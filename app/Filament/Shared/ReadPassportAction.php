@@ -6,6 +6,7 @@ use App\Services\Mrz\MrzParser;
 use App\Services\Mrz\MrzReader;
 use App\Services\Mrz\PassportScanFile;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -19,8 +20,13 @@ final class ReadPassportAction
             ->label('Read details from passport')
             ->icon('heroicon-o-identification')
             ->visible(fn (Get $get) => filled($get('passport_scan_path')))
-            ->action(function (Get $get, Set $set) {
+            ->action(function (FileUpload $component, Get $get, Set $set) {
                 $state = $get('passport_scan_path');
+                // A stored string path is client-controlled in Livewire state: only the record's own files may be read.
+                $item = is_array($state) ? (array_values($state)[0] ?? null) : $state;
+                if (is_string($item) && ! $component->isFilePathAuthorized($item)) {
+                    $state = null;
+                }
                 $path = PassportScanFile::localPath($state);
                 try {
                     $lines = $path ? app(MrzReader::class)->read($path) : null;
