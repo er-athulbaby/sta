@@ -58,6 +58,9 @@ class Person extends Model
         'consent_data', 'consent_media', 'consent_medical', 'decl_conduct', 'decl_antidoping', 'decl_data_sharing',
     ];
 
+    /** Mirror the DB defaults of the NOT NULL *_cc columns. */
+    protected $attributes = ['phone_cc' => '+973', 'whatsapp_cc' => '+973', 'emergency_phone_cc' => '+973', 'guardian_phone_cc' => '+973'];
+
     protected $hidden = ['passport_no_hash', 'cpr_no_hash'];
 
     /** @var array<int, string> */

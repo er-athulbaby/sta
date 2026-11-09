@@ -36,7 +36,7 @@ class PersonFactory extends Factory
     public function complete(): static
     {
         return $this->state(fn () => ['full_name' => 'Test Person', 'photo_path' => 'photos/x.jpg', 'passport_issuing_country' => 'Bahrain',
-            'passport_issue_date' => now()->subYear()->toDateString(), 'passport_scan_path' => 'scans/x.pdf', 'phone_cc' => '+973', 'phone' => '33000000',
+            'passport_issue_date' => now()->subYear()->toDateString(), 'passport_scan_path' => 'scans/x.pdf', 'phone' => '33000000',
             'whatsapp_same' => true, 'email' => fake()->safeEmail(), 'emergency_name' => 'Kin', 'emergency_relationship' => 'Brother',
             'emergency_phone' => '33111111']);
     }

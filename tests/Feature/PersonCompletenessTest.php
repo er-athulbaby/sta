@@ -17,3 +17,9 @@ it('lists what an official still needs and passes when complete', function () {
     $full = Person::factory()->official()->complete()->create();
     expect($full->missingFields())->toBe([])->and($full->isComplete())->toBeTrue();
 });
+
+it('defaults country codes so whatsapp_same works without a phone_cc', function () {
+    $o = Person::factory()->official()->create(['phone' => '33000000', 'whatsapp_same' => true]);
+
+    expect($o->whatsapp_cc)->toBe('+973')->and($o->whatsapp)->toBe('33000000');
+});
