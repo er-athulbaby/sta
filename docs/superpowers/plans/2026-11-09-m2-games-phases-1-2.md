@@ -51,7 +51,7 @@
 - **Notifications:** sent by email through queued Laravel notifications to active users only.
   - Association recipients are the association's active users.
   - STA recipients are active Super Admins plus active STA users with `view_submissions`.
-- **Optimistic locking:** a save compares the submission's `updated_at` with the value loaded. If they differ, show "This entry was changed by someone else — reload to see the latest" and do not overwrite.
+- **Optimistic locking:** each submission has an integer `lock_version` (added in a Task 2 fix). A save claims the version it loaded with one conditional UPDATE (`Submission::claimVersion(int)`, wrapped by `PhaseGate::assertFresh(Submission, int)`) inside its DB transaction, before writing. If the claim fails, show "This entry was changed by someone else — reload to see the latest" and do not overwrite. `updated_at` is not used for locking.
 - **Audit log:** spatie activitylog is on `Submission`, `InterestAnswer`, `NumberEntry`, `Game`, `GameSport`, `GameEvent` and `GamePhase`.
 - **Tenant isolation (BR-01):** `Submission` uses `BelongsToAssociation`. Portal pages abort with 404 for a game the tenant association is not invited to.
 - **Permissions:**
@@ -1268,7 +1268,7 @@ Use the Filament 4.16 class for `Placeholder`; it may be `Filament\Forms\Compone
 **Interfaces:**
 - Consumes: `Game::isInvited`, `Game::sportsFor`, `Submission::for`, `PhaseGate`, `SubmissionWorkflow`.
 - Produces:
-  - **`HandlesSubmission` trait:** used by portal phase pages that set `public Submission $submission` and `public string $loadedAt`. It provides:
+  - **`HandlesSubmission` trait:** used by portal phase pages that set `public Submission $submission` and `public int $loadedVersion`. It provides `claimOrHalt(): void`, which is called first inside each page's save transaction. It also provides:
     - `submitAction()`, `approveAction()`, `returnAction()`: Filament `Action`s, visible by role and status.
     - `guardEditable(): void`, which sends a danger notification and halts when `PhaseGate` denies or the save is stale.
     - `refreshLoadedAt(): void`.
@@ -1333,8 +1333,8 @@ it('returns 404 for a game the association is not invited to', function () {
 
 it('refuses a stale save', function () {
     $page = livewire(Phase1Entry::class, ['game' => $this->game->id]);
-    $this->travel(2)->seconds();
-    Submission::sole()->touch();
+    $s = Submission::sole();
+    $s->claimVersion($s->lock_version); // someone else saved in between (same second is fine)
     $page->set("answers.{$this->wl->id}", 'no')->call('save')->assertNotified('This entry was changed by someone else — reload to see the latest.');
     expect(\App\Models\InterestAnswer::count())->toBe(0);
 });
@@ -1367,29 +1367,33 @@ trait HandlesSubmission
 {
     public Submission $submission;
 
-    public string $loadedAt = '';
+    public int $loadedVersion = 0;
 
     public ?string $readOnlyReason = null;
 
     protected function refreshLoadedAt(): void
     {
         $this->submission->refresh();
-        $this->loadedAt = (string) $this->submission->updated_at?->toIso8601String();
+        $this->loadedVersion = (int) $this->submission->lock_version;
         $this->readOnlyReason = app(PhaseGate::class)->denialReason($this->submission);
     }
 
+    /** Status/phase checks; call before validating input. */
     protected function guardEditable(): void
     {
-        $gate = app(PhaseGate::class);
-        $fresh = $this->submission->fresh();
-        try {
-            $gate->assertFresh($fresh, $this->loadedAt);
-        } catch (StaleSubmission $e) {
-            Notification::make()->danger()->title($e->getMessage())->send();
+        if ($reason = app(PhaseGate::class)->denialReason($this->submission->fresh())) {
+            Notification::make()->danger()->title($reason)->send();
             throw new Halt;
         }
-        if ($reason = $gate->denialReason($fresh)) {
-            Notification::make()->danger()->title($reason)->send();
+    }
+
+    /** Call FIRST inside the save's DB::transaction: atomically claims the loaded version, else halts (rolling back). */
+    protected function claimOrHalt(): void
+    {
+        try {
+            app(PhaseGate::class)->assertFresh($this->submission, $this->loadedVersion);
+        } catch (StaleSubmission $e) {
+            Notification::make()->danger()->title($e->getMessage())->send();
             throw new Halt;
         }
     }
@@ -1472,13 +1476,14 @@ public function save(): void
     $this->guardEditable();
     $valid = $this->game->sportsFor(Filament::getTenant())->pluck('id')->all();
     DB::transaction(function () use ($valid) {
+        $this->claimOrHalt();
         foreach ($this->answers as $gameSportId => $answer) {
             if (! in_array((int) $gameSportId, $valid, true) || InterestAnswerValue::tryFrom((string) $answer) === null) {
                 continue;
             }
             InterestAnswer::updateOrCreate(['submission_id' => $this->submission->id, 'game_sport_id' => $gameSportId], ['answer' => $answer]);
         }
-        $this->submission->touch();
+        // lock_version already bumped by claimOrHalt()
     });
     $this->refreshLoadedAt();
     Notification::make()->success()->title('Saved')->send();
@@ -1612,12 +1617,13 @@ public function save(): void
     }
     $allowed = $this->visibleSports()->flatMap->gameEvents->pluck('id')->all();
     DB::transaction(function () use ($allowed) {
+        $this->claimOrHalt();
         foreach ($this->counts as $gameEventId => $count) {
             if (in_array((int) $gameEventId, $allowed, true)) {
                 NumberEntry::updateOrCreate(['submission_id' => $this->submission->id, 'game_event_id' => $gameEventId], ['count' => (int) $count]);
             }
         }
-        $this->submission->touch();
+        // lock_version already bumped by claimOrHalt()
     });
     $this->refreshLoadedAt();
     Notification::make()->success()->title('Saved')->send();
