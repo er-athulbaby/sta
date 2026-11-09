@@ -2,6 +2,8 @@
 
 use App\Models\Association;
 use App\Models\Person;
+use App\Models\PersonVisa;
+use Illuminate\Support\Facades\Storage;
 
 it('numbers athletes and officials per association and type', function () {
     $bwf = Association::factory()->create(['code' => 'BWF']);
