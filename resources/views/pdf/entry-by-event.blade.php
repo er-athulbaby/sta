@@ -13,13 +13,13 @@
 <body>
 <table>
     <tr>
-        <td style="width:20%">@if($nocLogo)<img src="{{ $nocLogo }}" style="height:60px">@endif</td>
+        <td style="width:20%">@if($nocLogo)<img src="{{ $nocLogo }}" style="max-width:100%;max-height:60px">@endif</td>
         <td class="c">
             <div style="font-size:14px;font-weight:bold">{{ $game->name }}</div>
             <div style="font-size:13px">Entry by Event</div>
             <div style="font-size:13px;font-weight:bold">{{ $sportName }}</div>
         </td>
-        <td style="width:20%;text-align:right">@if($gameLogo)<img src="{{ $gameLogo }}" style="height:60px">@endif</td>
+        <td style="width:20%;text-align:right">@if($gameLogo)<img src="{{ $gameLogo }}" style="max-width:100%;max-height:60px">@endif</td>
     </tr>
 </table>
 <p>
@@ -51,9 +51,13 @@
     </tr>
     @endforeach
     <tr>
-        <td><strong>Total: {{ $totals['total'] }}</strong></td>
+        <td><strong>Totals</strong></td>
         <td class="c"><strong>{{ $totals['men'] }}</strong></td>
         <td class="c"><strong>{{ $totals['women'] }}</strong></td>
+    </tr>
+    <tr>
+        <td><strong>All events (incl. mixed)</strong></td>
+        <td class="c" colspan="2"><strong>{{ $totals['total'] }}</strong></td>
     </tr>
 </table>
 <p style="margin-top:14px">{{ $declaration }}</p>

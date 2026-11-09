@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Games;
 
 use App\Enums\StaPermission;
-use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\Games\Pages\CreateGame;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Filament\Resources\Games\Pages\GameDashboard;
@@ -24,8 +23,6 @@ use Illuminate\Support\Facades\Gate;
 
 class GameResource extends Resource
 {
-    use RequiresStaPermission;
-
     protected static ?string $model = Game::class;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -33,11 +30,6 @@ class GameResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = 'Games';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFlag;
-
-    protected static function requiredPermission(): StaPermission
-    {
-        return StaPermission::ManageGames;
-    }
 
     public static function canAccess(): bool
     {
@@ -52,6 +44,16 @@ class GameResource extends Resource
     }
 
     public static function getEditAuthorizationResponse(Model $record): Response
+    {
+        return static::manageResponse();
+    }
+
+    public static function getDeleteAuthorizationResponse(Model $record): Response
+    {
+        return static::manageResponse();
+    }
+
+    public static function getDeleteAnyAuthorizationResponse(): Response
     {
         return static::manageResponse();
     }

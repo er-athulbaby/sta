@@ -15,6 +15,7 @@ use App\Notifications\DeadlineChanged;
 use App\Notifications\SubmissionAwaitingApproval;
 use App\Notifications\SubmissionReceived;
 use App\Notifications\SubmissionReturned;
+use App\Services\Phases\PhaseGate;
 use App\Services\Phases\SubmissionWorkflow;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
@@ -135,4 +136,44 @@ it('does not dispatch the PDF job on a Phase 1 submit', function () {
 it('stops an editor of another association submitting', function () {
     $other = User::factory()->assocEditor(Association::factory()->create())->create();
     expect(fn () => $this->wf->submit($this->sub, $other))->toThrow(ValidationException::class);
+});
+
+it('refuses re-open after the deadline without a future deadline, and works with one', function () {
+    $this->wf->submit($this->sub, $this->admin);
+    $this->game->phase(2)->update(['deadline' => now()->subDay()]);
+    Notification::fake();
+
+    expect(fn () => $this->wf->reopen($this->sub->fresh(), $this->sta))->toThrow(ValidationException::class);
+    expect(fn () => $this->wf->reopen($this->sub->fresh(), $this->sta, now()->subHour()))->toThrow(ValidationException::class);
+    expect($this->sub->fresh()->status)->toBe(SubmissionStatus::Submitted);
+    Notification::assertNothingSent();
+
+    $s = $this->wf->reopen($this->sub->fresh(), $this->sta, now()->addDays(3));
+    expect($s->status)->toBe(SubmissionStatus::Draft)->and(app(PhaseGate::class)->canEdit($s->fresh()))->toBeTrue();
+});
+
+it('refuses approve and return once the phase is closed or disabled', function () {
+    $this->wf->submit($this->sub, $this->editor);
+    $this->game->phase(2)->update(['status' => PhaseStatus::Closed]);
+    expect(fn () => $this->wf->approve($this->sub->fresh(), $this->admin))->toThrow(ValidationException::class, 'This phase is closed.');
+    expect(fn () => $this->wf->returnToDraft($this->sub->fresh(), $this->admin))->toThrow(ValidationException::class, 'This phase is closed.');
+    $this->game->phase(2)->update(['status' => PhaseStatus::Open, 'enabled' => false]);
+    expect(fn () => $this->wf->approve($this->sub->fresh(), $this->admin))->toThrow(ValidationException::class, 'not used');
+});
+
+it('clears stale PDF links on re-submit', function () {
+    $this->wf->submit($this->sub, $this->admin);
+    $this->sub->forceFill(['pdf_paths' => ['1' => 'x.pdf']])->saveQuietly();
+    $s = $this->wf->reopen($this->sub->fresh(), $this->sta);
+    $this->wf->submit($s, $this->admin);
+    expect($this->sub->fresh()->pdf_paths)->toBeNull();
+});
+
+it('bumps lock_version on every status change', function () {
+    $v = $this->sub->fresh()->lock_version;
+    $this->wf->submit($this->sub, $this->editor);
+    expect($this->sub->fresh()->claimVersion($v))->toBeFalse();
+    $v = $this->sub->fresh()->lock_version;
+    $this->wf->returnToDraft($this->sub->fresh(), $this->admin);
+    expect($this->sub->fresh()->lock_version)->toBeGreaterThan($v);
 });

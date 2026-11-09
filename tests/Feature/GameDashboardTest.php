@@ -111,3 +111,10 @@ it('refuses disabled phases and uninvited associations without creating rows', f
     $mk()->call('extend', $other->id, 2, $d)->assertNotFound();
     expect(Submission::withoutGlobalScopes()->where('association_id', '!=', $this->done->id)->count())->toBe(0);
 });
+
+it('rejects a bad or past extend deadline', function () {
+    $page = livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()]);
+    $page->call('extend', $this->late->id, 2, 'garbage')->assertNotified('Give a valid deadline in the future.');
+    $page->call('extend', $this->late->id, 2, now()->subDay()->format('Y-m-d H:i'))->assertNotified('Give a valid deadline in the future.');
+    expect(Submission::withoutGlobalScopes()->where('association_id', $this->late->id)->count())->toBe(0);
+});

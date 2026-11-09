@@ -2,6 +2,7 @@
 
 namespace App\Services\Phases;
 
+use App\Enums\PhaseStatus;
 use App\Enums\Role;
 use App\Enums\SubmissionStatus;
 use App\Jobs\GenerateEntryByEventPdfs;
@@ -30,7 +31,7 @@ final class SubmissionWorkflow
         if ($by->role === Role::AssocAdmin) {
             return $this->finalise($s, $by, submittedBy: $by);
         }
-        $s->update(['status' => SubmissionStatus::AwaitingAssocAdmin, 'submitted_by' => $by->id, 'submitted_at' => now()]);
+        $this->change($s, ['status' => SubmissionStatus::AwaitingAssocAdmin, 'submitted_by' => $by->id, 'submitted_at' => now()]);
         Notification::send(Recipients::association($s->association, Role::AssocAdmin), new SubmissionAwaitingApproval($s));
 
         return $s;
@@ -45,6 +46,7 @@ final class SubmissionWorkflow
         if ($s->status !== SubmissionStatus::AwaitingAssocAdmin) {
             $this->fail('This entry is not waiting for approval.');
         }
+        $this->assertPhaseOpen($s);
 
         $this->assertWithinLimits($s);
 
@@ -61,8 +63,9 @@ final class SubmissionWorkflow
         if ($s->status !== SubmissionStatus::AwaitingAssocAdmin) {
             $this->fail('This entry is not waiting for approval.');
         }
+        $this->assertPhaseOpen($s);
         $editor = User::find($s->submitted_by);
-        $s->update(['status' => SubmissionStatus::Draft]);
+        $this->change($s, ['status' => SubmissionStatus::Draft]);
         $editor?->notify(new SubmissionReturned($s));
 
         return $s;
@@ -73,7 +76,11 @@ final class SubmissionWorkflow
         if (! in_array($s->status, [SubmissionStatus::Submitted, SubmissionStatus::AwaitingAssocAdmin], true)) {
             $this->fail('This entry is not submitted, so there is nothing to re-open.');
         }
-        $s->update(['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override]);
+        $effective = $newDeadline ?? $s->deadline_override ?? $s->gamePhase()->deadline;
+        if ($effective === null || $effective->isPast()) {
+            $this->fail('Give a new deadline in the future to re-open this entry.');
+        }
+        $this->change($s, ['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override]);
         Notification::send(Recipients::association($s->association), new DeadlineChanged($s, reopened: true));
 
         return $s;
@@ -84,7 +91,7 @@ final class SubmissionWorkflow
         if ($s->status === SubmissionStatus::Submitted) {
             $this->fail('This entry is already submitted — re-open it to change the deadline.');
         }
-        $s->update(['deadline_override' => $deadline]);
+        $this->change($s, ['deadline_override' => $deadline]);
         Notification::send(Recipients::association($s->association), new DeadlineChanged($s, reopened: false));
 
         return $s;
@@ -94,8 +101,9 @@ final class SubmissionWorkflow
     {
         DB::transaction(function () use ($s, $approver, $submittedBy) {
             $revision = $s->revision + 1;
-            $s->update([
+            $this->change($s, [
                 'status' => SubmissionStatus::Submitted,
+                'pdf_paths' => null,
                 'revision' => $revision,
                 'reference_no' => sprintf('%s-G%03d-P%d-R%d', $s->association->code, $s->game_id, $s->phase, $revision),
                 'submitted_by' => $submittedBy->id,
@@ -110,6 +118,24 @@ final class SubmissionWorkflow
         }
 
         return $s;
+    }
+
+    /** Every status change bumps lock_version so editors holding a stale page cannot save over it. */
+    private function change(Submission $s, array $attributes): void
+    {
+        $s->update($attributes);
+        $s->increment('lock_version');
+    }
+
+    private function assertPhaseOpen(Submission $s): void
+    {
+        $phase = $s->gamePhase();
+        if (! $phase->enabled) {
+            $this->fail('This phase is not used for this game.');
+        }
+        if ($phase->status !== PhaseStatus::Open) {
+            $this->fail('This phase is closed.');
+        }
     }
 
     private function assertWithinLimits(Submission $s): void

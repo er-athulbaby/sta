@@ -61,7 +61,7 @@ class GameSportsRelationManager extends RelationManager
                 ->saveRelationshipsUsing(function (Repeater $component, ?GameSport $record) {
                     foreach ($component->getState() as $key => $item) {
                         if (str_starts_with($key, 'record-')) {
-                            $record->gameEvents()->whereKey(substr($key, 7))->update(['p2_max_athletes' => $item['p2_max_athletes'] ?? null]);
+                            $record->gameEvents()->find((int) substr($key, 7))?->update(['p2_max_athletes' => $item['p2_max_athletes'] ?? null]);
                         }
                     }
                 })

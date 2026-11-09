@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Notifications\PhaseOpened;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Activitylog\Models\Activity;
 
 use function Pest\Livewire\livewire;
 
@@ -173,4 +174,21 @@ it('hides delete once the game has a submission', function () {
     $manager()->assertActionVisible(TestAction::make('delete')->table($gs));
     Submission::factory()->create(['game_id' => $gs->game_id]);
     $manager()->assertActionHidden(TestAction::make('delete')->table($gs));
+});
+
+it('requires a deadline on an open phase', function () {
+    $game = Game::factory()->create();
+    $p = $game->phase(1);
+    $p->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
+    livewire(PhasesRelationManager::class, ['ownerRecord' => $game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('edit')->table($p), ['deadline' => null])
+        ->assertHasFormErrors(['deadline']);
+});
+
+it('audit-logs event maximum changes', function () {
+    $gs = GameSport::factory()->create();
+    $ge = GameEvent::factory()->create(['game_id' => $gs->game_id, 'game_sport_id' => $gs->id]);
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $gs->game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('edit')->table($gs), ['gameEvents' => ["record-{$ge->id}" => ['p2_max_athletes' => 4]]]);
+    expect(Activity::where('subject_type', GameEvent::class)->where('event', 'updated')->count())->toBe(1);
 });

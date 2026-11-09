@@ -119,8 +119,18 @@ class GameDashboard extends Page
         abort_unless($this->phases()->contains('phase', $phase), 404);
         $a = $this->record->associations()->find($associationId);
         abort_unless($a, 404);
+        try {
+            $when = Carbon::createFromFormat('Y-m-d H:i', $deadline, 'Asia/Bahrain');
+        } catch (\Throwable) {
+            $when = null;
+        }
+        if (! $when || $when->isPast()) {
+            Notification::make()->danger()->title('Give a valid deadline in the future.')->send();
+
+            return;
+        }
         $this->guarded(fn () => app(SubmissionWorkflow::class)->extend(
-            Submission::for($this->record, $a, $phase), auth()->user(), Carbon::parse($deadline, 'Asia/Bahrain')));
+            Submission::for($this->record, $a, $phase), auth()->user(), $when));
     }
 
     public function reopen(int $associationId, int $phase, ?string $deadline = null): void
@@ -159,7 +169,9 @@ class GameDashboard extends Page
             ->visible(fn () => $this->canManage())
             ->requiresConfirmation()
             ->modalHeading('Re-open submission')
-            ->action(fn (array $arguments) => $this->reopen($arguments['association'], $arguments['phase']));
+            ->schema([DateTimePicker::make('deadline')->label('New deadline')->required()->seconds(false)])
+            ->action(fn (array $data, array $arguments) => $this->reopen(
+                $arguments['association'], $arguments['phase'], Carbon::parse($data['deadline'])->format('Y-m-d H:i')));
     }
 
     protected function getHeaderActions(): array

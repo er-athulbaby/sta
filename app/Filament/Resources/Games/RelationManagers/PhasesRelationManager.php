@@ -29,7 +29,8 @@ class PhasesRelationManager extends RelationManager
         return $schema->components([
             Toggle::make('enabled'),
             DateTimePicker::make('opens_at'),
-            DateTimePicker::make('deadline')->after('opens_at'),
+            DateTimePicker::make('deadline')->after('opens_at')
+                ->required(fn (?GamePhase $record) => $record?->status === PhaseStatus::Open),
         ]);
     }
 
