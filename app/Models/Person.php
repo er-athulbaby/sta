@@ -35,6 +35,15 @@ class Person extends Model
 
     public const CONSENTS = ['consent_data', 'consent_media', 'consent_medical', 'decl_conduct', 'decl_antidoping', 'decl_data_sharing'];
 
+    public const REQUIRED_FOR_COMPLETE = [
+        'athlete' => ['full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
+            'passport_issue_date' => 'Passport issue date', 'passport_scan_path' => 'Passport scan', 'cpr_no' => 'CPR number'],
+        'official' => ['full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
+            'passport_issue_date' => 'Passport issue date', 'passport_scan_path' => 'Passport scan', 'phone' => 'Mobile',
+            'whatsapp' => 'WhatsApp', 'email' => 'Email', 'emergency_name' => 'Emergency contact name',
+            'emergency_relationship' => 'Emergency contact relationship', 'emergency_phone' => 'Emergency phone'],
+    ];
+
     protected $fillable = [
         'association_id', 'type', 'first_name', 'second_name', 'third_name', 'last_name', 'photo_path',
         'passport_no', 'passport_expiry', 'passport_scan_path', 'cpr_no', 'cpr_expiry', 'cpr_front_path',
@@ -201,6 +210,18 @@ class Person extends Model
                 $this->sizes()->updateOrCreate(['clothing_item_id' => $item->id], ['size' => $size]);
             }
         });
+    }
+
+    /** @return array<int, string> */
+    public function missingFields(): array
+    {
+        return collect(self::REQUIRED_FOR_COMPLETE[$this->type->value])
+            ->filter(fn (string $label, string $column) => blank($this->{$column}))->values()->all();
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->missingFields() === [];
     }
 
     public function getActivitylogOptions(): LogOptions
