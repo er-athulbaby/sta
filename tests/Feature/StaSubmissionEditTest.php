@@ -19,6 +19,7 @@ use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
 use App\Models\InterestAnswer;
+use App\Models\LongListDetail;
 use App\Models\NumberEntry;
 use App\Models\Person;
 use App\Models\Sport;
@@ -120,4 +121,37 @@ it('refuses STA without edit_submissions, another game and the wrong phase page'
     $this->get(GameResource::getUrl('submission-edit-2', ['record' => $this->game, 'submission' => $s]))->assertNotFound();
     $this->get(GameResource::getUrl('submission-edit-3', ['record' => $this->game, 'submission' => $s]))->assertOk();
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])->assertActionVisible('edit');
+});
+
+it('never lets STA without view_medical read or overwrite a policy number', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $s->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+    LongListDetail::create(['submission_id' => $s->id, 'person_id' => $this->ali->id, 'insurance_policy_no' => 'POL-9']);
+
+    livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->callAction('travel', ['insurance_company' => 'X', 'insurance_policy_no' => 'HACK'], ['person' => $this->ali->id])->assertHasNoActionErrors();
+
+    $d = LongListDetail::where('submission_id', $s->id)->sole();
+    expect($d->insurance_policy_no)->toBe('POL-9')->and($d->insurance_company)->toBe('X');
+});
+
+it('has no submit workflow on STA pages', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $page = livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id]);
+    try {
+        $page->callAction('submit');
+    } catch (Throwable) {
+    }
+    expect(Entry::count())->toBe(0)->and($s->fresh()->status)->toBe(SubmissionStatus::Draft);
+});
+
+it('is read-only for STA when the phase is disabled', function () {
+    $this->game->phase(3)->update(['enabled' => false]);
+    $s = Submission::for($this->game, $this->assoc, 3);
+
+    livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->assertSee('This phase is not used for this game.')
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->call('save');
+    expect(Entry::count())->toBe(0);
 });

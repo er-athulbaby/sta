@@ -59,6 +59,22 @@ trait StaEditsSubmission
 
     abstract protected function saveEntries(): void;
 
+    /** STA edits are not a submit workflow: the portal actions are inert here (they resolve by name even when not in the header). */
+    protected function submitAction(): Action
+    {
+        return Action::make('submit')->hidden();
+    }
+
+    protected function approveAction(): Action
+    {
+        return Action::make('approve')->hidden();
+    }
+
+    protected function returnAction(): Action
+    {
+        return Action::make('return')->hidden();
+    }
+
     public function save(): void
     {
         $before = $this->loadedVersion;
