@@ -12,13 +12,16 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 
 trait HandlesSubmission
 {
     public Submission $submission;
 
+    #[Locked]
     public int $loadedVersion = 0;
 
+    #[Locked]
     public ?string $readOnlyReason = null;
 
     protected function refreshLoadedAt(): void

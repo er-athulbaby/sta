@@ -11,10 +11,10 @@
         @forelse ($this->sports as $gs)
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 py-3 last:border-0 dark:border-white/10">
                 <span class="font-medium">{{ $gs->sport->name }}</span>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4" role="radiogroup" aria-label="{{ $gs->sport->name }}">
                     @foreach (['yes' => 'Yes', 'no' => 'No', 'maybe' => 'Maybe'] as $value => $label)
                         <label class="flex items-center gap-1 text-sm">
-                            <input type="radio" wire:model="answers.{{ $gs->id }}" value="{{ $value }}" @disabled($readOnlyReason)>
+                            <input type="radio" name="answer-{{ $gs->id }}" wire:model="answers.{{ $gs->id }}" value="{{ $value }}" @disabled($readOnlyReason)>
                             {{ $label }}
                         </label>
                     @endforeach
