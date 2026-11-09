@@ -50,3 +50,16 @@ it('shows the cap error when the association is already full of editors', functi
 
     $this->get('/invitations/tok-123')->assertOk()->assertSee('already has 2 editors');
 });
+
+it('returns an email error, not a 500, when the email already has an account', function () {
+    $other = Association::factory()->create();
+    $secondUrl = app(InvitationService::class)->invite($other, 'boss@squash.bh', Role::AssocAdmin, null);
+
+    $form = ['name' => 'Ali', 'password' => 'a-long-password-1', 'password_confirmation' => 'a-long-password-1'];
+    $this->post($this->url, $form)->assertRedirect("/portal/{$this->assoc->id}");
+    auth()->logout();
+
+    $this->from($secondUrl)->post($secondUrl, $form)->assertSessionHasErrors('email');
+    expect(User::where('email', 'boss@squash.bh')->count())->toBe(1)
+        ->and(User::firstWhere('email', 'boss@squash.bh')->association_id)->toBe($this->assoc->id);
+});

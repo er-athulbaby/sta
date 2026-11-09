@@ -68,6 +68,9 @@ final class InvitationService
             if (! $invitation) {
                 throw ValidationException::withMessages(['token' => 'This invitation is invalid or has expired.']);
             }
+            if (User::where('email', $invitation->email)->exists()) {
+                throw ValidationException::withMessages(['email' => 'An account with this email already exists. Please sign in instead.']);
+            }
 
             $invitation->role === Role::AssocEditor
                 ? $this->membership->ensureCanAddEditor($invitation->association, ignore: $invitation)

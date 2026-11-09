@@ -72,3 +72,17 @@ it('re-inviting the same email revokes the older invitation', function () {
     expect($this->service->findPending($first))->toBeNull()
         ->and(Invitation::pending()->count())->toBe(1);
 });
+
+it('refuses to accept a second invitation for an email that already has an account', function () {
+    $first = tokenFrom($this->service->invite($this->assoc, 'dup@assoc.bh', Role::AssocEditor, null));
+    $second = tokenFrom($this->service->invite(Association::factory()->create(), 'dup@assoc.bh', Role::AssocEditor, null));
+    $this->service->accept($first, 'First', 'a-long-password-1');
+
+    try {
+        $this->service->accept($second, 'Second', 'a-long-password-1');
+        $this->fail('Expected a validation error');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey('email');
+    }
+    expect(User::where('email', 'dup@assoc.bh')->count())->toBe(1);
+});
