@@ -7,6 +7,7 @@ use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\Games\Pages\CreateGame;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Filament\Resources\Games\Pages\ListGames;
+use App\Filament\Resources\Games\RelationManagers\GameSportsRelationManager;
 use App\Filament\Resources\Games\RelationManagers\PhasesRelationManager;
 use App\Filament\Resources\Games\Schemas\GameForm;
 use App\Filament\Resources\Games\Tables\GamesTable;
@@ -46,7 +47,7 @@ class GameResource extends Resource
 
     public static function getRelations(): array
     {
-        return [PhasesRelationManager::class];
+        return [PhasesRelationManager::class, GameSportsRelationManager::class];
     }
 
     public static function getPages(): array

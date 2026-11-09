@@ -1,14 +1,20 @@
 <?php
 
+use App\Enums\EventGender;
 use App\Enums\PhaseStatus;
 use App\Enums\StaPermission;
 use App\Filament\Resources\Games\GameResource;
 use App\Filament\Resources\Games\Pages\CreateGame;
 use App\Filament\Resources\Games\Pages\EditGame;
+use App\Filament\Resources\Games\RelationManagers\GameSportsRelationManager;
 use App\Filament\Resources\Games\RelationManagers\PhasesRelationManager;
 use App\Models\Association;
 use App\Models\ClothingItem;
+use App\Models\Event;
 use App\Models\Game;
+use App\Models\GameEvent;
+use App\Models\GameSport;
+use App\Models\Sport;
 use App\Models\User;
 use App\Notifications\PhaseOpened;
 use Filament\Actions\Testing\TestAction;
@@ -74,4 +80,62 @@ it('is hidden from STA users without manage_games', function () {
     $this->get(GameResource::getUrl('index'))->assertForbidden();
     $sta->givePermissionTo(StaPermission::ManageGames->value);
     $this->get(GameResource::getUrl('index'))->assertOk();
+});
+
+it('adds a sport of an invited association with all its active events', function () {
+    $game = Game::factory()->create();
+    $a = Association::factory()->create();
+    $game->associations()->attach($a);
+    $judo = Sport::factory()->create(['association_id' => $a->id, 'name' => 'Judo']);
+    Event::factory()->create(['sport_id' => $judo->id, 'name' => 'Men -60kg', 'gender' => EventGender::Men]);
+    Event::factory()->create(['sport_id' => $judo->id, 'name' => 'Old', 'is_active' => false]);
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('create')->table(), ['sport_id' => $judo->id, 'p2_max_men' => 3, 'p2_max_total' => 5,
+            'dob_from' => '2002-01-01', 'dob_to' => '2010-12-31', 'entry_policy' => 'Max 1 athlete per weight category'])
+        ->assertHasNoFormErrors();
+
+    $gs = GameSport::sole();
+    expect($gs->p2_max_men)->toBe(3)->and($gs->gameEvents->pluck('event.name')->all())->toBe(['Men -60kg']);
+});
+
+it('only offers sports of invited associations, once', function () {
+    $game = Game::factory()->create();
+    $invited = Association::factory()->create();
+    $game->associations()->attach($invited);
+    $ok = Sport::factory()->create(['association_id' => $invited->id]);
+    GameSport::factory()->create(['game_id' => $game->id, 'sport_id' => $ok->id]);
+    $other = Sport::factory()->create();
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('create')->table(), ['sport_id' => $other->id])
+        ->assertHasFormErrors(['sport_id']);
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('create')->table(), ['sport_id' => $ok->id])
+        ->assertHasFormErrors(['sport_id']);
+});
+
+it('sets event maximums and rejects dob_to before dob_from', function () {
+    $gs = GameSport::factory()->create();
+    $ge = GameEvent::factory()->create(['game_id' => $gs->game_id, 'game_sport_id' => $gs->id]);
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $gs->game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('edit')->table($gs), ['dob_from' => '2010-01-01', 'dob_to' => '2005-01-01'])
+        ->assertHasFormErrors(['dob_to']);
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $gs->game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('edit')->table($gs), ['gameEvents' => ["record-{$ge->id}" => ['p2_max_athletes' => 2]]])->assertHasNoFormErrors()->assertNotified();
+    expect($ge->fresh()->p2_max_athletes)->toBe(2);
+});
+
+it('syncs events added to the sport later without duplicating', function () {
+    $gs = GameSport::factory()->create();
+    GameEvent::factory()->create(['game_id' => $gs->game_id, 'game_sport_id' => $gs->id]);
+    Event::factory()->create(['sport_id' => $gs->sport_id]);
+
+    livewire(GameSportsRelationManager::class, ['ownerRecord' => $gs->game, 'pageClass' => EditGame::class])
+        ->callAction(TestAction::make('syncEvents')->table());
+
+    expect($gs->gameEvents()->count())->toBe(2);
 });
