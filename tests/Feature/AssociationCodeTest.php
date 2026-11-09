@@ -19,3 +19,7 @@ it('requires a unique upper-case association code', function () {
 
     expect(Association::firstWhere('name', 'Judo')->code)->toBe('BJF');
 });
+
+it('trims and upper-cases the code at model level', function () {
+    expect(Association::factory()->create(['code' => ' bjf '])->code)->toBe('BJF');
+});
