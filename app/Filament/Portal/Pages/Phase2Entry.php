@@ -3,34 +3,16 @@
 namespace App\Filament\Portal\Pages;
 
 use App\Filament\Portal\Concerns\HandlesSubmission;
-use App\Models\Game;
-use App\Models\GameSport;
-use App\Models\NumberEntry;
-use App\Models\Submission;
-use App\Services\Phases\Phase2Limits;
-use Filament\Facades\Filament;
-use Filament\Notifications\Notification;
+use App\Filament\Shared\Phases\EditsPhase2;
 use Filament\Pages\Page;
 use Filament\Panel;
-use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class Phase2Entry extends Page
 {
-    use HandlesSubmission;
+    use EditsPhase2, HandlesSubmission;
 
     protected string $view = 'filament.portal.pages.phase2-entry';
-
-    public Game $gameModel;
-
-    /** @var array<int|string, int|string|null> game_event_id => count */
-    public array $counts = [];
-
-    /** @var array<string, string> */
-    public array $liveErrors = [];
 
     public static function getRoutePath(Panel $panel): string
     {
@@ -49,69 +31,7 @@ class Phase2Entry extends Page
 
     public function mount(int|string $game): void
     {
-        $this->gameModel = Game::findOrFail($game);
-        $tenant = Filament::getTenant();
-        abort_unless($this->gameModel->isInvited($tenant) && $this->gameModel->phase(2)->enabled, 404);
-        $this->submission = Submission::for($this->gameModel, $tenant, 2);
-        $this->counts = $this->submission->numbers()->pluck('count', 'game_event_id')->all();
-        $this->refreshLoadedAt();
-    }
-
-    /** @return Collection<int, GameSport> */
-    public function visibleSports(): Collection
-    {
-        return $this->gameModel->phase2SportsFor(Filament::getTenant());
-    }
-
-    /** @return array<string, string> keyed counts.{gameEventId} or sport.{gameSportId}.{men|women|total} */
-    protected function limitErrors(): array
-    {
-        $errors = [];
-        foreach ($this->visibleSports() as $gs) {
-            $valid = $this->counts;
-            foreach ($gs->gameEvents as $ge) {
-                $raw = $this->counts[$ge->id] ?? null;
-                if ($raw !== null && $raw !== '' && ! preg_match('/^\d{1,3}$/', trim((string) $raw))) {
-                    $errors['counts.'.$ge->id] = "{$ge->event->name}: enter a whole number from 0 to 999.";
-                    unset($valid[$ge->id]);
-                }
-            }
-            foreach (app(Phase2Limits::class)->errors($gs, $valid) as $key => $message) {
-                $errors[str_starts_with($key, 'event.') ? 'counts.'.substr($key, 6) : "sport.{$gs->id}.".substr($key, 6)] ??= $message;
-            }
-        }
-
-        return $errors;
-    }
-
-    public function updatedCounts(): void
-    {
-        $this->liveErrors = $this->limitErrors();
-    }
-
-    public function save(): void
-    {
-        try {
-            $this->guardEditable();
-            if ($errors = $this->limitErrors()) {
-                throw ValidationException::withMessages($errors);
-            }
-            $allowed = $this->visibleSports()->flatMap->gameEvents->pluck('id')->all();
-            DB::transaction(function () use ($allowed) {
-                $this->claimOrHalt();
-                foreach ($this->counts as $gameEventId => $count) {
-                    if (in_array((int) $gameEventId, $allowed, true)) {
-                        NumberEntry::updateOrCreate(['submission_id' => $this->submission->id, 'game_event_id' => $gameEventId], ['count' => (int) $count]);
-                    }
-                }
-                // lock_version already bumped by claimOrHalt()
-            });
-        } catch (Halt) {
-            return; // notification already sent; loadedVersion unchanged so submit knows nothing was saved
-        }
-        $this->liveErrors = [];
-        $this->refreshLoadedAt();
-        Notification::make()->success()->title('Saved')->send();
+        $this->mountPortal($game, 2);
     }
 
     protected function getHeaderActions(): array

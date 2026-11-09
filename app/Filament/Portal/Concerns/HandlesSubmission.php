@@ -4,18 +4,27 @@ namespace App\Filament\Portal\Concerns;
 
 use App\Enums\Role;
 use App\Enums\SubmissionStatus;
+use App\Models\Association;
+use App\Models\Game;
 use App\Models\Submission;
 use App\Services\Phases\PhaseGate;
 use App\Services\Phases\StaleSubmission;
 use App\Services\Phases\SubmissionWorkflow;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 
+/**
+ * Submission plumbing shared by the portal phase pages and the STA edit pages.
+ * The phase state and save() come from App\Filament\Shared\Phases\EditsPhaseN.
+ */
 trait HandlesSubmission
 {
+    public Game $gameModel;
+
     public Submission $submission;
 
     #[Locked]
@@ -24,17 +33,44 @@ trait HandlesSubmission
     #[Locked]
     public ?string $readOnlyReason = null;
 
+    /** Fills the phase state from $this->submission. */
+    abstract protected function loadPhase(): void;
+
+    /** Called before submit so unsaved changes go in. */
+    abstract public function save(): void;
+
+    protected function mountPortal(int|string $game, int $phase): void
+    {
+        $this->gameModel = Game::findOrFail($game);
+        $tenant = Filament::getTenant();
+        abort_unless($this->gameModel->isInvited($tenant) && $this->gameModel->phase($phase)->enabled, 404);
+        $this->submission = Submission::for($this->gameModel, $tenant, $phase);
+        $this->loadPhase();
+        $this->refreshLoadedAt();
+    }
+
+    protected function association(): Association
+    {
+        return Filament::getTenant();
+    }
+
+    /** Why the current user may not edit; associations follow the phase gate. STA pages override this. */
+    protected function editDenialReason(Submission $s): ?string
+    {
+        return app(PhaseGate::class)->denialReason($s);
+    }
+
     protected function refreshLoadedAt(): void
     {
         $this->submission->refresh();
         $this->loadedVersion = (int) $this->submission->lock_version;
-        $this->readOnlyReason = app(PhaseGate::class)->denialReason($this->submission);
+        $this->readOnlyReason = $this->editDenialReason($this->submission);
     }
 
     /** Status/phase checks; call before validating input. */
     protected function guardEditable(): void
     {
-        if ($reason = app(PhaseGate::class)->denialReason($this->submission->fresh())) {
+        if ($reason = $this->editDenialReason($this->submission->fresh())) {
             Notification::make()->danger()->title($reason)->send();
             throw new Halt;
         }
@@ -50,9 +86,6 @@ trait HandlesSubmission
             throw new Halt;
         }
     }
-
-    /** Called before submit so unsaved changes go in; each page implements it. */
-    abstract public function save(): void;
 
     protected function submitAction(): Action
     {
