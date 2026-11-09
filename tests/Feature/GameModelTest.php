@@ -9,6 +9,8 @@ use App\Models\GameEvent;
 use App\Models\GameSport;
 use App\Models\Sport;
 use App\Models\Submission;
+use App\Models\User;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 it('creates four disabled draft phases with a new game', function () {
     $game = Game::factory()->create();
@@ -68,4 +70,20 @@ it('builds game events from the game sport, explicit values winning', function (
 
 it('uses the Bahrain time zone', function () {
     expect(config('app.timezone'))->toBe('Asia/Bahrain');
+});
+
+it('refuses Submission::for across associations for association users only', function () {
+    $game = Game::factory()->create();
+    $a = Association::factory()->create();
+    $b = Association::factory()->create();
+
+    $this->actingAs(User::factory()->assocEditor($a)->create());
+    expect(fn () => Submission::for($game, $b, 2))->toThrow(NotFoundHttpException::class);
+    expect(Submission::withoutGlobalScopes()->count())->toBe(0)
+        ->and(Submission::for($game, $a, 2)->association_id)->toBe($a->id);
+
+    $this->actingAs(User::factory()->sta()->create());
+    expect(Submission::for($game, $b, 2)->association_id)->toBe($b->id);
+    auth()->logout();
+    expect(Submission::for($game, $b, 3)->association_id)->toBe($b->id);
 });

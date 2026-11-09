@@ -50,7 +50,12 @@ class Submission extends Model
      */
     public static function for(Game $game, Association $association, int $phase): self
     {
-        return static::withoutGlobalScopes()->firstOrCreate(
+        $user = auth()->user();
+        if ($user instanceof User && $user->role->isAssociationRole() && $user->association_id !== $association->id) {
+            abort(404);
+        }
+
+        return static::withoutGlobalScope('association')->firstOrCreate(
             ['game_id' => $game->id, 'association_id' => $association->id, 'phase' => $phase],
             ['status' => SubmissionStatus::Draft],
         );
