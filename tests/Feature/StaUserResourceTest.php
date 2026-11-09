@@ -3,6 +3,7 @@
 use App\Enums\Role;
 use App\Enums\StaPermission;
 use App\Filament\Resources\StaUsers\Pages\CreateStaUser;
+use App\Filament\Resources\StaUsers\Pages\EditStaUser;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 
@@ -35,4 +36,11 @@ it('hides STA user management from STA users', function () {
 
 it('gives super admin every permission', function () {
     expect(User::factory()->superAdmin()->create()->can(StaPermission::ViewAuditLog->value))->toBeTrue();
+});
+
+it('offers no hard delete on the STA user edit page', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+    $sta = User::factory()->sta()->create();
+
+    livewire(EditStaUser::class, ['record' => $sta->getRouteKey()])->assertActionDoesNotExist('delete');
 });
