@@ -35,6 +35,9 @@
                             @endphp
                             <td class="p-2 space-y-1" wire:key="cell-{{ $a->id }}-{{ $p->phase }}">
                                 <x-filament::badge :color="$colors[$c['status']]">{{ $c['label'] }}</x-filament::badge>
+                                @if ($s)
+                                    <div><a href="{{ \App\Filament\Resources\Games\GameResource::getUrl('submission', ['record' => $record, 'submission' => $s]) }}" class="text-xs text-primary-600 underline">View</a></div>
+                                @endif
                                 @if ($s?->deadline_override)
                                     <div class="text-xs">Deadline: {{ $s->deadline_override->format('d M Y H:i') }}</div>
                                 @endif

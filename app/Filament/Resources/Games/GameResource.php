@@ -7,6 +7,7 @@ use App\Filament\Resources\Games\Pages\CreateGame;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Filament\Resources\Games\Pages\GameDashboard;
 use App\Filament\Resources\Games\Pages\ListGames;
+use App\Filament\Resources\Games\Pages\SubmissionView;
 use App\Filament\Resources\Games\RelationManagers\GameSportsRelationManager;
 use App\Filament\Resources\Games\RelationManagers\PhasesRelationManager;
 use App\Filament\Resources\Games\Schemas\GameForm;
@@ -85,6 +86,7 @@ class GameResource extends Resource
             'create' => CreateGame::route('/create'),
             'edit' => EditGame::route('/{record}/edit'),
             'dashboard' => GameDashboard::route('/{record}/dashboard'),
+            'submission' => SubmissionView::route('/{record}/submissions/{submission}'),
         ];
     }
 }

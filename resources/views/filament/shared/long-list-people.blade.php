@@ -4,7 +4,7 @@
 @else
         <table class="w-full text-sm">
             <thead>
-                <tr class="text-left text-gray-500"><th class="py-1">Name</th><th>Entered in</th><th>Age</th><th>Registry</th><th>Warnings</th><th></th></tr>
+                <tr class="text-left text-gray-500"><th class="py-1">Name</th><th>Entered in</th><th>Age</th><th>Registry</th><th>Warnings</th><th>{{ ($showDetails ?? false) ? 'Travel & insurance' : '' }}</th></tr>
             </thead>
             <tbody>
                 @foreach ($rows as $row)
@@ -26,7 +26,16 @@
                             </ul>
                         </td>
                         <td class="py-2">
-                            @if ($row['detail'])
+                            @if (($showDetails ?? false) && ($d = $row['detail']))
+                                <div class="text-xs">
+                                    <div>{{ $d->insurance_company ?? '–' }}@if ($showMedical ?? false) · Policy {{ $d->insurance_policy_no ?? '–' }}@endif</div>
+                                    <div>Valid until {{ $d->insurance_valid_until?->format('j M Y') ?? '–' }}</div>
+                                    @if ($d->insurance_certificate_path)
+                                        <a href="{{ \App\Filament\Shared\AttachmentActions::url($d->insurance_certificate_path) }}" target="_blank" class="text-primary-600 underline">Certificate</a>
+                                    @endif
+                                    @if ($d->vaccinations)<div>Vaccinations: {{ $d->vaccinations }}</div>@endif
+                                </div>
+                            @elseif ($row['detail'])
                                 <div class="text-xs text-gray-500">Insurance: {{ $row['detail']->insurance_company ?? '–' }}</div>
                             @endif
                             @if (($showTravel ?? false) && $row['on_list'])

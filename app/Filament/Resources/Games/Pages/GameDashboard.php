@@ -56,7 +56,7 @@ class GameDashboard extends Page
     public function submissions(): Collection
     {
         return $this->loaded ??= Submission::withoutGlobalScopes()->where('game_id', $this->record->id)
-            ->withExists(['answers', 'numbers'])->get()->keyBy(fn ($s) => "{$s->association_id}-{$s->phase}");
+            ->withExists(['answers', 'numbers', 'entries'])->get()->keyBy(fn ($s) => "{$s->association_id}-{$s->phase}");
     }
 
     public function loadSubmissions(): void
@@ -90,7 +90,7 @@ class GameDashboard extends Page
             $s?->status === SubmissionStatus::Submitted => 'submitted',
             $s?->status === SubmissionStatus::AwaitingAssocAdmin => 'awaiting',
             $deadline !== null && now()->greaterThan($deadline) => 'overdue',
-            $s !== null && ($s->answers_exists || $s->numbers_exists) => 'draft',
+            $s !== null && ($s->answers_exists || $s->numbers_exists || $s->entries_exists) => 'draft',
             default => 'no_response',
         };
         $labels = ['submitted' => 'Submitted', 'awaiting' => 'Awaiting assoc. admin', 'overdue' => 'Overdue', 'draft' => 'In progress', 'no_response' => 'No response'];
@@ -99,7 +99,7 @@ class GameDashboard extends Page
     }
 
     /** @return list<array{name: string, url: string}> */
-    public function pdfLinks(Submission $s): array
+    public static function pdfLinks(Submission $s): array
     {
         $disk = Storage::disk(config('filesystems.private'));
 
