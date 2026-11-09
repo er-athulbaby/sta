@@ -20,10 +20,11 @@ class DatabaseSeeder extends Seeder
 
         $password = config('app.super_admin.password');
 
+        if (app()->isProduction() && (blank($password) || strtolower($password) === 'change-me-now')) {
+            throw new \RuntimeException('SUPER_ADMIN_PASSWORD must be set to a non-default value');
+        }
+
         if (blank($password)) {
-            if (app()->isProduction()) {
-                throw new \RuntimeException('SUPER_ADMIN_PASSWORD must be set');
-            }
             $password = 'change-me-now';
         }
 

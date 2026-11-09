@@ -31,3 +31,12 @@ it('falls back to the dev password outside production', function () {
     expect($user->role)->toBe(Role::SuperAdmin)
         ->and(Hash::check('change-me-now', $user->password))->toBeTrue();
 });
+
+it('refuses to seed in production with the known dev password', function (string $password) {
+    config(['app.super_admin.password' => $password]);
+    $this->app['env'] = 'production';
+
+    expect(fn () => (new DatabaseSeeder)->run())
+        ->toThrow(RuntimeException::class, 'SUPER_ADMIN_PASSWORD must be set');
+    expect(User::where('role', Role::SuperAdmin)->exists())->toBeFalse();
+})->with(['change-me-now', 'Change-Me-Now']);
