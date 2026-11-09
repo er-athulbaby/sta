@@ -12,6 +12,7 @@ use App\Models\Event;
 use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
+use App\Models\InterestAnswer;
 use App\Models\LongListDetail;
 use App\Models\NumberEntry;
 use App\Models\Person;
