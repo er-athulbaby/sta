@@ -26,6 +26,7 @@ final class SubmissionWorkflow
         if ($reason = $this->gate->denialReason($s)) {
             $this->fail($reason);
         }
+        $this->assertWithinLimits($s);
         if ($by->role === Role::AssocAdmin) {
             return $this->finalise($s, $by, submittedBy: $by);
         }
@@ -44,6 +45,8 @@ final class SubmissionWorkflow
         if ($s->status !== SubmissionStatus::AwaitingAssocAdmin) {
             $this->fail('This entry is not waiting for approval.');
         }
+
+        $this->assertWithinLimits($s);
 
         // ponytail: approval is allowed after the deadline — the editor sent it in time; block here if STA wants otherwise.
         return $this->finalise($s, $by, submittedBy: User::find($s->submitted_by) ?? $by);
@@ -67,6 +70,9 @@ final class SubmissionWorkflow
 
     public function reopen(Submission $s, User $by, ?CarbonInterface $newDeadline = null): Submission
     {
+        if (! in_array($s->status, [SubmissionStatus::Submitted, SubmissionStatus::AwaitingAssocAdmin], true)) {
+            $this->fail('This entry is not submitted, so there is nothing to re-open.');
+        }
         $s->update(['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override]);
         Notification::send(Recipients::association($s->association), new DeadlineChanged($s, reopened: true));
 
@@ -75,6 +81,9 @@ final class SubmissionWorkflow
 
     public function extend(Submission $s, User $by, CarbonInterface $deadline): Submission
     {
+        if ($s->status === SubmissionStatus::Submitted) {
+            $this->fail('This entry is already submitted — re-open it to change the deadline.');
+        }
         $s->update(['deadline_override' => $deadline]);
         Notification::send(Recipients::association($s->association), new DeadlineChanged($s, reopened: false));
 
@@ -101,6 +110,19 @@ final class SubmissionWorkflow
         }
 
         return $s;
+    }
+
+    private function assertWithinLimits(Submission $s): void
+    {
+        if ($s->phase !== 2) {
+            return;
+        }
+        $counts = $s->numbers()->pluck('count', 'game_event_id')->all();
+        foreach ($s->game->sportsFor($s->association) as $gs) {
+            if ($errors = app(Phase2Limits::class)->errors($gs, $counts)) {
+                $this->fail(reset($errors));
+            }
+        }
     }
 
     private function ownAssociation(Submission $s, User $by): void

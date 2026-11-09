@@ -6,6 +6,9 @@ use App\Enums\SubmissionStatus;
 use App\Jobs\GenerateEntryByEventPdfs;
 use App\Models\Association;
 use App\Models\Game;
+use App\Models\GameEvent;
+use App\Models\GameSport;
+use App\Models\Sport;
 use App\Models\Submission;
 use App\Models\User;
 use App\Notifications\DeadlineChanged;
@@ -80,4 +83,46 @@ it('extends one association\'s deadline', function () {
     $s = $this->wf->extend($this->sub, $this->sta, now()->addDays(20));
     expect($s->deadline_override->isSameDay(now()->addDays(20)))->toBeTrue();
     Notification::assertSentTo($this->admin, DeadlineChanged::class);
+});
+
+function overLimit($t): void
+{
+    $gs = GameSport::factory()->create([
+        'game_id' => $t->game->id, 'sport_id' => Sport::factory()->create(['association_id' => $t->assoc->id])->id,
+        'p2_max_total' => 1,
+    ]);
+    $ge = GameEvent::factory()->create(['game_id' => $t->game->id, 'game_sport_id' => $gs->id, 'p2_max_athletes' => null]);
+    $t->sub->numbers()->create(['game_event_id' => $ge->id, 'count' => 2]);
+}
+
+it('blocks submit and approve over the Phase 2 limits', function () {
+    overLimit($this);
+    expect(fn () => $this->wf->submit($this->sub, $this->admin))->toThrow(ValidationException::class);
+    expect(fn () => $this->wf->submit($this->sub, $this->editor))->toThrow(ValidationException::class);
+    $this->sub->update(['status' => SubmissionStatus::AwaitingAssocAdmin, 'submitted_by' => $this->editor->id]);
+    expect(fn () => $this->wf->approve($this->sub->fresh(), $this->admin))->toThrow(ValidationException::class);
+});
+
+it('passes submit within the Phase 2 limits', function () {
+    overLimit($this);
+    $this->sub->numbers()->update(['count' => 1]);
+    expect($this->wf->submit($this->sub, $this->admin)->status)->toBe(SubmissionStatus::Submitted);
+});
+
+it('refuses reopen of a draft and extend of a submitted entry without notifying', function () {
+    expect(fn () => $this->wf->reopen($this->sub, $this->sta))->toThrow(ValidationException::class);
+    $this->wf->submit($this->sub, $this->admin);
+    expect(fn () => $this->wf->extend($this->sub->fresh(), $this->sta, now()->addDays(20)))->toThrow(ValidationException::class);
+    Notification::assertNothingSentTo($this->editor);
+});
+
+it('does not dispatch the PDF job on a Phase 1 submit', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
+    $this->wf->submit(Submission::for($this->game, $this->assoc, 1), $this->admin);
+    Bus::assertNotDispatched(GenerateEntryByEventPdfs::class);
+});
+
+it('stops an editor of another association submitting', function () {
+    $other = User::factory()->assocEditor(Association::factory()->create())->create();
+    expect(fn () => $this->wf->submit($this->sub, $other))->toThrow(ValidationException::class);
 });
