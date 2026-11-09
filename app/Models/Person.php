@@ -6,6 +6,7 @@ use App\Enums\AppliesTo;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Models\Concerns\BelongsToAssociation;
+use App\Models\Concerns\RenamesAttachments;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Person extends Model
 {
-    use BelongsToAssociation, HasFactory, LogsActivity;
+    use BelongsToAssociation, HasFactory, LogsActivity, RenamesAttachments;
 
     public const FILE_COLUMNS = ['photo_path' => 'photo', 'passport_scan_path' => 'passport', 'cpr_front_path' => 'cpr_front',
         'cpr_back_path' => 'cpr_back', 'cpr_reader_path' => 'cpr_reader', 'wada_certificate_path' => 'wada'];
@@ -123,6 +124,16 @@ class Person extends Model
             $paths = array_filter(array_map(fn ($c) => $person->{$c}, array_keys(self::FILE_COLUMNS)));
             Storage::disk(config('filesystems.private'))->delete([...$paths, ...$person->visaPathsToDelete]);
         });
+    }
+
+    protected function attachmentColumns(): array
+    {
+        return self::FILE_COLUMNS;
+    }
+
+    protected function attachmentPrefix(): string
+    {
+        return $this->code;
     }
 
     // ponytail: HMAC keyed by APP_KEY; rotating APP_KEY requires re-computing both *_hash columns (artisan command when needed).

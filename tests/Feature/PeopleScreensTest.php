@@ -132,16 +132,16 @@ it('creates no person when a size is invalid', function () {
 
 it('refuses a tampered passport scan path pointing at another association\'s file', function () {
     Storage::disk(config('filesystems.private'))->put('scans/victim.pdf', 'secret');
-    foreignPerson(['passport_scan_path' => 'scans/victim.pdf']);
+    $victim = foreignPerson(['passport_scan_path' => 'scans/victim.pdf'])->passport_scan_path; // renamed on save
     $mine = Person::factory()->create(['association_id' => $this->assoc->id, 'passport_scan_path' => null]);
 
     livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
-        ->set('data.passport_scan_path', ['x' => 'scans/victim.pdf'])
+        ->set('data.passport_scan_path', ['x' => $victim])
         ->call('save')
         ->assertHasFormErrors(['passport_scan_path']);
 
     expect($mine->refresh()->passport_scan_path)->toBeNull();
-    Storage::disk(config('filesystems.private'))->assertExists('scans/victim.pdf');
+    Storage::disk(config('filesystems.private'))->assertExists($victim);
 });
 
 it('keeps a person\'s own stored files when saving', function () {
@@ -155,7 +155,7 @@ it('keeps a person\'s own stored files when saving', function () {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($mine->refresh()->passport_scan_path)->toBe('scans/mine.pdf')->and($mine->photo_path)->toBe('photos/mine.png');
+    expect($mine->refresh()->passport_scan_path)->toBe("scans/{$mine->code}_passport.pdf")->and($mine->photo_path)->toBe("photos/{$mine->code}_photo.png");
 });
 
 it('rejects unsafe or oversized uploads', function (string $field, Closure $file) {

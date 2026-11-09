@@ -66,7 +66,7 @@ final class PersonForm
         return FileUpload::make($name)->label($label)
             // image() (if wanted) must come before acceptedFileTypes(), or it widens the list to image/* (SVG).
             ->acceptedFileTypes($types)->maxSize($maxKb)
-            ->disk(config('filesystems.private'))->directory($dir)->visibility('private');
+            ->disk(config('filesystems.private'))->directory($dir)->visibility('private')->openable()->downloadable();
     }
 
     private static function uniqueDocument(string $hashColumn, string $label, ?Model $record): Closure
