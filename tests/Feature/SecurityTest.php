@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 it('gives admin users a profile page where MFA can be set up', function () {
     $this->actingAs(User::factory()->superAdmin()->create())->get('/admin/profile')->assertOk();
@@ -18,6 +19,6 @@ it('hides the MFA secret from serialisation', function () {
 
 it('never defaults a user without a role to STA', function () {
     expect(fn () => User::create(['name' => 'No Role', 'email' => 'norole@example.com', 'password' => 'a-long-password-1']))
-        ->toThrow(Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
     expect(User::where('email', 'norole@example.com')->exists())->toBeFalse();
 });

@@ -8,6 +8,7 @@ use App\Models\Association;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Models\Activity;
 
 use function Pest\Livewire\livewire;
 
@@ -98,7 +99,7 @@ it('lets STA deactivate an association and logs it', function () {
         ->fillForm(['is_active' => false])->call('save')->assertHasNoFormErrors();
 
     expect($assoc->fresh()->is_active)->toBeFalse()
-        ->and(Spatie\Activitylog\Models\Activity::where('subject_type', Association::class)->where('subject_id', $assoc->id)
+        ->and(Activity::where('subject_type', Association::class)->where('subject_id', $assoc->id)
             ->where('event', 'updated')->latest('id')->first()->properties['attributes']['is_active'])->toBeFalse();
 });
 
