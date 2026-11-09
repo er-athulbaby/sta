@@ -86,3 +86,25 @@ it('keeps the association\'s own stored logo when saving in admin and portal', f
         ->fillForm(['phone' => '222'])->call('save')->assertHasNoFormErrors();
     expect($assoc->fresh()->logo_path)->toBe('logos/own.png')->and($assoc->fresh()->phone)->toBe('222');
 });
+
+it('lets STA deactivate an association and logs it', function () {
+    $sta = User::factory()->sta()->create();
+    $sta->givePermissionTo(StaPermission::ManageAssociations->value);
+    actingInAdmin($sta);
+    $assoc = Association::factory()->create();
+    expect($assoc->is_active)->toBeTrue();
+
+    livewire(EditAssociation::class, ['record' => $assoc->getRouteKey()])
+        ->fillForm(['is_active' => false])->call('save')->assertHasNoFormErrors();
+
+    expect($assoc->fresh()->is_active)->toBeFalse()
+        ->and(Spatie\Activitylog\Models\Activity::where('subject_type', Association::class)->where('subject_id', $assoc->id)
+            ->where('event', 'updated')->latest('id')->first()->properties['attributes']['is_active'])->toBeFalse();
+});
+
+it('does not let the association change its own active flag from the portal', function () {
+    $assoc = Association::factory()->create();
+    actingInPortal(User::factory()->assocAdmin($assoc)->create());
+
+    livewire(EditAssociationProfile::class)->assertFormFieldDoesNotExist('is_active');
+});

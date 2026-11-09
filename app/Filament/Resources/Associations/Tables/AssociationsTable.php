@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Filament\Shared\InvitationActions;
 use App\Models\Association;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -20,6 +21,7 @@ class AssociationsTable
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('users_count')->counts('users')->label('Users'),
+                IconColumn::make('is_active')->label('Active')->boolean(),
             ])
             ->recordActions([
                 EditAction::make(),

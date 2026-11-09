@@ -25,6 +25,9 @@ final class InvitationService
         if (! $role->isAssociationRole()) {
             throw new InvalidArgumentException('Only association roles can be invited.');
         }
+        if (! $association->is_active) {
+            throw ValidationException::withMessages(['email' => 'This association is deactivated.']);
+        }
         $email = Str::lower(trim($email));
 
         if (User::where('email', $email)->exists()) {

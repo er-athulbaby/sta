@@ -12,7 +12,14 @@ class Association extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['name', 'email', 'logo_path', 'phone', 'address', 'website'];
+    protected $fillable = ['name', 'email', 'logo_path', 'phone', 'address', 'website', 'is_active'];
+
+    protected $attributes = ['is_active' => true];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
 
     public function invitations(): HasMany
     {

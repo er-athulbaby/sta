@@ -56,7 +56,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
         return match ($panel->getId()) {
             'admin' => $this->role === Role::SuperAdmin || $this->role === Role::Sta,
-            'portal' => $this->role->isAssociationRole() && $this->association_id !== null,
+            'portal' => $this->role->isAssociationRole() && (bool) $this->association?->is_active,
             default => false,
         };
     }

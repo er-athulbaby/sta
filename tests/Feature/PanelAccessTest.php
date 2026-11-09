@@ -29,3 +29,9 @@ it('blocks inactive association users from their portal', function () {
     $user = User::factory()->assocEditor($assoc)->inactive()->create();
     $this->actingAs($user)->get("/portal/{$assoc->id}")->assertForbidden();
 });
+
+it('blocks users of a deactivated association from the portal', function (string $state) {
+    $assoc = Association::factory()->create(['is_active' => false]);
+    $user = User::factory()->{$state}($assoc)->create();
+    $this->actingAs($user)->get("/portal/{$assoc->id}")->assertForbidden();
+})->with(['assocAdmin', 'assocEditor']);

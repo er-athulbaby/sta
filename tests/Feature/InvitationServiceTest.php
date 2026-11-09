@@ -86,3 +86,16 @@ it('refuses to accept a second invitation for an email that already has an accou
     }
     expect(User::where('email', 'dup@assoc.bh')->count())->toBe(1);
 });
+
+it('refuses to invite into a deactivated association', function () {
+    $this->assoc->update(['is_active' => false]);
+
+    try {
+        $this->service->invite($this->assoc, 'new@assoc.bh', Role::AssocEditor, null);
+        $this->fail('Expected a validation error');
+    } catch (ValidationException $e) {
+        expect($e->errors()['email'])->toBe(['This association is deactivated.']);
+    }
+    expect(Invitation::count())->toBe(0);
+    Mail::assertNothingQueued();
+});
