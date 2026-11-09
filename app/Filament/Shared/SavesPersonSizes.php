@@ -14,6 +14,10 @@ trait SavesPersonSizes
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['sizes'] = $this->record?->sizesMap() ?? [];
+        if (! Person::canViewMedical(auth()->user())) {
+            // Form data is sent to the browser even for hidden fields, so medical values must never be filled.
+            $data = array_diff_key($data, array_flip([...Person::MEDICAL, 'medical_clearance_expiry', 'wada_certificate_path', 'meal_requirement']));
+        }
 
         return $data;
     }

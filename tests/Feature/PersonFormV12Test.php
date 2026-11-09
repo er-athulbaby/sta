@@ -49,17 +49,27 @@ it('labels the mobile by person type', function () {
 });
 
 it('hides medical fields in admin without view_medical', function () {
-    $person = Person::factory()->create(['association_id' => $this->assoc->id, 'allergies' => 'Peanuts']);
+    $person = Person::factory()->create(['association_id' => $this->assoc->id, 'allergies' => 'Peanuts', 'blood_group' => 'O+',
+        'insurance_policy_no' => 'INS-SECRET', 'medical_clearance_expiry' => '2031-03-04']);
+    $person->injuries()->create(['injury_date' => '2025-01-02', 'status' => 'Recovered', 'description' => 'Torn ligament']);
     $sta = User::factory()->sta()->create();
     $sta->givePermissionTo(StaPermission::ManagePeople->value);
     actingInAdmin($sta);
-    livewire(AdminEditPerson::class, ['record' => $person->getRouteKey()])->assertFormFieldDoesNotExist('allergies')
-        ->fillForm(['first_name' => 'Changed'])->call('save')->assertHasNoFormErrors();
-    expect($person->refresh()->first_name)->toBe('Changed')->and($person->allergies)->toBe('Peanuts');
+    $page = livewire(AdminEditPerson::class, ['record' => $person->getRouteKey()])->assertFormFieldDoesNotExist('allergies');
+    // Nothing medical may reach the browser: not the Livewire state, not the rendered HTML.
+    expect($page->get('data.allergies'))->toBeNull()->and($page->get('data.blood_group'))->toBeNull()
+        ->and($page->get('data.medical_clearance_expiry'))->toBeNull()->and($page->get('data.injuries'))->toBeEmpty();
+    $page->assertDontSee('Peanuts')->assertDontSee('INS-SECRET')->assertDontSee('Torn ligament')->assertDontSee('2031-03-04');
+
+    $page->fillForm(['first_name' => 'Changed'])->call('save')->assertHasNoFormErrors();
+    expect($person->refresh()->first_name)->toBe('Changed')->and($person->allergies)->toBe('Peanuts')
+        ->and($person->blood_group)->toBe('O+')->and($person->medical_clearance_expiry->toDateString())->toBe('2031-03-04')
+        ->and($person->injuries()->count())->toBe(1);
 
     $sta->givePermissionTo(StaPermission::ViewMedical->value);
     actingInAdmin($sta->fresh());
-    livewire(AdminEditPerson::class, ['record' => $person->getRouteKey()])->assertFormFieldVisible('allergies');
+    $page = livewire(AdminEditPerson::class, ['record' => $person->getRouteKey()])->assertFormFieldVisible('allergies');
+    expect($page->get('data.allergies'))->toBe('Peanuts')->and($page->get('data.injuries'))->toHaveCount(1);
 });
 
 it('saves visas for officials', function () {

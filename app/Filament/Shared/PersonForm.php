@@ -20,6 +20,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -123,7 +124,8 @@ final class PersonForm
                 Textarea::make('allergies')->rows(2),
                 Textarea::make('chronic_conditions')->label(fn (Get $get) => $isOfficial($get) ? 'Medical conditions' : 'Chronic conditions')->rows(2),
                 Textarea::make('medication')->label('Current medication')->rows(2),
-                Repeater::make('injuries')->relationship()->visible($isAthlete)->columnSpanFull()->defaultItems(0)->addActionLabel('Add injury')->columns(3)->schema([
+                // Filament loads relationships even for hidden components; load nothing without view_medical.
+                Repeater::make('injuries')->relationship(modifyQueryUsing: fn (Builder $query) => $medical() ? $query : $query->whereRaw('1 = 0'))->visible($isAthlete)->columnSpanFull()->defaultItems(0)->addActionLabel('Add injury')->columns(3)->schema([
                     DatePicker::make('injury_date')->required(),
                     Select::make('status')->options(array_combine(PersonInjury::STATUSES, PersonInjury::STATUSES))->required(),
                     Textarea::make('description')->required()->rows(2)->columnSpanFull(),
