@@ -140,6 +140,13 @@ final class SubmissionWorkflow
 
     private function assertWithinLimits(Submission $s): void
     {
+        if ($s->phase === 3) {
+            if ($errors = app(LongListChecks::class)->submitErrors($s)) {
+                $this->fail(implode(' ', $errors));
+            }
+
+            return;
+        }
         if ($s->phase !== 2) {
             return;
         }
