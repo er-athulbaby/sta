@@ -122,3 +122,21 @@ it('totals numbers and dates over all rows', function () {
         ->and($total('age', 'max'))->toEqual(46)
         ->and($total('passport_expiry', 'max'))->toBe('2028-06-30');
 });
+
+it('groups by the null flag it orders by, so MySQL ONLY_FULL_GROUP_BY accepts it', function () {
+    DB::enableQueryLog();
+    runPeople(['columns' => ['full_name', 'passport_expiry'], 'groups' => [['field' => 'passport_expiry', 'bucket' => 'year']]]);
+    $grouped = collect(DB::getQueryLog())->pluck('query')->first(fn (string $sql) => str_contains($sql, 'group by'));
+
+    expect($grouped)->not->toBeNull()
+        ->and(Str::between($grouped, 'group by', 'order by'))->toContain('IS NULL');
+});
+
+it('breaks sort ties by the base table id, so screen and Excel get the same rows', function () {
+    DB::enableQueryLog();
+    $r = runPeople(['sort' => ['field' => 'association', 'dir' => 'desc']]);
+    $detail = collect(DB::getQueryLog())->pluck('query')->last();
+
+    expect(peopleNames($r))->toBe(['Mariam Ahmed', 'Ali Hasan', 'Omar Saleh Al-Bahraini', 'Coach Karim'])
+        ->and($detail)->toEndWith('"people"."id" asc limit 500');
+});

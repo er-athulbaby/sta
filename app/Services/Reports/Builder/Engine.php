@@ -39,6 +39,8 @@ final class Engine
             $detail->addSelect(DB::raw("{$sql} AS g{$i}"))->orderByRaw("({$sql}) IS NULL")->orderByRaw($sql);
         }
         $detail->orderByRaw($fields[$def->sort['field']]->sql.' '.($def->sort['dir'] === 'desc' ? 'desc' : 'asc'));
+        // Ties broken by the base table id, so the screen and Excel see the same rows in the same order.
+        $detail->orderBy("{$query->from}.id");
         if ($limit !== null) {
             $detail->limit($limit);
         }
@@ -87,7 +89,8 @@ final class Engine
         }
         $query->select(DB::raw(implode(', ', $select)));
         foreach ($groupSql as $sql) {
-            $query->groupByRaw($sql)->orderByRaw("({$sql}) IS NULL")->orderByRaw($sql);
+            // Grouping by the null flag too (same groups) lets MySQL ONLY_FULL_GROUP_BY accept ordering by it.
+            $query->groupByRaw($sql)->groupByRaw("({$sql}) IS NULL")->orderByRaw("({$sql}) IS NULL")->orderByRaw($sql);
         }
 
         return array_map(function ($record) use ($groupSql, $aliases) {
