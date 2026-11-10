@@ -7,6 +7,12 @@
         <div class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">{{ $readOnlyReason }}</div>
     @endif
 
+    @php $paths = $this->submission->pdf_paths ?? []; @endphp
+    @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['entry_by_sport']))
+        <a class="text-sm text-primary-600 underline" target="_blank"
+           href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths['entry_by_sport'], now()->addMinutes(5)) }}">Download Entry by Sport PDF</a>
+    @endif
+
     <x-filament::section>
         @forelse ($this->sports as $gs)
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 py-3 last:border-0 dark:border-white/10">

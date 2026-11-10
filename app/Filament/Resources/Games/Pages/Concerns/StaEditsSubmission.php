@@ -7,6 +7,7 @@ use App\Enums\SubmissionStatus;
 use App\Filament\Portal\Concerns\HandlesSubmission;
 use App\Filament\Resources\Games\GameResource;
 use App\Jobs\GenerateEntryByEventPdfs;
+use App\Jobs\GenerateEntryBySportPdf;
 use App\Jobs\GenerateLongListPdf;
 use App\Jobs\GenerateShortListPdf;
 use App\Models\Association;
@@ -85,6 +86,7 @@ trait StaEditsSubmission
         }
         // ponytail: the PDF is re-rendered under the same reference_no; bump the revision here if paper copies must show STA edits.
         match ($this->submission->phase) {
+            1 => GenerateEntryBySportPdf::dispatch($this->submission),
             2 => GenerateEntryByEventPdfs::dispatch($this->submission),
             3 => GenerateLongListPdf::dispatch($this->submission),
             4 => GenerateShortListPdf::dispatch($this->submission),
