@@ -389,3 +389,55 @@ Each game has its own management or accreditation system, and STA uploads a file
 - **Missing files:** a person with no file of a kind is listed in a `missing.txt` inside the ZIP.
 - **How it's built:** in a queued job on the private disk. The user is notified in the app with a 5-minute download link when it's ready. The export is audited.
 - **Permission:** `export_game_files`.
+
+## 16. Management feedback on the UI design (decided 2026-11-11)
+
+These comments came from management after they reviewed the A3 design set. This section overrides earlier sections where they conflict. The changes are built as Milestone 4.3, before the report builder (section 14) and the upload files (section 15).
+
+### 16.1 Gender wording
+Gender is always shown as **Male** and **Female**, and **Mixed** for events, everywhere: screens, PDFs, reports and exports.
+- "Men" and "Women" are no longer used in any label.
+- The stored values (`men`, `women`, `mixed`) do not change. Only the labels and headings do, for example "Max male" and "Max female".
+
+### 16.2 Phase 2 — Entry by Number
+- **Per event:** each event shows how many athletes it allows ("Up to N athletes"), taken from its own maximum. No general "max 1 per event" text appears.
+- **Participants per sport:** each sport has a section after the deadline line, **Total number of participants**, where the association enters a **Male** and a **Female** number.
+  - These count distinct athletes, because one athlete can take part in several events.
+  - Each is a whole number from 0 to 999.
+  - The sport limits `p2_max_men`, `p2_max_women` and `p2_max_total` now apply to these participant totals (male, female, and male + female), not to the sum of the event counts. Event counts are limited only by each event's own maximum.
+- **Expected medals per sport:** at the bottom of each sport the association enters **Gold**, **Silver** and **Bronze** counts. They are optional, whole numbers from 0 to 99, and are not linked to any athlete or event.
+- **Storage:** totals and medals are stored per submission and game sport, in `phase2_sport_totals`.
+- **Where they appear:**
+  - the Entry by Event PDF for that sport;
+  - the admin submission view;
+  - the Phase 2 totals report.
+
+### 16.3 Long List (Phase 3)
+- **Two views:** the association can switch between a **List** view (table) and a **Grid** view (cards with photo, name, code, events and warnings). The choice is remembered per user in the browser.
+- **Adding people from the Long List:**
+  - The page has **Add athlete** and **Add team official** buttons. Each opens the person form (the same fields and rules as the registry) without leaving the page.
+  - After saving, the new person is in the registry and can be picked straight away.
+  - The pickers also offer **Open registry**.
+- **PDF:** the Long List PDF shows a summary with the number of athletes (male and female) and the number of team officials. The Short List PDF does the same.
+
+### 16.4 Short List (Phase 4)
+The design shows how the Short List is chosen from the Long List:
+- each sport lists the Long List people with a tick;
+- the counts against the limits update as people are ticked;
+- the justification box appears when a limit is exceeded.
+
+This is how the app already behaves.
+
+### 16.5 Attachments
+Every attachment shown anywhere has a **View** action, which opens a 5-minute link:
+- person scans and photos;
+- insurance certificates;
+- PDFs.
+
+### 16.6 Save as draft everywhere
+- **Associations:** every data-entry screen that has a Submit step shows **Save as draft** beside it. This covers Phases 1–4, travel details, and the athlete and official forms. A saved draft is never submitted.
+- **Athlete and official forms:** **Save as draft** saves even when the person is incomplete. The existing "Complete/Incomplete" badge shows the state.
+- **Games (admin):** a new game is a **draft** until STA presses **Publish** (`games.published_at`).
+  - Associations don't see a draft game, and its phases can't be opened.
+  - Publishing needs at least one invited association and one game sport.
+- **STA edits:** STA edit pages call their button **Save as draft**, because STA edits never change the submission status.
