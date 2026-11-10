@@ -6,6 +6,8 @@ use App\Enums\EventGender;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Enums\SubmissionStatus;
+use App\Models\User;
+use App\Services\Reports\Builder\ExtraFields;
 use App\Services\Reports\Builder\Field;
 use App\Services\Reports\Builder\Sql;
 use App\Services\Reports\Builder\Subject;
@@ -48,6 +50,11 @@ final class Entries extends Subject
     public function defaultColumns(): array
     {
         return ['full_name', 'association', 'sport', 'event', 'phase'];
+    }
+
+    public function fields(?User $user = null): array
+    {
+        return [...parent::fields($user), ...ExtraFields::fields($user)];
     }
 
     protected function define(): array

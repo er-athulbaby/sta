@@ -113,7 +113,7 @@ class ReportBuilder extends Page
 
     public function updatedDef(mixed $value, string $key): void
     {
-        $fields = $this->subject()?->fields() ?? [];
+        $fields = $this->subject()?->fields(auth()->user()) ?? [];
         if ($key === 'subject') {
             $subject = Registry::get((string) $value);
             $game = $this->def['game_id'] ?? null;
@@ -138,7 +138,7 @@ class ReportBuilder extends Page
 
     public function addFilter(): void
     {
-        $fields = $this->subject()?->fields() ?? [];
+        $fields = $this->subject()?->fields(auth()->user()) ?? [];
         if ($fields !== [] && count($this->def['filters'] ?? []) < ReportDefinition::MAX_FILTERS) {
             $this->def['filters'][] = self::blankFilter(reset($fields));
         }
@@ -152,7 +152,7 @@ class ReportBuilder extends Page
 
     public function addGroup(): void
     {
-        $field = collect($this->subject()?->fields() ?? [])->first(fn (Field $f) => $f->type->groupable());
+        $field = collect($this->subject()?->fields(auth()->user()) ?? [])->first(fn (Field $f) => $f->type->groupable());
         if ($field !== null && count($this->def['groups'] ?? []) < ReportDefinition::MAX_GROUPS) {
             $this->def['groups'][] = ['field' => $field->key, 'bucket' => $field->type === FieldType::Date ? 'month' : null];
         }

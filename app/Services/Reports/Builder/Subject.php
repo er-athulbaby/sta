@@ -2,6 +2,7 @@
 
 namespace App\Services\Reports\Builder;
 
+use App\Models\User;
 use Illuminate\Database\Query\Builder;
 
 /** A reportable subject (spec 14): where its rows come from and the fields it offers. Columns are never exposed automatically. */
@@ -25,11 +26,12 @@ abstract class Subject
 
     /**
      * The fields, keyed. The engine and the validator read fields only from here, so a subject can append dynamic
-     * fields (spec 15 extra fields, M4.2) by overriding this method.
+     * fields (spec 15 extra fields, M4.2) by overriding this method. $user decides which of those they may see
+     * (sensitive extra fields); nothing is cached, so one user's fields never reach another's call.
      *
      * @return array<string, Field>
      */
-    public function fields(): array
+    public function fields(?User $user = null): array
     {
         $fields = [];
         foreach ($this->define() as $field) {

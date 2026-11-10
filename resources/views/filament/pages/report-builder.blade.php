@@ -2,7 +2,7 @@
     @php
         [$result, $problems] = $this->result();
         $subject = $this->subject();
-        $fields = $subject?->fields() ?? [];
+        $fields = $subject?->fields(auth()->user()) ?? [];
         $canEdit = $this->canEdit();
         $input = 'rounded border-gray-300 text-sm dark:bg-white/5';
         $noValue = ['empty', 'not_empty', 'yes', 'no'];

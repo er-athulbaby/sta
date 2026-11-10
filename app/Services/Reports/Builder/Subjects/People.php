@@ -5,6 +5,8 @@ namespace App\Services\Reports\Builder\Subjects;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Models\Person;
+use App\Models\User;
+use App\Services\Reports\Builder\ExtraFields;
 use App\Services\Reports\Builder\Field;
 use App\Services\Reports\Builder\Sql;
 use App\Services\Reports\Builder\Subject;
@@ -50,10 +52,19 @@ final class People extends Subject
         return ['full_name', 'code', 'type', 'gender', 'dob', 'association'];
     }
 
+    public function fields(?User $user = null): array
+    {
+        return [...parent::fields($user), ...ExtraFields::fields($user)];
+    }
+
     protected function define(): array
     {
         // Same rule as Person::missingFields(), as "filled or not" only: cpr_no's value never leaves the database.
-        $complete = fn (string $type) => implode(' AND ', array_map(fn (string $c) => Sql::filled("people.{$c}", $c === 'passport_issue_date'), array_keys(Person::REQUIRED_FOR_COMPLETE[$type])));
+        // Required extra fields (active, for the type) need a value too.
+        $complete = fn (string $type) => implode(' AND ', array_filter([
+            ...array_map(fn (string $c) => Sql::filled("people.{$c}", $c === 'passport_issue_date'), array_keys(Person::REQUIRED_FOR_COMPLETE[$type])),
+            ExtraFields::completeSql(PersonType::from($type)),
+        ]));
 
         return [
             Field::text('full_name', 'Name', 'Person', Sql::fullName()),

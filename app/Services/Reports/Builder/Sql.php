@@ -47,6 +47,24 @@ final class Sql
         return $date ? "({$column} IS NOT NULL)" : "({$column} IS NOT NULL AND {$column} <> '')";
     }
 
+    /** A text expression holding a number, as a number (so 100 > 70, not '100' < '70'). */
+    public static function castNumber(string $text): string
+    {
+        return self::sqlite() ? "CAST({$text} AS REAL)" : "CAST({$text} AS DECIMAL(15,4))";
+    }
+
+    /** A text expression holding '0'/'1', as an integer. */
+    public static function castInteger(string $text): string
+    {
+        return self::sqlite() ? "CAST({$text} AS INTEGER)" : "CAST({$text} AS SIGNED)";
+    }
+
+    /** A text expression holding 'Y-m-d', as a date (SQLite has no date type: its dates are 'Y-m-d' text). */
+    public static function castDate(string $text): string
+    {
+        return self::sqlite() ? "DATE({$text})" : "CAST({$text} AS DATE)";
+    }
+
     /** The person's full name, else first, second, third and last name with blanks skipped (like Person::fullName()). */
     public static function fullName(): string
     {

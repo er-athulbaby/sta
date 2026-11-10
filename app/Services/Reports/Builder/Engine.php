@@ -16,7 +16,7 @@ final class Engine
     /** @param  ?int  $limit  rows to fetch; null = all (Excel) */
     public function run(ReportDefinition $def, ?int $limit = self::SCREEN_LIMIT): ReportResult
     {
-        $fields = $def->subject->fields();
+        $fields = $def->fields;
         $query = $def->subject->query($def->gameId);
         foreach ($def->filters as $filter) {
             $this->filter($query, $fields[$filter['field']], $filter['op'], $filter['value']);

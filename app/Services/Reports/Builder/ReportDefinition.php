@@ -31,6 +31,7 @@ final readonly class ReportDefinition
      * @param  list<array{field: string, bucket: ?string}>  $groups
      * @param  array<string, string>  $totals  field key => sum|avg|min|max
      * @param  array{field: string, dir: string}  $sort
+     * @param  array<string, Field>  $fields  the subject's fields for the user it was validated for; the engine reads only these
      */
     private function __construct(
         public Subject $subject,
@@ -40,6 +41,7 @@ final readonly class ReportDefinition
         public array $groups,
         public array $totals,
         public array $sort,
+        public array $fields,
     ) {}
 
     /** @return array<string, mixed> a new definition for the builder screen (raw; validated when run) */
@@ -67,7 +69,7 @@ final readonly class ReportDefinition
         return Game::query()->when(! $user?->isSuperAdmin(), fn ($q) => $q->whereNotNull('published_at'))->orderBy('name')->pluck('name', 'id');
     }
 
-    /** @param  array<string, mixed>  $data  $user decides which games are allowed (drafts: Super Admin only) */
+    /** @param  array<string, mixed>  $data  $user decides which games (drafts: Super Admin only) and fields (sensitive extra fields) are allowed */
     public static function fromArray(array $data, ?User $user = null): self
     {
         $errors = [];
@@ -78,7 +80,7 @@ final readonly class ReportDefinition
         if ($subject === null) {
             throw ValidationException::withMessages(['subject' => 'Choose a subject from the list.', ...$errors]);
         }
-        $fields = $subject->fields();
+        $fields = $subject->fields($user);
 
         $gameId = $data['game_id'] ?? null;
         $gameId = $gameId === '' ? null : $gameId;
@@ -158,12 +160,20 @@ final readonly class ReportDefinition
             $errors['sort'] = 'Choose a field to sort by.';
         }
 
+        // A field deactivated after the report was saved gets a message that says so.
+        $referenced = [...$columns, ...array_map(fn ($x) => is_array($x) ? ($x['field'] ?? null) : null, [...$filters, ...$groups]),
+            ...array_keys($totals), is_array($sort) ? ($sort['field'] ?? null) : null];
+        $gone = ExtraFields::labels(array_unique(array_filter($referenced, fn ($k) => is_string($k) && ! isset($fields[$k]))));
+        if ($gone !== []) {
+            $errors['fields'] = 'This report uses fields that are no longer available: '.implode(', ', $gone).'. Remove them and save again.';
+        }
+
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
 
         return new self($subject, $gameId === null ? null : (int) $gameId, $columns, $cleanFilters, $cleanGroups, $totals,
-            ['field' => $sort['field'], 'dir' => $sort['dir']]);
+            ['field' => $sort['field'], 'dir' => $sort['dir']], $fields);
     }
 
     /** @return array<string, mixed> what saved_reports.definition stores */
