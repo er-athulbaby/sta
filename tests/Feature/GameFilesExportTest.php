@@ -18,6 +18,7 @@ use App\Models\Submission;
 use App\Models\User;
 use App\Services\GameFiles\ExportSources;
 use App\Services\GameFiles\GameFileExporter;
+use Filament\Notifications\Notification;
 use OpenSpout\Reader\XLSX\Reader;
 use Spatie\Activitylog\Models\Activity;
 
@@ -219,4 +220,24 @@ it('hides the download once the game is a draft', function () {
     $this->game->update(['published_at' => null]);
 
     $page->call('$refresh')->assertActionHidden('download');
+});
+
+it('notes columns whose source no longer exists apart from medical ones', function () {
+    $this->layout->update(['columns' => [...$this->layout->columns, ['source' => 'extra.deleted_field', 'heading' => 'Gone']]]);
+    $table = app(GameFileExporter::class)->table($this->layout->fresh(), $this->exporter);
+    expect($table['left_out'])->toBe(['Donor', 'Allergies'])->and($table['gone'])->toBe(['Gone']);
+
+    actingInAdmin($this->exporter);
+    livewire(GameExportFiles::class, ['record' => $this->game->getRouteKey()])
+        ->callAction('download', ['type' => 'athlete'])
+        ->assertNotified(Notification::make()->warning()->title('Some columns were left out')
+            ->body("They need \"View medical & health data\": Donor, Allergies\nTheir source no longer exists: Gone"));
+    expect(Activity::where('description', 'game system file exported')->sole()->properties['gone'])->toBe(['Gone']);
+});
+
+it('exports a person without a gender as empty', function () {
+    $raw = new ReflectionMethod(GameFileExporter::class, 'raw');
+    $p = Person::factory()->make(['gender' => null]);
+
+    expect($raw->invoke(app(GameFileExporter::class), ['source' => 'person.gender'], $p, $this->judoFed, collect(), $this->game, collect()))->toBeNull();
 });

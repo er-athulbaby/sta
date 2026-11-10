@@ -32,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->profile()
             ->multiFactorAuthentication([AppAuthentication::make()])
+            ->databaseNotifications()
             ->brandName('STA Admin')
             ->colors([
                 'primary' => Color::Amber,

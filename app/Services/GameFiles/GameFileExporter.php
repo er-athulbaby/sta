@@ -42,7 +42,7 @@ final class GameFileExporter
             ->values();
     }
 
-    /** @return array{headings: list<string>, rows: list<list<scalar|null>>, left_out: list<string>} */
+    /** @return array{headings: list<string>, rows: list<list<scalar|null>>, left_out: list<string>, gone: list<string>} left_out: medical columns the user may not see; gone: columns whose source no longer exists */
     public function table(ExportLayout $layout, ?User $user, ?int $associationId = null, ?int $gameSportId = null): array
     {
         $game = $layout->game;
@@ -50,9 +50,15 @@ final class GameFileExporter
         $medic = Person::canViewMedical($user);
         $columns = [];
         $leftOut = [];
+        $gone = [];
         foreach ($layout->columns as $c) {
             $s = $sources[$c['source']] ?? null;
-            if (! $s || ($s['medical'] && ! $medic)) {
+            if (! $s) {
+                $gone[] = $c['heading'];
+
+                continue;
+            }
+            if ($s['medical'] && ! $medic) {
                 $leftOut[] = $c['heading'];
 
                 continue;
@@ -69,7 +75,7 @@ final class GameFileExporter
             }
         }
 
-        return ['headings' => array_column($columns, 'heading'), 'rows' => $rows, 'left_out' => $leftOut];
+        return ['headings' => array_column($columns, 'heading'), 'rows' => $rows, 'left_out' => $leftOut, 'gone' => $gone];
     }
 
     /** @return array{0: string, 1: string} temp file path, download name */
@@ -112,7 +118,7 @@ final class GameFileExporter
         return match ($group) {
             'person' => match (true) {
                 in_array($name, ExportSources::PHONES, true) => filled($p->{$name}) ? $p->{$name.'_cc'}.$p->{$name} : null,
-                $name === 'gender' => $p->gender->value,
+                $name === 'gender' => $p->gender?->value,
                 default => $p->{$name},
             },
             'extra' => $p->fieldValues->firstWhere('extra_field_id', $extraIds[$name] ?? 0)?->value,

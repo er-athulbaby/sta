@@ -5,12 +5,14 @@ namespace App\Filament\Resources\Games\Pages;
 use App\Enums\PersonType;
 use App\Enums\StaPermission;
 use App\Filament\Resources\Games\GameResource;
+use App\Jobs\BuildGameFilesZip;
 use App\Models\ExportLayout;
 use App\Models\Game;
 use App\Models\Person;
 use App\Services\GameFiles\ExportSources;
 use App\Services\GameFiles\GameFileExporter;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -142,6 +144,21 @@ class GameExportFiles extends Page
                 ->action(fn (array $data) => $this->download(PersonType::from($data['type']),
                     filled($data['association_id'] ?? null) ? (int) $data['association_id'] : null,
                     filled($data['game_sport_id'] ?? null) ? (int) $data['game_sport_id'] : null)),
+            Action::make('zip')->label('Download files ZIP')->icon('heroicon-o-archive-box-arrow-down')
+                ->visible(fn () => $this->record->isPublished()) // spec 16.6
+                ->schema(fn () => [...$this->filterFields(), CheckboxList::make('columns')->label('Besides photos, include')
+                    ->options(array_filter(['passport_scan_path' => 'Passport scans', 'cpr_front_path' => 'CPR front scans',
+                        'wada_certificate_path' => Person::canViewMedical(auth()->user()) ? 'WADA certificates' : null]))])
+                ->action(function (array $data) {
+                    $this->authorizeExport();
+                    BuildGameFilesZip::dispatch(
+                        ExportLayout::firstOrCreate(['game_id' => $this->record->id, 'type' => PersonType::from($data['type'])->value]),
+                        auth()->user(), array_values(array_intersect($data['columns'] ?? [], array_keys(BuildGameFilesZip::KINDS))),
+                        filled($data['association_id'] ?? null) ? (int) $data['association_id'] : null,
+                        filled($data['game_sport_id'] ?? null) ? (int) $data['game_sport_id'] : null);
+                    Notification::make()->success()->title('Building the files ZIP')
+                        ->body('You will be notified here with a download link when it is ready.')->send();
+                }),
             Action::make('copy')->label('Copy layouts from another game')->color('gray')
                 ->modalDescription('Replaces both layouts of this game.')
                 ->schema([Select::make('game_id')->label('Game')->required()
@@ -163,8 +180,15 @@ class GameExportFiles extends Page
         ];
     }
 
+    /** Public Livewire methods can be called directly: re-check what mount and the action visibility check. */
+    private function authorizeExport(): void
+    {
+        abort_unless(static::canAccess() && $this->record->fresh()->isPublished(), 403);
+    }
+
     public function download(PersonType $type, ?int $associationId = null, ?int $gameSportId = null): ?StreamedResponse
     {
+        $this->authorizeExport();
         $layout = ExportLayout::for($this->record, $type);
         if (($layout->columns ?? []) === []) {
             Notification::make()->warning()->title("Set up the {$type->value} layout first.")->send();
@@ -176,12 +200,14 @@ class GameExportFiles extends Page
         [$path, $name] = $exporter->write($layout, $table);
 
         activity()->performedOn($this->record)->event('exported')
-            ->withProperties(['layout' => $type->value, 'file' => $name, 'rows' => count($table['rows']), 'left_out' => $table['left_out'],
+            ->withProperties(['layout' => $type->value, 'file' => $name, 'rows' => count($table['rows']), 'left_out' => $table['left_out'], 'gone' => $table['gone'],
                 'association_id' => $associationId, 'game_sport_id' => $gameSportId])
             ->log('game system file exported');
-        if ($table['left_out']) {
-            Notification::make()->warning()->title('Some columns were left out')
-                ->body('They need "View medical & health data": '.implode(', ', $table['left_out']))->send();
+        if ($table['left_out'] || $table['gone']) {
+            Notification::make()->warning()->title('Some columns were left out')->body(implode("\n", array_filter([
+                $table['left_out'] ? 'They need "View medical & health data": '.implode(', ', $table['left_out']) : null,
+                $table['gone'] ? 'Their source no longer exists: '.implode(', ', $table['gone']) : null,
+            ])))->send();
         }
 
         return response()->streamDownload(function () use ($path) {
