@@ -128,7 +128,7 @@ it('counts distinct athletes by gender and officials per sport against the Phase
     expect($over)->toBe([
         ['sport' => 'Judo', 'kind' => 'men', 'count' => 2, 'max' => 1],
         ['sport' => 'Judo', 'kind' => 'officials', 'count' => 1, 'max' => 0],
-    ])->and(ShortListChecks::describe($over[0]))->toBe('Judo: 2 men (limit 1)')
+    ])->and(ShortListChecks::describe($over[0]))->toBe('Judo: 2 male athletes (limit 1)')
         ->and(ShortListChecks::describe($over[1]))->toBe('Judo: 1 team officials (limit 0)');
 
     $this->judo->update(['p4_max_men' => 5, 'p4_max_officials' => null]);

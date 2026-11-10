@@ -18,7 +18,7 @@ final class ShortListChecks
 
     public const JUSTIFICATION_REQUIRED = 'The Short List is over a limit: give a justification before submitting.';
 
-    public const KINDS = ['men' => 'men', 'women' => 'women', 'officials' => 'team officials'];
+    public const KINDS = ['men' => 'male athletes', 'women' => 'female athletes', 'officials' => 'team officials'];
 
     public function __construct(private readonly LongListChecks $long) {}
 

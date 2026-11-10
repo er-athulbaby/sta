@@ -70,7 +70,7 @@ it('saves the list and syncs removals, dropping travel details of removed people
 it('blocks a gender mismatch and writes nothing', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $this->sara->id])->call('save')
-        ->assertHasErrors(["athletes.{$this->m60->id}"])->assertSee('Sara Ali (Female) cannot enter a Men event.');
+        ->assertHasErrors(["athletes.{$this->m60->id}"])->assertSee('Sara Ali (Female) cannot enter a Male event.');
     expect(Entry::count())->toBe(0);
 });
 

@@ -90,8 +90,8 @@ it('totals phase 2 numbers per event and per sport', function () {
     expect($this->reports->phase2Totals($this->game))->toBe([
         'headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count'],
         'rows' => [
-            ['Bahrain Judo Federation', 'Judo', 'Men -60kg', 'Men', 2],
-            ['Bahrain Judo Federation', 'Judo', 'Women -52kg', 'Women', 0],
+            ['Bahrain Judo Federation', 'Judo', 'Men -60kg', 'Male', 2],
+            ['Bahrain Judo Federation', 'Judo', 'Women -52kg', 'Female', 0],
             ['Bahrain Judo Federation', 'Judo', 'Total', null, 2],
         ],
     ]);
@@ -111,7 +111,7 @@ it('lists the Long List and the Short List one row per entry', function () {
 it('lists Short Lists over a limit with their justification', function () {
     expect($this->reports->overLimit($this->game))->toBe([
         'headings' => ['Association', 'Sport', 'Limit', 'Count', 'Max', 'Justification'],
-        'rows' => [['Bahrain Judo Federation', 'Judo', 'men', 2, 1, 'Both can medal']],
+        'rows' => [['Bahrain Judo Federation', 'Judo', 'male athletes', 2, 1, 'Both can medal']],
     ]);
 });
 

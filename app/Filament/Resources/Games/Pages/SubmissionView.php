@@ -66,7 +66,7 @@ class SubmissionView extends Page
             fn ($ge) => ['sport' => $gs->sport->name, 'event' => $ge->event->name, 'count' => (int) ($counts[$ge->id] ?? 0)]));
     }
 
-    /** @return list<string> e.g. "Judo: 2 men (limit 1)" */
+    /** @return list<string> e.g. "Judo: 2 male athletes (limit 1)" */
     public function overLimitLines(): array
     {
         return array_map(ShortListChecks::describe(...), app(ShortListChecks::class)->overLimits($this->submission));

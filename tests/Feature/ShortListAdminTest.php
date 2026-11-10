@@ -58,7 +58,7 @@ it('shows the Short List with its over-limit lines and the justification', funct
 
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->p4])
         ->assertSee('Short List')->assertSee('Ali Hasan')->assertSee('Omar Saleh')
-        ->assertSee('Judo: 2 men (limit 1)')->assertSee('Both can medal')->assertActionHidden('edit');
+        ->assertSee('Judo: 2 male athletes (limit 1)')->assertSee('Both can medal')->assertActionHidden('edit');
 });
 
 it('lets STA edit a submitted Short List and its justification after the deadline, audited, and regenerates the PDF', function () {

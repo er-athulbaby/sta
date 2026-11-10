@@ -40,14 +40,14 @@ class GameSportsRelationManager extends RelationManager
                     ->whereIn('association_id', $livewire->getOwnerRecord()->associations()->pluck('associations.id'))
                     ->where('is_active', true)->pluck('id')->all())
                 ->unique(ignoreRecord: true, modifyRuleUsing: fn ($rule, RelationManager $livewire) => $rule->where('game_id', $livewire->getOwnerRecord()->id)),
-            Fieldset::make('Phase 2 – Entry by Number (athletes)')->columns(3)->schema([
-                TextInput::make('p2_max_men')->label('Max men')->integer()->minValue(0),
-                TextInput::make('p2_max_women')->label('Max women')->integer()->minValue(0),
-                TextInput::make('p2_max_total')->label('Max total')->integer()->minValue(0),
+            Fieldset::make('Phase 2 – Entry by Number (participants)')->columns(3)->schema([
+                TextInput::make('p2_max_men')->label('Max male')->integer()->minValue(0),
+                TextInput::make('p2_max_women')->label('Max female')->integer()->minValue(0),
+                TextInput::make('p2_max_total')->label('Max total (male + female)')->integer()->minValue(0),
             ]),
             Fieldset::make('Phase 4 – Short List')->columns(3)->schema([
-                TextInput::make('p4_max_men')->integer()->minValue(0),
-                TextInput::make('p4_max_women')->integer()->minValue(0),
+                TextInput::make('p4_max_men')->label('Max male')->integer()->minValue(0),
+                TextInput::make('p4_max_women')->label('Max female')->integer()->minValue(0),
                 TextInput::make('p4_max_officials')->label('Max team officials')->integer()->minValue(0),
             ]),
             Fieldset::make('Age eligibility (optional)')->columns(2)->schema([
@@ -81,8 +81,8 @@ class GameSportsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('sport.name'),
                 TextColumn::make('sport.association.code')->label('Association'),
-                TextColumn::make('p2_max_men')->label('P2 men'),
-                TextColumn::make('p2_max_women')->label('P2 women'),
+                TextColumn::make('p2_max_men')->label('P2 male'),
+                TextColumn::make('p2_max_women')->label('P2 female'),
                 TextColumn::make('p2_max_total')->label('P2 total'),
                 TextColumn::make('game_events_count')->label('Events'),
             ])

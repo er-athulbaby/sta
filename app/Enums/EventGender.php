@@ -10,6 +10,11 @@ enum EventGender: string
 
     public function label(): string
     {
-        return ucfirst($this->value);
+        // Stored values stay men/women/mixed; spec 16.1 shows Male/Female/Mixed everywhere.
+        return match ($this) {
+            self::Men => 'Male',
+            self::Women => 'Female',
+            self::Mixed => 'Mixed',
+        };
     }
 }

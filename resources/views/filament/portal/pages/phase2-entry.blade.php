@@ -35,7 +35,7 @@
 
             <table class="mt-3 w-full text-sm">
                 <thead>
-                    <tr class="text-left text-gray-500"><th class="py-1">Event</th><th class="py-1">Men</th><th class="py-1">Women</th></tr>
+                    <tr class="text-left text-gray-500"><th class="py-1">Event</th><th class="py-1">Male</th><th class="py-1">Female</th></tr>
                 </thead>
                 <tbody>
                     @foreach ($gs->gameEvents as $ge)

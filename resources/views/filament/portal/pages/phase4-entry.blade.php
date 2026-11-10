@@ -35,7 +35,7 @@
             @php $events = $gs->gameEvents->filter(fn ($ge) => ! empty($slotAthletes[$ge->id])); @endphp
             @continue($events->isEmpty() && empty($slotOfficials[$gs->id]))
             <x-filament::section :heading="$gs->sport->name"
-                :description="'Limits: men '.($gs->p4_max_men ?? '–').' · women '.($gs->p4_max_women ?? '–').' · team officials '.($gs->p4_max_officials ?? '–')">
+                :description="'Limits: male '.($gs->p4_max_men ?? '–').' · female '.($gs->p4_max_women ?? '–').' · team officials '.($gs->p4_max_officials ?? '–')">
                 <div class="grid gap-4 md:grid-cols-2">
                     @foreach ($events as $ge)
                         <fieldset wire:key="event-{{ $ge->id }}">

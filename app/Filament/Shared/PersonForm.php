@@ -106,7 +106,7 @@ final class PersonForm
                 ]),
             ]),
             Section::make('Clothing')->columns(3)->schema([
-                Select::make('fit')->options(array_combine($f = ["Men's", "Women's", 'Youth'], $f)),
+                Select::make('fit')->options(["Men's" => 'Male', "Women's" => 'Female', 'Youth' => 'Youth']),
                 TextInput::make('chest_cm')->label('Chest (cm)')->numeric()->minValue(40)->maxValue(200),
                 TextInput::make('waist_cm')->label('Waist (cm)')->numeric()->minValue(40)->maxValue(200),
                 Grid::make(3)->columnSpanFull()

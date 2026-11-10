@@ -49,7 +49,7 @@ it('accepts a list that follows the rules', function () {
 
 it('rejects an athlete whose gender does not match the event', function () {
     expect($this->checks->errors($this->sub, [$this->w48->id => [$this->man->id]], []))
-        ->toBe(["athletes.{$this->w48->id}" => 'Women -48kg: Ali Hasan (Male) cannot enter a Women event.']);
+        ->toBe(["athletes.{$this->w48->id}" => 'Women -48kg: Ali Hasan (Male) cannot enter a Female event.']);
 });
 
 it('rejects people of another association, inactive people and the wrong type', function () {
@@ -126,7 +126,7 @@ it('re-checks hard errors of the saved list on submit', function () {
     Entry::create(['submission_id' => $this->sub->id, 'person_id' => $this->man->id, 'game_event_id' => $this->w48->id, 'game_sport_id' => $this->judo->id]);
 
     expect(fn () => app(SubmissionWorkflow::class)->submit($this->sub, User::factory()->assocAdmin($this->assoc)->create()))
-        ->toThrow(ValidationException::class, 'cannot enter a Women event');
+        ->toThrow(ValidationException::class, 'cannot enter a Female event');
 });
 
 it('submits a long list of complete people', function () {
