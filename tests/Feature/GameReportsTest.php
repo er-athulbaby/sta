@@ -253,3 +253,23 @@ it('gives a reports-only user nothing beyond the reports page', function () {
         ->assertTableActionVisible('reports', $this->game)
         ->assertActionHidden('create');
 });
+
+it('exports text starting with "=" as literal text, never a formula', function () {
+    $this->ali->update(['first_name' => '=1+1']);
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    $page = livewire(GameReportsPage::class, ['record' => $this->game->getRouteKey()])->set('report', 'longList')->call('export');
+
+    // The OpenSpout reader re-parses "=..." strings as formulas itself, so inspect the written XML.
+    $path = sys_get_temp_dir().'/'.uniqid('report').'.xlsx';
+    file_put_contents($path, base64_decode($page->effects['download']['content']));
+    $zip = new ZipArchive;
+    $zip->open($path);
+    $sheet = $zip->getFromName('xl/worksheets/sheet1.xml');
+    $strings = $zip->getFromName('xl/sharedStrings.xml');
+    $zip->close();
+    unlink($path);
+
+    expect($sheet)->not->toMatch('/<f[ >]/')
+        ->and($sheet.$strings)->toContain('=1+1');
+});
