@@ -12,6 +12,7 @@ use App\Services\Reports\Builder\Registry;
 use App\Services\Reports\Builder\ReportDefinition;
 use Illuminate\Support\Carbon;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
+use OpenSpout\Reader\XLSX\Reader;
 
 use function Pest\Livewire\livewire;
 
@@ -201,4 +202,92 @@ it('offers only published games unless super admin', function () {
 
     actingInAdmin(User::factory()->superAdmin()->create());
     livewire(ReportBuilder::class)->assertSee('Draft Games');
+});
+
+function builderXlsx($page): string
+{
+    $path = sys_get_temp_dir().'/'.uniqid('builder').'.xlsx';
+    file_put_contents($path, base64_decode($page->effects['download']['content']));
+
+    return $path;
+}
+
+it('exports all rows to Excel with group subtotal rows and a grand total', function () {
+    actingInAdmin($this->owner);
+
+    $page = livewire(ReportBuilder::class)
+        ->set('name', 'People by association')
+        ->set('def.columns', ['association', 'full_name', 'age'])
+        ->set('def.groups', [['field' => 'association', 'bucket' => null]])
+        ->set('def.totals', ['age' => 'sum'])
+        ->call('export')
+        ->assertFileDownloaded('people-by-association.xlsx',
+            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    $path = builderXlsx($page);
+    $reader = new Reader;
+    $reader->open($path);
+    $rows = [];
+    foreach ($reader->getSheetIterator() as $sheet) {
+        foreach ($sheet->getRowIterator() as $row) {
+            $rows[] = $row->toArray();
+        }
+    }
+    $reader->close();
+    unlink($path);
+
+    expect($rows)->toHaveCount(7)
+        ->and($rows[0])->toBe(['Association', 'Name', 'Age (today)'])
+        ->and([$rows[1][0], $rows[1][2]])->toEqual(['Bahrain Judo Federation (2)', 42])
+        ->and($rows[2])->toEqual(['Bahrain Judo Federation', 'Ali Hasan', 20])
+        ->and($rows[3])->toEqual(['Bahrain Judo Federation', 'Omar Saleh', 22])
+        ->and([$rows[4][0], $rows[4][2]])->toEqual(['Bahrain Karate Federation (1)', 21])
+        ->and($rows[5])->toEqual(['Bahrain Karate Federation', 'Karim Ahmed', 21])
+        ->and([$rows[6][0], $rows[6][2]])->toEqual(['Total (3)', 63]);
+});
+
+it('refuses to export an invalid definition', function () {
+    actingInAdmin($this->owner);
+
+    livewire(ReportBuilder::class)->set('def.columns', [])->call('export')->assertHasErrors('columns')->assertNoFileDownloaded();
+});
+
+it('exports text starting with "=" from the builder as literal text, never a formula', function () {
+    Person::where('first_name', 'Ali')->first()->update(['first_name' => '=1+1']);
+    actingInAdmin($this->owner);
+
+    $page = livewire(ReportBuilder::class)->set('def.columns', ['full_name'])->call('export');
+
+    // The OpenSpout reader re-parses "=..." strings as formulas itself, so inspect the written XML.
+    $path = builderXlsx($page);
+    $zip = new ZipArchive;
+    $zip->open($path);
+    $sheet = $zip->getFromName('xl/worksheets/sheet1.xml');
+    $strings = $zip->getFromName('xl/sharedStrings.xml');
+    $zip->close();
+    unlink($path);
+
+    expect($sheet)->not->toMatch('/<f[ >]/')
+        ->and($sheet.$strings)->toContain('=1+1');
+});
+
+it('refuses to export a report that is no longer visible, or a draft game for non super admins', function () {
+    $report = storedReport($this->owner, 'shared', 'All people');
+    actingInAdmin($this->other);
+    $page = livewire(ReportBuilder::class, ['report' => $report->id]);
+    $report->update(['visibility' => 'private']);
+    $page->call('export')->assertForbidden();
+
+    $draft = Game::factory()->draft()->create();
+    livewire(ReportBuilder::class)->set('def.game_id', $draft->id)->call('export')->assertHasErrors('game_id')->assertNoFileDownloaded();
+});
+
+it('records the run time of a saved report on export', function () {
+    $report = storedReport($this->owner, 'private', 'All people');
+    actingInAdmin($this->owner);
+    $page = livewire(ReportBuilder::class, ['report' => $report->id]);
+    $this->travelTo(Carbon::parse('2026-11-11 09:00'));
+
+    $page->call('export')->assertFileDownloaded('all-people.xlsx');
+    expect($report->fresh()->last_run_at->toDateTimeString())->toBe('2026-11-11 09:00:00');
 });

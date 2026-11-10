@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Enums\StaPermission;
+use App\Exports\LiteralRow;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Models\SavedReport;
 use App\Services\Reports\Builder\Engine;
@@ -22,6 +23,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
+use OpenSpout\Writer\XLSX\Writer;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Spec 14 builder. $def is raw input; ReportDefinition::fromArray() validates it on every run and save. */
 class ReportBuilder extends Page
@@ -194,6 +197,31 @@ class ReportBuilder extends Page
         $this->authorize('delete', $saved);
         $saved->delete();
         $this->redirect(Reports::getUrl());
+    }
+
+    /** All rows (no screen cap), with the same group subtotal lines and grand total as the screen. */
+    public function export(): StreamedResponse
+    {
+        if ($this->reportId !== null) {
+            $this->saved();
+        }
+        $result = app(Engine::class)->run(ReportDefinition::fromArray($this->def, auth()->user()), null);
+        if ($this->reportId !== null) {
+            DB::table('saved_reports')->where('id', $this->reportId)->update(['last_run_at' => now()]);
+        }
+
+        return response()->streamDownload(function () use ($result) {
+            $tmp = tempnam(sys_get_temp_dir(), 'rb');
+            $writer = new Writer;
+            $writer->openToFile($tmp);
+            $writer->addRow(LiteralRow::from(array_map(fn (Field $f) => $f->label, $result->columns)));
+            foreach ($result->lines() as $line) {
+                $writer->addRow(LiteralRow::from($line['cells']));
+            }
+            $writer->close();
+            readfile($tmp);
+            unlink($tmp);
+        }, (Str::slug($this->name) ?: 'report').'.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     private function persist(?SavedReport $saved, string $name, string $visibility): void

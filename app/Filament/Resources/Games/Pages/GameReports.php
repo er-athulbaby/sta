@@ -3,14 +3,12 @@
 namespace App\Filament\Resources\Games\Pages;
 
 use App\Enums\StaPermission;
+use App\Exports\LiteralRow;
 use App\Filament\Resources\Games\GameResource;
 use App\Services\Reports\GameReports as Reports;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Str;
-use OpenSpout\Common\Entity\Cell;
-use OpenSpout\Common\Entity\Cell\StringCell;
-use OpenSpout\Common\Entity\Row;
 use OpenSpout\Writer\XLSX\Writer;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -55,20 +53,14 @@ class GameReports extends Page
             $tmp = tempnam(sys_get_temp_dir(), 'rep');
             $writer = new Writer;
             $writer->openToFile($tmp);
-            $writer->addRow(self::literalRow($data['headings']));
+            $writer->addRow(LiteralRow::from($data['headings']));
             foreach ($data['rows'] as $row) {
-                $writer->addRow(self::literalRow($row));
+                $writer->addRow(LiteralRow::from($row));
             }
             $writer->close();
             readfile($tmp);
             unlink($tmp);
         }, Str::slug($this->record->name).'-'.Str::kebab($this->report).'.xlsx',
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
-    }
-
-    /** Strings are written as literal text: Cell::fromValue would turn a leading "=" into a live formula. */
-    private static function literalRow(array $values): Row
-    {
-        return new Row(array_map(fn ($v) => is_string($v) && $v !== '' ? new StringCell($v, null) : Cell::fromValue($v), $values));
     }
 }
