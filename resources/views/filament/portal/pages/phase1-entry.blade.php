@@ -10,7 +10,7 @@
     @php $paths = $this->submission->pdf_paths ?? []; @endphp
     @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['entry_by_sport']))
         <a class="text-sm text-primary-600 underline" target="_blank"
-           href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths['entry_by_sport'], now()->addMinutes(5)) }}">Download Entry by Sport PDF</a>
+           href="{{ \App\Filament\Shared\AttachmentActions::url($paths['entry_by_sport']) }}">View Entry by Sport PDF</a>
     @endif
 
     <x-filament::section>

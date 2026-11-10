@@ -103,7 +103,7 @@
             </fieldset>
 
             @if ($submitted && isset($paths[$gs->id]))
-                <a class="mt-3 inline-block text-sm text-primary-600 underline" href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths[$gs->id], now()->addMinutes(5)) }}">Download Entry by Event PDF</a>
+                <a class="mt-3 inline-block text-sm text-primary-600 underline" target="_blank" href="{{ \App\Filament\Shared\AttachmentActions::url($paths[$gs->id]) }}">View Entry by Event PDF</a>
             @endif
         </x-filament::section>
     @empty

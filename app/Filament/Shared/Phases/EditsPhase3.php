@@ -3,6 +3,7 @@
 namespace App\Filament\Shared\Phases;
 
 use App\Enums\PersonType;
+use App\Filament\Shared\AttachmentActions;
 use App\Models\Association;
 use App\Models\GameSport;
 use App\Models\LongListDetail;
@@ -103,12 +104,12 @@ trait EditsPhase3
                 TextInput::make('insurance_policy_no')->label('Policy number')->maxLength(100)
                     ->visible(fn () => Person::canViewMedical(auth()->user())),
                 DatePicker::make('insurance_valid_until')->label('Insurance valid until'),
-                FileUpload::make('insurance_certificate_path')->label('Insurance certificate')
+                AttachmentActions::view(FileUpload::make('insurance_certificate_path')->label('Insurance certificate')
                     ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])->maxSize(10240)
                     ->disk(config('filesystems.private'))->directory(fn () => 'submissions/'.$this->submission->id)->visibility('private')
                     // No record backs this modal, so accept exactly the stored certificate of the person being edited.
                     ->preventFilePathTampering(allowFilePathUsing: fn (string $file) => $file === $this->travelDetail(
-                        (int) ($this->getMountedAction()?->getArguments()['person'] ?? 0))?->insurance_certificate_path),
+                        (int) ($this->getMountedAction()?->getArguments()['person'] ?? 0))?->insurance_certificate_path)),
                 Textarea::make('vaccinations')->label('Vaccinations for the destination')->rows(3)->maxLength(2000)
                     ->visible(fn () => Person::canViewMedical(auth()->user())),
             ])

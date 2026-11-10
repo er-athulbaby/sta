@@ -31,12 +31,15 @@
                                     <div>{{ $d->insurance_company ?? '–' }}@if ($showMedical ?? false) · Policy {{ $d->insurance_policy_no ?? '–' }}@endif</div>
                                     <div>Valid until {{ $d->insurance_valid_until?->format('j M Y') ?? '–' }}</div>
                                     @if ($d->insurance_certificate_path)
-                                        <a href="{{ \App\Filament\Shared\AttachmentActions::url($d->insurance_certificate_path) }}" target="_blank" class="text-primary-600 underline">Certificate</a>
+                                        <a href="{{ \App\Filament\Shared\AttachmentActions::url($d->insurance_certificate_path) }}" target="_blank" class="text-primary-600 underline">View certificate</a>
                                     @endif
                                     @if ($d->vaccinations && ($showMedical ?? false))<div>Vaccinations: {{ $d->vaccinations }}</div>@endif
                                 </div>
                             @elseif ($row['detail'])
                                 <div class="text-xs text-gray-500">Insurance: {{ $row['detail']->insurance_company ?? '–' }}</div>
+                                @if ($row['detail']->insurance_certificate_path)
+                                    <a href="{{ \App\Filament\Shared\AttachmentActions::url($row['detail']->insurance_certificate_path) }}" target="_blank" class="text-xs text-primary-600 underline">View certificate</a>
+                                @endif
                             @endif
                             @if (($showTravel ?? false) && $row['on_list'])
                                 <x-filament::link tag="button" size="xs" wire:click="mountAction('travel', { person: {{ $row['person']->id }} })">Travel & insurance</x-filament::link>

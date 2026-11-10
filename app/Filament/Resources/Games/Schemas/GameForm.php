@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Games\Schemas;
 
+use App\Filament\Shared\AttachmentActions;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -17,8 +18,8 @@ class GameForm
         return $schema->components([
             Section::make('Details')->columns(2)->schema([
                 TextInput::make('name')->required()->maxLength(200)->columnSpanFull(),
-                FileUpload::make('logo_path')->label('Game logo')->image()->acceptedFileTypes(['image/jpeg', 'image/png'])
-                    ->maxSize(2048)->disk(config('filesystems.private'))->directory('game-logos')->visibility('private'),
+                AttachmentActions::view(FileUpload::make('logo_path')->label('Game logo')->image()->acceptedFileTypes(['image/jpeg', 'image/png'])
+                    ->maxSize(2048)->disk(config('filesystems.private'))->directory('game-logos')->visibility('private')),
                 DatePicker::make('start_date')->required(),
                 DatePicker::make('end_date')->required()->afterOrEqual('start_date'),
                 TagsInput::make('reminder_days')->label('Reminder days before the deadline')->required()

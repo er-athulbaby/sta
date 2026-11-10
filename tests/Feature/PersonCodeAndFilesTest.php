@@ -1,8 +1,10 @@
 <?php
 
+use App\Filament\Shared\AttachmentActions;
 use App\Models\Association;
 use App\Models\Person;
 use App\Models\PersonVisa;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;
 
 it('numbers athletes and officials per association and type', function () {
@@ -80,4 +82,8 @@ it('names visa copies after the person code and visa id', function () {
 
     $visa = $official->visas()->create(['country' => 'Japan', 'status' => 'Approved', 'copy_path' => 'visas/tmp.pdf']);
     expect($visa->fresh()->copy_path)->toBe("visas/BJF-TO-0001_visa_{$visa->id}.pdf");
+});
+
+it('makes uploads openable through the 5-minute link', function () {
+    expect(AttachmentActions::view(FileUpload::make('photo_path'))->isOpenable())->toBeTrue();
 });

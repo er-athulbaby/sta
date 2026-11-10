@@ -146,10 +146,10 @@ final class PersonForm
 
     private static function upload(string $name, string $label, string $dir, array $types, int $maxKb): FileUpload
     {
-        return FileUpload::make($name)->label($label)
+        return AttachmentActions::view(FileUpload::make($name)->label($label)
             // image() (if wanted) must come before acceptedFileTypes(), or it widens the list to image/* (SVG).
             ->acceptedFileTypes($types)->maxSize($maxKb)
-            ->disk(config('filesystems.private'))->directory($dir)->visibility('private')->openable()->downloadable();
+            ->disk(config('filesystems.private'))->directory($dir)->visibility('private')->downloadable());
     }
 
     /**

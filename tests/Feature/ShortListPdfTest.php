@@ -100,5 +100,5 @@ it('offers the download on the phase 4 page once submitted', function () {
     $this->p4->update(['pdf_paths' => ['short_list' => 'submissions/BJF-G001-P4-R1/short-list.pdf']]);
     actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
 
-    livewire(Phase4Entry::class, ['game' => $this->game->id])->assertSee('Download Short List PDF');
+    livewire(Phase4Entry::class, ['game' => $this->game->id])->assertSee('View Short List PDF');
 });

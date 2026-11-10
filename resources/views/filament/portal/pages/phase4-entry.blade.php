@@ -10,7 +10,7 @@
     @php $paths = $this->submission->pdf_paths ?? []; @endphp
     @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['short_list']))
         <a class="text-sm text-primary-600 underline" target="_blank"
-           href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths['short_list'], now()->addMinutes(5)) }}">Download Short List PDF</a>
+           href="{{ \App\Filament\Shared\AttachmentActions::url($paths['short_list']) }}">View Short List PDF</a>
     @endif
 
     @if (! $this->longListSubmitted())

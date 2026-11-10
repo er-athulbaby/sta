@@ -5,6 +5,7 @@ namespace App\Filament\Shared;
 use App\Models\Person;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;
 
 final class AttachmentActions
@@ -20,6 +21,12 @@ final class AttachmentActions
                 && ($column !== 'wada_certificate_path' || Person::canViewMedical(auth()->user())))
             ->url(fn (Person $record) => self::url($record->{$column}), shouldOpenInNewTab: true))->values()->all())
             ->label('Attachments')->icon('heroicon-o-paper-clip');
+    }
+
+    /** Spec 16.5: Filament's own open link lasts to the end of the hour; open through the 5-minute URL instead. */
+    public static function view(FileUpload $upload): FileUpload
+    {
+        return $upload->openable()->getOpenableFileUrlUsing(fn (string $file) => self::url($file));
     }
 
     public static function url(string $path): string

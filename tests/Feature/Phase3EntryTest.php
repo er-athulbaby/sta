@@ -111,6 +111,7 @@ it('saves travel and insurance details with a certificate named after the person
     expect($d->insurance_company)->toBe('AXA Gulf')->and($d->insurance_policy_no)->toBe('POL-1')
         ->and($d->insurance_valid_until->toDateString())->toBe('2027-04-01')->and($d->insurance_certificate_path)->toBe($path);
     Storage::disk(config('filesystems.private'))->assertExists($path);
+    $page->assertSee('View certificate');
 });
 
 it('refuses travel details for a person not on the saved list', function () {

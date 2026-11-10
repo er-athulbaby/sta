@@ -133,7 +133,7 @@ it('offers the download on the phase 3 page once submitted', function () {
     $this->sub->update(['pdf_paths' => ['long_list' => 'submissions/BJF-G001-P3-R1/long-list.pdf']]);
     actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
 
-    livewire(Phase3Entry::class, ['game' => $this->game->id])->assertSee('Download Long List PDF');
+    livewire(Phase3Entry::class, ['game' => $this->game->id])->assertSee('View Long List PDF');
 });
 
 it('leaves out people of another association and entries in sports hidden by a Phase 1 no', function () {

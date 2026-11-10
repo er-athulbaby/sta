@@ -17,7 +17,7 @@
     @php $paths = $this->submission->pdf_paths ?? []; @endphp
     @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['long_list']))
         <a class="text-sm text-primary-600 underline" target="_blank"
-           href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths['long_list'], now()->addMinutes(5)) }}">Download Long List PDF</a>
+           href="{{ \App\Filament\Shared\AttachmentActions::url($paths['long_list']) }}">View Long List PDF</a>
     @endif
 
     @if ($url = $this->registryUrl())

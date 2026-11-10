@@ -81,13 +81,13 @@ it('shows the download link on the Phase 1 page only when submitted with the key
     $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
     actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
 
-    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('Download Entry by Sport PDF');
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('View Entry by Sport PDF');
 
     $this->p1->update(['pdf_paths' => ['entry_by_sport' => 'submissions/BWF-G001-P1-R1/entry-by-sport.pdf'], 'status' => SubmissionStatus::Draft]);
-    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('Download Entry by Sport PDF');
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('View Entry by Sport PDF');
 
     $this->p1->update(['status' => SubmissionStatus::Submitted]);
-    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertSee('Download Entry by Sport PDF');
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertSee('View Entry by Sport PDF');
 });
 
 it('is regenerated after an STA save of a submitted Phase 1', function () {
