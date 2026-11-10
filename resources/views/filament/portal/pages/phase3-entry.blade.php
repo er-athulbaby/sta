@@ -20,6 +20,11 @@
            href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths['long_list'], now()->addMinutes(5)) }}">Download Long List PDF</a>
     @endif
 
+    @if ($url = $this->registryUrl())
+        <p class="text-sm"><a href="{{ $url }}" target="_blank" class="text-primary-600 underline">Open registry</a>
+            <span class="text-gray-500">to edit people; new people added with the buttons above appear in the lists straight away.</span></p>
+    @endif
+
     @forelse ($this->visibleSports() as $gs)
         <x-filament::section :heading="$gs->sport->name">
             <div class="grid gap-4 md:grid-cols-2">
@@ -56,7 +61,39 @@
     @endforelse
 
     <x-filament::section heading="People on the Long List">
-        @include('filament.shared.long-list-people', ['rows' => $this->listRows(), 'showTravel' => ! $readOnlyReason])
+        @php $rows = $this->listRows(); @endphp
+        {{-- View choice is per user, browser-only (localStorage), never sent to the server. --}}
+        <div x-data="{ view: (() => { try { return localStorage.getItem('longListView.{{ auth()->id() }}') || 'list' } catch (e) { return 'list' } })() }"
+             x-init="$watch('view', v => { try { localStorage.setItem('longListView.{{ auth()->id() }}', v) } catch (e) {} })">
+            <div class="mb-3 flex gap-2" role="group" aria-label="Long List view">
+                <x-filament::button size="xs" color="gray" x-on:click="view = 'list'" x-bind:aria-pressed="view === 'list'">List</x-filament::button>
+                <x-filament::button size="xs" color="gray" x-on:click="view = 'grid'" x-bind:aria-pressed="view === 'grid'">Grid</x-filament::button>
+            </div>
+            <div x-show="view === 'list'">
+                @include('filament.shared.long-list-people', ['rows' => $rows, 'showTravel' => ! $readOnlyReason])
+            </div>
+            <div x-show="view === 'grid'" x-cloak class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                @forelse ($rows as $row)
+                    @php $p = $row['person']; @endphp
+                    <div wire:key="card-{{ $p->id }}" class="flex gap-3 rounded-lg border border-gray-200 p-3 dark:border-white/10">
+                        @if ($p->photo_path)
+                            <img src="{{ \App\Filament\Shared\AttachmentActions::url($p->photo_path) }}" alt="" class="h-16 w-12 rounded object-cover">
+                        @else
+                            <div class="h-16 w-12 rounded bg-gray-100 dark:bg-white/5"></div>
+                        @endif
+                        <div class="min-w-0 text-sm">
+                            <div class="font-medium">{{ $p->fullName() }}</div>
+                            <div class="text-xs text-gray-500">{{ $p->code }}</div>
+                            <div class="text-xs">{{ implode(', ', $row['roles']) }}</div>
+                            <x-filament::badge :color="$row['missing'] ? 'danger' : 'success'" size="sm">{{ $row['missing'] ? 'Incomplete' : 'Complete' }}</x-filament::badge>
+                            <ul class="text-xs text-warning-600">@foreach ($row['warnings'] as $w)<li>{{ $w }}</li>@endforeach</ul>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-500">Nobody on the list yet.</p>
+                @endforelse
+            </div>
+        </div>
     </x-filament::section>
 
     @unless ($readOnlyReason)

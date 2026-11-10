@@ -2,10 +2,12 @@
 
 use App\Enums\EventGender;
 use App\Enums\PersonGender;
+use App\Enums\PersonType;
 use App\Enums\PhaseStatus;
 use App\Enums\SubmissionStatus;
 use App\Filament\Portal\Pages\Games;
 use App\Filament\Portal\Pages\Phase3Entry;
+use App\Filament\Portal\Resources\People\PersonResource;
 use App\Models\Association;
 use App\Models\Entry;
 use App\Models\Event;
@@ -174,4 +176,49 @@ it('refuses a stale travel save', function () {
     $page->callAction('travel', ['insurance_company' => 'AXA'], ['person' => $this->ali->id])
         ->assertNotified('This entry was changed by someone else — reload to see the latest.');
     expect(LongListDetail::count())->toBe(0);
+});
+
+it('adds an athlete from the Long List and offers them in the picker straight away', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->callAction('addAthlete', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->assertHasNoActionErrors()
+        ->assertSee('Hamad Isa');
+
+    $p = Person::where('first_name', 'Hamad')->sole();
+    expect($p->association_id)->toBe($this->assoc->id)->and($p->type)->toBe(PersonType::Athlete)->and($p->code)->toStartWith('BJF-AT-');
+});
+
+it('adds a team official with the official form', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->callAction('addOfficial', ['first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male', 'function' => 'Team Manager',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH9998887', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->assertHasNoActionErrors()->assertSee('Nasser Ali – Team Manager');
+
+    expect(Person::where('first_name', 'Nasser')->sole()->type)->toBe(PersonType::Official);
+});
+
+it('keeps an added person in the tenant association whatever the form sends', function () {
+    $other = Association::factory()->create();
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->callAction('addAthlete', ['association_id' => $other->id, 'first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->assertHasNoActionErrors();
+
+    expect(Person::withoutGlobalScopes()->where('first_name', 'Hamad')->sole()->association_id)->toBe($this->assoc->id);
+});
+
+it('offers List and Grid views and a link to the registry', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->assertSeeHtml('longListView.'.$this->admin->id)
+        ->assertSeeHtml("x-on:click=\"view = 'list'\"")->assertSeeHtml("x-on:click=\"view = 'grid'\"")
+        ->assertSeeHtml("x-show=\"view === 'grid'\"")
+        ->assertSee('Open registry')->assertSeeHtml(PersonResource::getUrl('index'));
+});
+
+it('hides the add buttons while the Long List is read-only', function () {
+    $this->game->phase(3)->update(['deadline' => now()->subDay()]);
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->assertActionHidden('addAthlete')->assertActionHidden('addOfficial');
 });

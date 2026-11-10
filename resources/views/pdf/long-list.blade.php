@@ -27,16 +27,18 @@
     @if($game->start_date){{ $game->start_date->format('d M Y') }}@if($game->end_date) - {{ $game->end_date->format('d M Y') }}@endif &middot; @endif
     Reference: {{ $referenceNo }}
 </p>
+<p><strong>Summary</strong> &middot; Athletes: {{ $summary['male'] + $summary['female'] }} ({{ $summary['male'] }} male, {{ $summary['female'] }} female) &middot; Team officials: {{ $summary['officials'] }}</p>
 
 <h3>Athletes</h3>
 <table class="grid">
     <tr>
-        <th style="width:50px">Photo</th><th>Name</th><th>Sport</th><th>Event</th><th>Date of birth</th>
+        <th style="width:30px">S.No</th><th style="width:50px">Photo</th><th>Name</th><th>Sport</th><th>Event</th><th>Date of birth</th>
         @foreach($athleteItems as $item)<th>{{ $item }}</th>@endforeach
         <th>Passport scan</th>
     </tr>
     @forelse($athletes as $r)
     <tr>
+        <td class="c">{{ $loop->iteration }}</td>
         <td class="c">@if($r['photo'])<img src="{{ $r['photo'] }}" style="width:40px;height:50px">@endif</td>
         <td>{{ $r['name'] }}</td>
         <td>{{ $r['sport'] }}</td>
@@ -46,17 +48,18 @@
         <td class="c">{{ $r['passport'] ? 'Yes' : 'No' }}</td>
     </tr>
     @empty
-    <tr><td colspan="{{ 6 + count($athleteItems) }}">No athletes.</td></tr>
+    <tr><td colspan="{{ 7 + count($athleteItems) }}">No athletes.</td></tr>
     @endforelse
 </table>
 
 <h3>Team officials</h3>
 <table class="grid">
     <tr>
-        <th style="width:50px">Photo</th><th>Name</th><th>Function</th><th>Date of birth</th><th>Phone</th><th>Email</th><th>Sizes</th><th>Passport scan</th>
+        <th style="width:30px">S.No</th><th style="width:50px">Photo</th><th>Name</th><th>Function</th><th>Date of birth</th><th>Phone</th><th>Email</th><th>Sizes</th><th>Passport scan</th>
     </tr>
     @forelse($officials as $r)
     <tr>
+        <td class="c">{{ $loop->iteration }}</td>
         <td class="c">@if($r['photo'])<img src="{{ $r['photo'] }}" style="width:40px;height:50px">@endif</td>
         <td>{{ $r['name'] }}</td>
         <td>{{ $r['function'] }}</td>
@@ -67,7 +70,7 @@
         <td class="c">{{ $r['passport'] ? 'Yes' : 'No' }}</td>
     </tr>
     @empty
-    <tr><td colspan="8">No team officials.</td></tr>
+    <tr><td colspan="9">No team officials.</td></tr>
     @endforelse
 </table>
 

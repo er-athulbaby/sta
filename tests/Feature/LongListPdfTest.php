@@ -76,12 +76,42 @@ it('renders the header, columns, declaration, boxes and reference', function () 
         'officials' => [['photo' => null, 'name' => 'Coach Karim', 'function' => 'Head Coach', 'dob' => '10 Mar 2005', 'phone' => '+973 33000000',
             'email' => 'coach@example.com', 'sizes' => 'T-Shirt: M', 'passport' => false]],
         'referenceNo' => 'BJF-G001-P3-R1', 'declaration' => 'I confirm.', 'nocLogo' => 'data:image/png;base64,AA==', 'gameLogo' => null,
+        'summary' => ['male' => 1, 'female' => 0, 'officials' => 1],
     ])->render();
 
     expect($html)->toContain('Long List')->toContain('Bahrain Judo Federation')->toContain('Asian Indoor Games')
         ->toContain('Photo')->toContain('Date of birth')->toContain('Passport scan')->toContain('T-Shirt')->toContain('Function')
         ->toContain('Phone')->toContain('Email')->toContain('Sizes')->toContain('Ali Hasan')->toContain('Men -60kg')->toContain('T-Shirt: M')
-        ->toContain('I confirm.')->toContain('Signature')->toContain('Stamp')->toContain('BJF-G001-P3-R1');
+        ->toContain('I confirm.')->toContain('Signature')->toContain('Stamp')->toContain('BJF-G001-P3-R1')
+        ->toContain('Athletes: 1 (1 male, 0 female)')->toContain('Team officials: 1');
+});
+
+it('passes a summary of athletes by gender and team officials', function () {
+    $captured = null;
+    view()->composer('pdf.long-list', function ($v) use (&$captured) {
+        $captured = $v->getData();
+    });
+
+    (new GenerateLongListPdf($this->sub))->handle();
+
+    expect($captured['summary'])->toBe(['male' => 1, 'female' => 0, 'officials' => 1]);
+});
+
+it('numbers the athlete and team official rows from 1 in each table', function () {
+    $athlete = fn ($name) => ['photo' => null, 'name' => $name, 'sport' => 'Judo', 'events' => 'Men -60kg', 'dob' => '10 Mar 2005', 'sizes' => [], 'passport' => true];
+    $html = view('pdf.long-list', [
+        'game' => $this->game, 'association' => $this->assoc, 'athleteItems' => [],
+        'athletes' => [$athlete('Ali Hasan'), $athlete('Omar Saleh')],
+        'officials' => [['photo' => null, 'name' => 'Coach Karim', 'function' => 'Head Coach', 'dob' => '10 Mar 2005', 'phone' => '', 'email' => '', 'sizes' => '', 'passport' => false]],
+        'referenceNo' => 'R', 'declaration' => '', 'nocLogo' => null, 'gameLogo' => null, 'summary' => ['male' => 2, 'female' => 0, 'officials' => 1],
+    ])->render();
+    // S.No cell, then the (empty) photo cell, then the name.
+    $numbers = fn (string $part) => preg_match_all('#<td class="c">(\d+)</td>\s*<td class="c"></td>\s*<td>([^<]+)</td>#', $part, $m) ? array_combine($m[2], $m[1]) : [];
+    [$athletes, $officials] = explode('<h3>Team officials</h3>', $html);
+
+    expect(substr_count($html, '<th style="width:30px">S.No</th>'))->toBe(2)
+        ->and($numbers($athletes))->toBe(['Ali Hasan' => '1', 'Omar Saleh' => '2'])
+        ->and($numbers($officials))->toBe(['Coach Karim' => '1']);
 });
 
 it('is dispatched when a long list is finalised', function () {

@@ -59,6 +59,12 @@ trait EditsPhase3
         return app(LongListChecks::class)->rows($this->submission, $this->athletes, $this->officials);
     }
 
+    /** Link offered next to the pickers; the portal page overrides it (STA edit pages have no registry link). */
+    public function registryUrl(): ?string
+    {
+        return null;
+    }
+
     public function save(): void
     {
         try {

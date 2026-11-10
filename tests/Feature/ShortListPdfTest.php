@@ -75,10 +75,10 @@ it('prints the title and the justification', function () {
     $html = view('pdf.long-list', [
         'game' => $this->game, 'association' => $this->assoc, 'athleteItems' => [], 'athletes' => [], 'officials' => [],
         'referenceNo' => 'BJF-G001-P4-R1', 'declaration' => 'I confirm.', 'nocLogo' => null, 'gameLogo' => null,
-        'title' => 'Short List', 'justification' => 'Two medal chances',
+        'title' => 'Short List', 'justification' => 'Two medal chances', 'summary' => ['male' => 3, 'female' => 2, 'officials' => 1],
     ])->render();
 
-    expect($html)->toContain('Short List')->toContain('Justification')->toContain('Two medal chances')->not->toContain('Long List');
+    expect($html)->toContain('Short List')->toContain('Justification')->toContain('Two medal chances')->toContain('Athletes: 5 (3 male, 2 female)')->not->toContain('Long List');
 });
 
 it('is dispatched when a Short List is finalised', function () {

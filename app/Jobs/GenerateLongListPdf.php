@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Models\Person;
 use App\Models\Setting;
@@ -79,7 +80,15 @@ class GenerateLongListPdf implements ShouldQueue
                 ];
             })->sortBy('name')->values()->all();
 
+        $athleteIds = $entries->whereNotNull('game_event_id')->pluck('person_id')->unique();
+        $summary = [
+            'male' => $athleteIds->filter(fn ($id) => $people[$id]->gender === PersonGender::Male)->count(),
+            'female' => $athleteIds->filter(fn ($id) => $people[$id]->gender === PersonGender::Female)->count(),
+            'officials' => count($officials),
+        ];
+
         $html = view('pdf.long-list', [
+            'summary' => $summary,
             'game' => $s->game, 'association' => $s->association, 'athletes' => $athletes, 'officials' => $officials,
             'athleteItems' => $athleteItems->pluck('name')->all(), 'referenceNo' => $s->reference_no,
             'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),

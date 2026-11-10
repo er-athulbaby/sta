@@ -170,3 +170,10 @@ it('never lets STA without view_medical read or overwrite vaccinations', functio
     $d = LongListDetail::where('submission_id', $s->id)->sole();
     expect($d->vaccinations)->toBe('Yellow fever')->and($d->insurance_company)->toBe('X');
 });
+
+it('does not offer adding people or the registry link on the STA long list edit', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+
+    livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->assertDontSee('Add athlete')->assertDontSee('Add team official')->assertDontSee('Open registry');
+});
