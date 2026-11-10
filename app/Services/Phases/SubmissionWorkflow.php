@@ -144,6 +144,17 @@ final class SubmissionWorkflow
 
     private function assertWithinLimits(Submission $s): void
     {
+        if ($s->phase === 4) {
+            $checks = app(ShortListChecks::class);
+            if ($errors = $checks->submitErrors($s)) {
+                $this->fail(implode(' ', $errors));
+            }
+            if ($checks->overLimits($s) && blank($s->justification)) {
+                $this->fail(ShortListChecks::JUSTIFICATION_REQUIRED);
+            }
+
+            return;
+        }
         if ($s->phase === 3) {
             if ($errors = app(LongListChecks::class)->submitErrors($s)) {
                 $this->fail(implode(' ', $errors));
