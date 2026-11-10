@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Services\Reports\Builder;
+
+/** What a run produced: raw values; lines() formats them for the screen and Excel. */
+final readonly class ReportResult
+{
+    /**
+     * @param  list<Field>  $columns
+     * @param  list<array{cells: array<string, mixed>, keys: list<?string>}>  $rows
+     * @param  array<string, mixed>  $totals  grand totals, field key => raw value
+     * @param  array<string, array{label: string, count: int, totals: array<string, mixed>}>  $groups  keyed by keyId()
+     */
+    public function __construct(
+        public array $columns,
+        public array $rows,
+        public int $rowCount,
+        public array $totals,
+        public array $groups,
+    ) {}
+
+    public function truncated(): bool
+    {
+        return $this->rowCount > count($this->rows);
+    }
+
+    /**
+     * Matches how MySQL's case-insensitive collation groups ("Judo" and "judo " are one group), so each row finds its
+     * group on both databases.
+     *
+     * @param  list<?string>  $keys
+     */
+    public static function keyId(array $keys): string
+    {
+        return json_encode(array_map(fn (?string $k) => $k === null ? null : mb_strtolower(rtrim($k)), $keys), JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * Rows with a subtotal line before each group (group totals come from SQL over all rows, not only the shown ones),
+     * then the grand total line.
+     *
+     * @return list<array{kind: string, cells: list<string|int|float|null>}>
+     */
+    public function lines(): array
+    {
+        $lines = [];
+        $open = [];
+        foreach ($this->rows as $row) {
+            foreach (array_keys($row['keys']) as $level) {
+                $id = self::keyId(array_slice($row['keys'], 0, $level + 1));
+                if (($open[$level] ?? null) === $id) {
+                    continue;
+                }
+                $open = array_slice($open, 0, $level);
+                $open[$level] = $id;
+                $group = $this->groups[$id] ?? ['label' => '—', 'count' => 0, 'totals' => []];
+                $lines[] = ['kind' => 'group', 'cells' => $this->totalCells(str_repeat('— ', $level).$group['label']." ({$group['count']})", $group['totals'])];
+            }
+            $lines[] = ['kind' => 'row', 'cells' => array_map(fn (Field $f) => $f->display($row['cells'][$f->key] ?? null), $this->columns)];
+        }
+        $lines[] = ['kind' => 'total', 'cells' => $this->totalCells("Total ({$this->rowCount})", $this->totals)];
+
+        return $lines;
+    }
+
+    /**
+     * @param  array<string, mixed>  $totals
+     * @return list<string|int|float>
+     */
+    private function totalCells(string $label, array $totals): array
+    {
+        $cells = array_map(fn (Field $f) => array_key_exists($f->key, $totals) && $totals[$f->key] !== null ? $f->display($totals[$f->key]) : '', $this->columns);
+        $cells[0] = $cells[0] === '' ? $label : "{$label} · {$cells[0]}";
+
+        return $cells;
+    }
+}
