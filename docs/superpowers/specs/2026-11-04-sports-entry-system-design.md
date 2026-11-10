@@ -279,3 +279,56 @@ Travel insurance company, policy number and valid-until date, the insurance cert
 - **On failure:** a field whose check digit fails is not filled, and is flagged.
 - **Nothing is saved automatically:** the user reviews and saves.
 - **Server requirement:** Tesseract and poppler-utils on the server.
+
+## 14. Custom report builder (decided 2026-11-10)
+
+The user asked for the custom report generation they have in their Rental Management System, in addition to the ready-made Milestone 4 reports. It is built after Milestone 4 as Milestone 4.1, using the same approach, cut to what this system needs.
+
+### Approach
+- Each **subject** is a small PHP class. It declares its base query and the fields it offers.
+- One engine turns a saved **report definition** into a query. The definition is validated JSON and never SQL, and values are bound parameters.
+- Database columns are never exposed automatically.
+
+### Screens
+- **Reports page in `/admin`:** "My reports" and "Shared" lists, plus a **New report** button. The ready-made Milestone 4 reports stay as they are.
+- **Builder (`/admin/report-builder/{report?}`):**
+  - Settings: subject, columns (tick and order), filters (rules joined by AND), group by (up to 2 levels) with counts per group, and sort.
+  - Results update live: up to 500 rows on screen, with a grand total row.
+  - Top bar: name, Save, Save as copy, Share (Only me, or Everyone with report access), Export to Excel (all rows, with group subtotal rows), and Delete.
+- **Running a saved report:** anyone who can see it may change its filters for that run only. Only the creator or a Super Admin saves changes; anyone else uses Save as copy.
+
+### Subjects
+Every subject has a **game** filter, which is required for game-based subjects.
+
+| Subject | One row is | Main fields |
+|---|---|---|
+| People | a registry person | association, code, type, full name, gender, nationality, date of birth, age (today), passport expiry, CPR expiry, function, has photo, has passport scan, complete (yes/no) |
+| Entries | a Long or Short List entry | game, phase (Long List / Short List), association, sport, event (or "Official"), event gender, person code, name, type, gender, date of birth, age at game start, nationality, passport expiry |
+| Submissions | a submission | game, association, phase, status, reference, revision, submitted at, approved at, deadline (effective), over limit (Phase 4), justification |
+| Phase 1 answers | an answer | game, association, sport, answer |
+| Phase 2 numbers | a number entry | game, association, sport, event, gender, count |
+| Clothing sizes | a person's size | association, person code, name, type, item, size |
+
+### Fields and filter operators
+| Type | Operators | Group | Totals |
+|---|---|---|---|
+| text | is, is not, contains, is empty, is not empty | yes | count |
+| enum | is any of, is none of | yes | count |
+| number | =, ≠, >, ≥, <, ≤, between | no | sum, average, min, max |
+| date | on, before, after, between | by month, by year | min, max |
+| boolean | is yes, is no | yes | count |
+
+Every subject offers **Count of rows**.
+
+### Permissions and safety
+- **Access:** you need `StaPermission::ViewReports`. Super Admin always has access. Associations have no builder in this version.
+- **Data that is never a field:** medical and health data, insurance policy numbers, vaccinations, and passport and CPR numbers.
+- **Validation:** a definition is checked on save and on every run. An unknown subject, field or operator, or a bad value, is refused.
+- **Limits:** 30 columns, 20 filters and 2 group levels.
+- **Editing and deleting:** only the creator or a Super Admin.
+
+### Storage
+`saved_reports`: name (up to 120 characters), subject, definition (JSON with a `version`), visibility (`private` or `shared`), created_by, updated_by, last_run_at and timestamps.
+
+### Left out for now, from the Rental Management builder
+Charts, period comparison, scheduled email delivery and relative date ranges. Each can be added later on top of the same engine.
