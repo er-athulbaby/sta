@@ -22,6 +22,13 @@ class GenerateLongListPdf implements ShouldQueue
 
     public $backoff = 60;
 
+    /** pdf_paths key, file name and title; GenerateShortListPdf overrides them for Phase 4. */
+    protected const KEY = 'long_list';
+
+    protected const FILE = 'long-list.pdf';
+
+    protected const TITLE = 'Long List';
+
     public function __construct(public Submission $submission) {}
 
     public function handle(): void
@@ -78,9 +85,10 @@ class GenerateLongListPdf implements ShouldQueue
             'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
             'nocLogo' => GenerateEntryByEventPdfs::dataUri(Setting::get(Setting::NOC_LOGO)),
             'gameLogo' => GenerateEntryByEventPdfs::dataUri($s->game->logo_path),
+            'title' => static::TITLE, 'justification' => $s->justification,
         ])->render();
-        $path = 'submissions/'.$s->reference_no.'/long-list.pdf';
+        $path = 'submissions/'.$s->reference_no.'/'.static::FILE;
         Storage::disk(config('filesystems.private'))->put($path, Pdf::loadHTML($html)->setPaper('a4', 'landscape')->output());
-        $s->forceFill(['pdf_paths' => ['long_list' => $path]])->saveQuietly();
+        $s->forceFill(['pdf_paths' => [static::KEY => $path]])->saveQuietly();
     }
 }

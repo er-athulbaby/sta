@@ -17,7 +17,7 @@
         <td style="width:20%">@if($nocLogo)<img src="{{ $nocLogo }}" style="max-width:100%;max-height:60px">@endif</td>
         <td class="c">
             <div style="font-size:14px;font-weight:bold">{{ $game->name }}</div>
-            <div style="font-size:13px">Long List</div>
+            <div style="font-size:13px">{{ $title ?? 'Long List' }}</div>
             <div style="font-size:13px;font-weight:bold">{{ $association->name }}</div>
         </td>
         <td style="width:20%;text-align:right">@if($gameLogo)<img src="{{ $gameLogo }}" style="max-width:100%;max-height:60px">@endif</td>
@@ -71,6 +71,10 @@
     @endforelse
 </table>
 
+@if(! empty($justification))
+<h3>Justification (over the limit)</h3>
+<p style="white-space:pre-line">{{ $justification }}</p>
+@endif
 <p style="margin-top:14px">{{ $declaration }}</p>
 <table class="grid" style="margin-top:10px">
     <tr>

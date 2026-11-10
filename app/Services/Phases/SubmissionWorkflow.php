@@ -7,6 +7,7 @@ use App\Enums\Role;
 use App\Enums\SubmissionStatus;
 use App\Jobs\GenerateEntryByEventPdfs;
 use App\Jobs\GenerateLongListPdf;
+use App\Jobs\GenerateShortListPdf;
 use App\Models\Submission;
 use App\Models\User;
 use App\Notifications\DeadlineChanged;
@@ -119,6 +120,9 @@ final class SubmissionWorkflow
         }
         if ($s->phase === 3) {
             GenerateLongListPdf::dispatch($s);
+        }
+        if ($s->phase === 4) {
+            GenerateShortListPdf::dispatch($s);
         }
 
         return $s;
