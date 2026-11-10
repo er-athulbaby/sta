@@ -138,7 +138,7 @@ final class ExportSources
         }
 
         return match ($kind) {
-            'date' => Carbon::parse($value)->format($format ?: 'd/m/Y'),
+            'date' => self::date($value, $format ?: 'd/m/Y'),
             'gender' => self::GENDER[$format ?: 'male_female'][$value] ?? (string) $value,
             'yes_no' => self::YES_NO[$format ?: 'yes_no'][$value ? 0 : 1],
             'number' => is_numeric($value) ? $value + 0 : (string) $value,
@@ -148,5 +148,15 @@ final class ExportSources
                 default => (string) $value,
             },
         };
+    }
+
+    /** A malformed stored value is exported as it is rather than failing the whole file. */
+    private static function date(mixed $value, string $format): string
+    {
+        try {
+            return Carbon::parse($value)->format($format);
+        } catch (\Throwable) {
+            return (string) $value;
+        }
     }
 }

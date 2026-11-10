@@ -9,6 +9,7 @@ use App\Models\ExportLayout;
 use App\Models\Game;
 use App\Models\Person;
 use App\Services\GameFiles\ExportSources;
+use App\Services\GameFiles\GameFileExporter;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -26,6 +27,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Arr;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Spec 15.2/15.3: the game's athlete and official upload-file layouts, the upload file and the files ZIP. */
 class GameExportFiles extends Page
@@ -134,12 +136,62 @@ class GameExportFiles extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('download')->label('Download upload file')->icon('heroicon-o-arrow-down-tray')
+                ->visible(fn () => $this->record->isPublished()) // spec 16.6
+                ->schema(fn () => $this->filterFields())
+                ->action(fn (array $data) => $this->download(PersonType::from($data['type']),
+                    filled($data['association_id'] ?? null) ? (int) $data['association_id'] : null,
+                    filled($data['game_sport_id'] ?? null) ? (int) $data['game_sport_id'] : null)),
             Action::make('copy')->label('Copy layouts from another game')->color('gray')
                 ->modalDescription('Replaces both layouts of this game.')
                 ->schema([Select::make('game_id')->label('Game')->required()
                     ->options(fn () => Game::whereKeyNot($this->record->id)->whereHas('exportLayouts')->orderBy('name')->pluck('name', 'id'))])
                 ->action(fn (array $data) => $this->copyFrom(Game::findOrFail($data['game_id']))),
         ];
+    }
+
+    /** Type, association and sport choices shared by the upload file and the files ZIP. */
+    public function filterFields(): array
+    {
+        return [
+            Select::make('type')->label('People')->options(['athlete' => 'Athletes', 'official' => 'Team officials'])
+                ->required()->default('athlete'),
+            Select::make('association_id')->label('Association')->placeholder('All associations')
+                ->options($this->record->associations()->orderBy('name')->pluck('name', 'associations.id')),
+            Select::make('game_sport_id')->label('Sport')->placeholder('All sports')
+                ->options($this->record->gameSports()->with('sport')->get()->mapWithKeys(fn ($gs) => [$gs->id => $gs->sport->name])->sort()),
+        ];
+    }
+
+    public function download(PersonType $type, ?int $associationId = null, ?int $gameSportId = null): ?StreamedResponse
+    {
+        $layout = ExportLayout::for($this->record, $type);
+        if (($layout->columns ?? []) === []) {
+            Notification::make()->warning()->title("Set up the {$type->value} layout first.")->send();
+
+            return null;
+        }
+        $exporter = app(GameFileExporter::class);
+        $table = $exporter->table($layout, auth()->user(), $associationId, $gameSportId);
+        [$path, $name] = $exporter->write($layout, $table);
+
+        activity()->performedOn($this->record)->event('exported')
+            ->withProperties(['layout' => $type->value, 'file' => $name, 'rows' => count($table['rows']), 'left_out' => $table['left_out'],
+                'association_id' => $associationId, 'game_sport_id' => $gameSportId])
+            ->log('game system file exported');
+        if ($table['left_out']) {
+            Notification::make()->warning()->title('Some columns were left out')
+                ->body('They need "View medical & health data": '.implode(', ', $table['left_out']))->send();
+        }
+
+        return response()->streamDownload(function () use ($path) {
+            try {
+                readfile($path);
+            } finally {
+                @unlink($path);
+            }
+        }, $name, ['Content-Type' => $layout->file_format === 'csv' ? 'text/csv; charset=UTF-8'
+            : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     private function copyFrom(Game $source): void

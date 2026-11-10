@@ -185,23 +185,32 @@ final class GameReports
     }
 
     /**
-     * Distinct people per association: its Short List when Phase 4 is submitted, else its submitted Long List.
+     * Per association: its submitted Short List (Phase 4) if any, else its submitted Long List (Phase 3).
+     * Shared with the game system upload files (M4.2); filter entries with visibleEntries().
+     *
+     * @return Collection<int, Submission> association loaded, sorted by association name
+     */
+    public function includedSubmissions(Game $game, array $with = []): Collection
+    {
+        return $this->submitted($game, 4, $with)->keyBy('association_id')
+            ->union($this->submitted($game, 3, $with)->keyBy('association_id'))
+            ->sortBy('association.name')->values();
+    }
+
+    /**
+     * Distinct people per association from includedSubmissions().
      *
      * @return Collection<int, array{0: Submission, 1: Person}>
      */
     private function people(Game $game): Collection
     {
-        $with = ['entries.person.sizes'];
-        $sources = $this->submitted($game, 4, $with)->keyBy('association_id')
-            ->union($this->submitted($game, 3, $with)->keyBy('association_id'))
-            ->sortBy('association.name')->values();
-
-        return $sources->flatMap(fn (Submission $s) => $this->visibleEntries($game, $s)->pluck('person')->unique('id')->sortBy('code')
-            ->map(fn (Person $p) => [$s, $p]))->values();
+        return $this->includedSubmissions($game, ['entries.person.sizes'])
+            ->flatMap(fn (Submission $s) => $this->visibleEntries($game, $s)->pluck('person')->unique('id')->sortBy('code')
+                ->map(fn (Person $p) => [$s, $p]))->values();
     }
 
     /** Entries in sports and events still open to the association (not answered "no" in Phase 1), like the PDFs. */
-    private function visibleEntries(Game $game, Submission $s): Collection
+    public function visibleEntries(Game $game, Submission $s): Collection
     {
         $sports = $game->phase2SportsFor($s->association);
         $sportIds = $sports->pluck('id');
