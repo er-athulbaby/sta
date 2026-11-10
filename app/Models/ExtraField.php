@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AppliesTo;
 use App\Enums\ExtraFieldType;
 use App\Enums\PersonType;
+use App\Exports\PeopleTemplateExport;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,10 +36,12 @@ class ExtraField extends Model
     protected static function booted(): void
     {
         // The key is used by the Excel import and export layouts, so it is generated once and never changes.
+        // Fixed import columns, the legacy 'phone' header and person attributes count as taken, so a heading is never doubled.
         static::creating(function (ExtraField $field) {
             $base = Str::limit(Str::slug($field->label, '_'), 50, '') ?: 'field';
+            $reserved = [...PeopleTemplateExport::COLUMNS, 'phone', ...(new Person)->getFillable()];
             $key = $base;
-            for ($n = 2; static::where('key', $key)->exists(); $n++) {
+            for ($n = 2; in_array($key, $reserved, true) || static::where('key', $key)->exists(); $n++) {
                 $key = "{$base}_{$n}";
             }
             $field->key = $key;

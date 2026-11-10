@@ -104,3 +104,10 @@ it('disables the type field once values exist', function () {
         ->fillForm(['label' => 'Renamed', 'is_active' => false])->call('save')->assertHasNoFormErrors();
     expect($f->fresh())->label->toBe('Renamed')->is_active->toBeFalse()->type->toBe(ExtraFieldType::Text);
 });
+
+it('never reuses a fixed import column, the phone alias or a person attribute as a key', function () {
+    expect(ExtraField::factory()->create(['label' => 'Email'])->key)->toBe('email_2')
+        ->and(ExtraField::factory()->create(['label' => 'Phone'])->key)->toBe('phone_2')
+        ->and(ExtraField::factory()->create(['label' => 'Dob'])->key)->toBe('dob_2')
+        ->and(ExtraField::factory()->create(['label' => 'Passport No'])->key)->toBe('passport_no_2');
+});

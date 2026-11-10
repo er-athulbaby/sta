@@ -237,3 +237,11 @@ it('leaves sensitive extra columns out of the template and the import for users 
     $result = app(PeopleImporter::class)->import(xlsxWith([row(['shirt_name' => 'SARA', 'donor_type' => str_repeat('x', 300)])]), Association::factory()->create(), $sta);
     expect($result->ok())->toBeTrue()->and(Person::sole()->extraValues())->toBe([$shirt->id => 'SARA']);
 });
+
+it('keeps the fixed column when an extra field is labelled like it', function () {
+    $email = ExtraField::factory()->create(['label' => 'Email']);
+
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['email' => 'sara@x.bh', 'email_2' => 'work@x.bh'])]), Association::factory()->create());
+    expect($result->ok())->toBeTrue()->and(Person::sole()->email)->toBe('sara@x.bh')
+        ->and(Person::sole()->extraValues())->toBe([$email->id => 'work@x.bh']);
+});
