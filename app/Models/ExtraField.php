@@ -87,6 +87,12 @@ class ExtraField extends Model
         return static::active()->forType($type)->orderBy('id')->get()->filter(fn (ExtraField $f) => $f->visibleTo($user))->values();
     }
 
+    /** @return Collection<int, ExtraField> active fields of both types the user may see, by id; null user = all (Excel import/template) */
+    public static function activeFor(?User $user): Collection
+    {
+        return static::active()->orderBy('id')->get()->filter(fn (ExtraField $f) => $user === null || $f->visibleTo($user))->values();
+    }
+
     /** @return Collection<int, ExtraField> active "required to be complete" fields of the type (memoised; flushed on save) */
     public static function requiredFor(PersonType $type): Collection
     {

@@ -55,7 +55,7 @@ class ImportPeople extends Page
     {
         return [
             Action::make('template')->label('Download template')->icon('heroicon-o-arrow-down-tray')
-                ->action(fn () => (new PeopleTemplateExport)->download()),
+                ->action(fn () => (new PeopleTemplateExport(user: auth()->user()))->download()),
             Action::make('import')->label('Validate and import')->action('import'),
         ];
     }
@@ -69,7 +69,7 @@ class ImportPeople extends Page
         }
 
         try {
-            $result = $importer->import($file->getRealPath(), Filament::getTenant());
+            $result = $importer->import($file->getRealPath(), Filament::getTenant(), auth()->user());
         } finally {
             $file->delete();
         }

@@ -7,9 +7,12 @@ use App\Enums\PersonType;
 use App\Exports\PeopleTemplateExport;
 use App\Filament\Shared\PersonForm;
 use App\Models\Association;
+use App\Models\ExtraField;
 use App\Models\Person;
+use App\Models\User;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -22,8 +25,14 @@ final class PeopleImporter
 
     private const DATE_COLUMNS = ['date_of_birth', 'passport_issue_date', 'passport_expiry', 'cpr_expiry'];
 
-    public function import(string $absolutePath, Association $association): ImportResult
+    /** @var Collection<int, ExtraField> the extra-field columns read by the current import */
+    private Collection $extraFields;
+
+    /** @param  ?User  $user  sensitive extra-field columns are ignored unless the user may view medical data; null = all */
+    public function import(string $absolutePath, Association $association, ?User $user = null): ImportResult
     {
+        $this->extraFields = ExtraField::activeFor($user);
+
         try {
             $rows = $this->read($absolutePath);
         } catch (\Throwable) {
@@ -62,9 +71,10 @@ final class PeopleImporter
             return new ImportResult(0, $errors);
         }
 
-        DB::transaction(function () use ($clean, $association) {
+        DB::transaction(function () use ($clean, $association, $user) {
             foreach ($clean as $row) {
-                Person::create([...$this->toAttributes($row), 'association_id' => $association->id]);
+                $person = Person::create([...$this->toAttributes($row), 'association_id' => $association->id]);
+                $person->syncExtraValues($row['extra'], $user);
             }
         });
 
@@ -134,6 +144,10 @@ final class PeopleImporter
         if ($row['type'] !== 'official') {
             $row['function'] = null;
         }
+        $row['extra'] = [];
+        foreach ($this->extraFields as $field) {
+            $row['extra'][$field->id] = $field->normalise($raw[$field->key] ?? null);
+        }
 
         return $row;
     }
@@ -141,6 +155,13 @@ final class PeopleImporter
     /** @return array<int, string> */
     private function validate(array $row): array
     {
+        $extraRules = [];
+        $names = [];
+        foreach ($this->extraFields as $field) {
+            $extraRules["extra.{$field->id}"] = $field->rules();
+            $names["extra.{$field->id}"] = $field->key; // messages name the column
+        }
+
         return Validator::make($row, [
             'type' => ['required', Rule::enum(PersonType::class)],
             'first_name' => ['required', 'string', 'max:100'],
@@ -160,7 +181,8 @@ final class PeopleImporter
             'cpr_expiry' => ['nullable', 'required_with:cpr_no', 'date_format:Y-m-d'],
             'function' => ['nullable', 'required_if:type,official', Rule::in(PersonForm::FUNCTIONS)],
             'email' => ['nullable', 'email'],
-        ])->errors()->all();
+            ...$extraRules,
+        ], [], $names)->errors()->all();
     }
 
     private function toAttributes(array $row): array

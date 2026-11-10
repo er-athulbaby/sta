@@ -94,3 +94,14 @@ it('counts active required fields of the person type for completeness', function
     $athlete->syncExtraValues([$this->shirt->id => 'ALI']);
     expect($athlete->isComplete())->toBeTrue();
 });
+
+it('syncs extra values atomically and ignores inactive fields', function () {
+    $p = Person::factory()->create(['association_id' => $this->assoc->id]);
+
+    expect(fn () => $p->syncExtraValues([$this->shirt->id => 'ALI', $this->weight->id => 'heavy']))->toThrow(ValidationException::class);
+    expect($p->fresh()->extraValues())->toBe([])
+        ->and(Activity::where('description', 'extra fields updated')->count())->toBe(0);
+
+    $p->syncExtraValues([$this->old->id => 'x', $this->shirt->id => 'ALI']);
+    expect($p->fresh()->extraValues())->toBe([$this->shirt->id => 'ALI']);
+});

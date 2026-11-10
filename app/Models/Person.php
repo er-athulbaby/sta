@@ -234,14 +234,20 @@ class Person extends Model
     }
 
     /**
-     * The only write path for extra values (form, import). Blank deletes. Unknown fields, fields of the other type and,
-     * with a user, sensitive fields the user may not see are skipped. One audit entry; sensitive values are never logged.
+     * The only write path for extra values (form, import). Blank deletes. Unknown or inactive fields, fields of the other
+     * type and, with a user, sensitive fields the user may not see are skipped. One audit entry; sensitive values are never
+     * logged. All or nothing: an invalid value leaves no writes and no audit entry.
      *
      * @param  array<int|string, mixed>  $values  extra_field_id => raw value
      */
     public function syncExtraValues(array $values, ?User $user = null): void
     {
-        $fields = ExtraField::whereKey(array_keys($values))->get()->keyBy('id');
+        DB::transaction(fn () => $this->writeExtraValues($values, $user));
+    }
+
+    private function writeExtraValues(array $values, ?User $user): void
+    {
+        $fields = ExtraField::active()->whereKey(array_keys($values))->get()->keyBy('id');
         $old = $this->fieldValues()->pluck('value', 'extra_field_id');
         $changes = [];
         $sensitiveChanged = false;

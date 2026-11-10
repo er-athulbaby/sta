@@ -1,14 +1,17 @@
 <?php
 
+use App\Enums\ExtraFieldType;
 use App\Exports\PeopleTemplateExport;
 use App\Filament\Portal\Pages\ImportPeople;
 use App\Models\Association;
+use App\Models\ExtraField;
 use App\Models\Person;
 use App\Models\User;
 use App\Services\PeopleImporter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use OpenSpout\Common\Entity\Row;
+use OpenSpout\Reader\XLSX\Reader;
 use OpenSpout\Writer\XLSX\Writer;
 
 use function Pest\Livewire\livewire;
@@ -189,4 +192,48 @@ it('accepts the legacy phone header as mobile', function () {
     $result = app(PeopleImporter::class)->import($path, Association::factory()->create());
 
     expect($result->ok())->toBeTrue()->and(Person::sole()->phone)->toBe('33445566');
+});
+
+it('imports one column per active extra field and validates it', function () {
+    $shirt = ExtraField::factory()->create(['label' => 'Shirt name']);
+    $vegan = ExtraField::factory()->create(['label' => 'Vegan', 'type' => ExtraFieldType::YesNo]);
+    ExtraField::factory()->create(['label' => 'Old', 'is_active' => false]);
+
+    expect(PeopleTemplateExport::columns())->toBe([...PeopleTemplateExport::COLUMNS, 'shirt_name', 'vegan']);
+
+    $bad = app(PeopleImporter::class)->import(xlsxWith([
+        row(['shirt_name' => 'SARA', 'vegan' => 'yes']),
+        row(['passport_no' => 'BH2222222', 'cpr_no' => '070402222', 'vegan' => 'maybe']),
+    ]), Association::factory()->create());
+    expect(array_keys($bad->errors))->toBe([3])->and($bad->errors[3][0])->toBe('The selected vegan is invalid.')
+        ->and(Person::count())->toBe(0);
+
+    $ok = app(PeopleImporter::class)->import(xlsxWith([row(['shirt_name' => 'SARA', 'vegan' => 'yes'])]), Association::factory()->create());
+    expect($ok->ok())->toBeTrue()->and(Person::sole()->extraValues())->toBe([$shirt->id => 'SARA', $vegan->id => '1']);
+});
+
+it('leaves sensitive extra columns out of the template and the import for users without view_medical', function () {
+    $shirt = ExtraField::factory()->create(['label' => 'Shirt name']);
+    ExtraField::factory()->create(['label' => 'Donor type', 'sensitive' => true]);
+    $sta = User::factory()->sta()->create();
+    $editor = User::factory()->assocEditor(Association::factory()->create())->create();
+
+    expect(PeopleTemplateExport::columns($sta))->toBe([...PeopleTemplateExport::COLUMNS, 'shirt_name'])
+        ->and(PeopleTemplateExport::columns($editor))->toBe([...PeopleTemplateExport::COLUMNS, 'shirt_name', 'donor_type']);
+
+    $path = storage_path('app/testing/template-'.uniqid().'.xlsx');
+    (new PeopleTemplateExport(user: $sta))->writeTo($path);
+    $reader = new Reader;
+    $reader->open($path);
+    foreach ($reader->getSheetIterator() as $sheet) {
+        foreach ($sheet->getRowIterator() as $r) {
+            expect($r->toArray())->toBe(PeopleTemplateExport::columns($sta));
+            break;
+        }
+    }
+    $reader->close();
+
+    // An over-long value in the hidden column would fail validation if it were read.
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['shirt_name' => 'SARA', 'donor_type' => str_repeat('x', 300)])]), Association::factory()->create(), $sta);
+    expect($result->ok())->toBeTrue()->and(Person::sole()->extraValues())->toBe([$shirt->id => 'SARA']);
 });
