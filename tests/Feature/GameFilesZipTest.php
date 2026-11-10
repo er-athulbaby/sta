@@ -173,3 +173,45 @@ it('refuses a direct download call once the permission is gone or the game is a 
     $revoked->call('download', 'athlete')->assertForbidden();
     expect(Activity::where('description', 'game system file exported')->exists())->toBeFalse();
 });
+
+it('runs once with a 10-minute timeout, and on failure tells the requester and removes its temp files', function () {
+    $job = new BuildGameFilesZip($this->layout, $this->user);
+    File::ensureDirectoryExists($job->dir);
+    file_put_contents("{$job->dir}.zip", 'partial');
+
+    $job->failed(new RuntimeException('killed'));
+
+    expect($job->timeout)->toBe(600)->and($job->tries)->toBe(1)
+        ->and(file_exists($job->dir))->toBeFalse()->and(file_exists("{$job->dir}.zip"))->toBeFalse()
+        ->and(json_encode($this->user->notifications()->sole()->data))->toContain('Files ZIP not built');
+});
+
+it('never stores a ZIP that could not be written', function () {
+    $job = new BuildGameFilesZip($this->layout, $this->user);
+    File::ensureDirectoryExists("{$job->dir}.zip"); // a directory where the ZIP should go: ZipArchive cannot write it
+
+    try {
+        expect(fn () => $job->handle(app(GameFileExporter::class)))->toThrow(RuntimeException::class, 'ZIP open failed.');
+    } finally {
+        File::deleteDirectory("{$job->dir}.zip");
+    }
+    expect($this->disk->allFiles('exports'))->toBe([])
+        ->and(Activity::where('description', 'game files ZIP exported')->exists())->toBeFalse()
+        ->and($this->user->notifications()->count())->toBe(0);
+});
+
+it('renames Windows device names, caps long names and strips bidi controls', function (string $last, string $expected) {
+    $p = Person::factory()->make(['last_name' => $last]);
+    $used = [];
+
+    expect(BuildGameFilesZip::fileName('{last_name}', $p, $this->assoc, 'photo', 'jpg', $used))->toBe($expected);
+})->with([
+    'CON' => ['CON', 'CON_.jpg'],
+    'lower-case nul' => ['nul', 'nul_.jpg'],
+    'COM1 with an extension' => ['com1.tar', 'com1_.tar.jpg'],
+    'LPT9' => ['LPT9', 'LPT9_.jpg'],
+    'not reserved' => ['CONSOLE', 'CONSOLE.jpg'],
+    'COM0 is not reserved' => ['COM0', 'COM0.jpg'],
+    'long' => [str_repeat('a', 250), str_repeat('a', 200).'.jpg'],
+    'bidi' => ["evil\u{202E}gpj.exe\u{2066}x\u{2069}", 'evilgpj.exex.jpg'],
+]);

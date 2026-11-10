@@ -48,14 +48,19 @@ class ExtraField extends Model
         });
 
         static::saving(function (ExtraField $field) {
-            if ($field->type !== ExtraFieldType::Choice) {
-                $field->options = null;
-            }
+            // Stored values must match an option exactly, so options are trimmed, blanks and duplicates dropped.
+            $field->options = $field->type === ExtraFieldType::Choice
+                ? array_values(array_unique(array_filter(array_map(fn ($o) => trim((string) $o), $field->options ?? []), fn (string $o) => $o !== '')))
+                : null;
         });
 
         static::updating(function (ExtraField $field) {
             if ($field->isDirty('type') && $field->values()->exists()) {
                 throw ValidationException::withMessages(['type' => 'The type cannot change once people have values for this field.']);
+            }
+            // Turning "sensitive" off would expose the values; only someone who may see them may change it.
+            if ($field->isDirty('sensitive') && auth()->user() && ! Person::canViewMedical(auth()->user())) {
+                throw ValidationException::withMessages(['sensitive' => 'Only users with "View medical & health data" can change whether a field is sensitive.']);
             }
         });
 
@@ -90,7 +95,10 @@ class ExtraField extends Model
         return static::active()->forType($type)->orderBy('id')->get()->filter(fn (ExtraField $f) => $f->visibleTo($user))->values();
     }
 
-    /** @return Collection<int, ExtraField> active fields of both types the user may see, by id; null user = all (Excel import/template) */
+    /**
+     * @return Collection<int, ExtraField> active fields of both types the user may see, by id.
+     *                                     A null user returns ALL active fields, sensitive ones included: callers acting for a person must pass the user.
+     */
     public static function activeFor(?User $user): Collection
     {
         return static::active()->orderBy('id')->get()->filter(fn (ExtraField $f) => $user === null || $f->visibleTo($user))->values();

@@ -231,7 +231,7 @@ it('notes columns whose source no longer exists apart from medical ones', functi
     livewire(GameExportFiles::class, ['record' => $this->game->getRouteKey()])
         ->callAction('download', ['type' => 'athlete'])
         ->assertNotified(Notification::make()->warning()->title('Some columns were left out')
-            ->body("They need \"View medical & health data\": Donor, Allergies\nTheir source no longer exists: Gone"));
+            ->body("They need \"View medical & health data\": Donor, Allergies\nTheir source is no longer available: Gone"));
     expect(Activity::where('description', 'game system file exported')->sole()->properties['gone'])->toBe(['Gone']);
 });
 
@@ -240,4 +240,12 @@ it('exports a person without a gender as empty', function () {
     $p = Person::factory()->make(['gender' => null]);
 
     expect($raw->invoke(app(GameFileExporter::class), ['source' => 'person.gender'], $p, $this->judoFed, collect(), $this->game, collect()))->toBeNull();
+});
+
+it('treats an inactive extra field as no longer available', function () {
+    ExtraField::where('key', 'shirt_name')->update(['is_active' => false]);
+    $table = app(GameFileExporter::class)->table($this->layout->fresh(), $this->exporter);
+
+    expect($table['headings'])->not->toContain('Shirt')->and($table['gone'])->toBe(['Shirt'])
+        ->and($table['rows'][0])->toHaveCount(count($table['headings']));
 });

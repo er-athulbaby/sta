@@ -111,3 +111,31 @@ it('never reuses a fixed import column, the phone alias or a person attribute as
         ->and(ExtraField::factory()->create(['label' => 'Dob'])->key)->toBe('dob_2')
         ->and(ExtraField::factory()->create(['label' => 'Passport No'])->key)->toBe('passport_no_2');
 });
+
+it('lets only view_medical users change "sensitive", in the form and on the model', function () {
+    $f = ExtraField::factory()->create(['sensitive' => true]);
+    $sta = User::factory()->sta()->create();
+    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    actingInAdmin($sta);
+
+    livewire(EditExtraField::class, ['record' => $f->getRouteKey()])->assertFormFieldIsDisabled('sensitive')
+        ->fillForm(['label' => 'Renamed', 'sensitive' => false])->call('save')->assertHasNoFormErrors();
+    expect($f->fresh())->label->toBe('Renamed')->sensitive->toBeTrue();
+
+    $message = 'Only users with "View medical & health data" can change whether a field is sensitive.';
+    expect(fn () => $f->fresh()->update(['sensitive' => false]))->toThrow(ValidationException::class, $message)
+        ->and(fn () => ExtraField::factory()->create()->update(['sensitive' => true]))->toThrow(ValidationException::class, $message)
+        ->and($f->fresh()->sensitive)->toBeTrue();
+
+    $sta->givePermissionTo(StaPermission::ViewMedical->value);
+    actingInAdmin($sta->fresh());
+    livewire(EditExtraField::class, ['record' => $f->getRouteKey()])->assertFormFieldIsEnabled('sensitive');
+    $f->fresh()->update(['sensitive' => false]);
+    expect($f->fresh()->sensitive)->toBeFalse();
+});
+
+it('trims choice options and drops blanks and duplicates', function () {
+    $f = ExtraField::factory()->create(['type' => ExtraFieldType::Choice, 'options' => [' S ', 'M', '', '  ', 'S', 'M ']]);
+
+    expect($f->fresh()->options)->toBe(['S', 'M']);
+});

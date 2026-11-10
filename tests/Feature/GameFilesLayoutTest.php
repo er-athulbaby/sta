@@ -136,3 +136,35 @@ it('offers layouts only for published games', function () {
     livewire(GameDashboard::class, ['record' => $draft->getRouteKey()])->assertActionHidden('gameFiles');
     livewire(ListGames::class)->assertTableActionHidden('gameFiles', $draft)->assertTableActionVisible('gameFiles', $this->game);
 });
+
+it('copies only from published games', function () {
+    $draft = Game::factory()->draft()->create();
+    ExportLayout::create(['game_id' => $draft->id, 'type' => 'athlete', 'columns' => [['source' => 'person.code', 'heading' => 'ID']]]);
+    actingInAdmin($this->exporter);
+
+    livewire(GameExportFiles::class, ['record' => $this->game->getRouteKey()])
+        ->callAction('copy', ['game_id' => $draft->id])->assertHasActionErrors(['game_id']);
+    expect(ExportLayout::where('game_id', $this->game->id)->exists())->toBeFalse();
+});
+
+it('refuses a crafted save with a medical source by a user without view_medical, writing nothing', function () {
+    actingInAdmin($this->exporter);
+    $undo = Repeater::fake();
+    livewire(GameExportFiles::class, ['record' => $this->game->getRouteKey()])
+        ->fillForm(['athlete' => ['file_format' => 'csv', 'row_mode' => 'one_per_athlete', 'zip_pattern' => '{code}', 'columns' => [
+            ['source' => 'person.allergies', 'heading' => 'Allergies'],
+        ]]])
+        ->call('save')->assertNotNotified('Layouts saved');
+    $undo();
+
+    expect(ExportLayout::where('game_id', $this->game->id)->exists())->toBeFalse();
+});
+
+it('refuses a save once the permission is gone', function () {
+    actingInAdmin($this->exporter);
+    $page = livewire(GameExportFiles::class, ['record' => $this->game->getRouteKey()]);
+    $this->exporter->revokePermissionTo(StaPermission::ExportGameFiles->value);
+
+    $page->call('save')->assertForbidden();
+    expect(ExportLayout::where('game_id', $this->game->id)->exists())->toBeFalse();
+});

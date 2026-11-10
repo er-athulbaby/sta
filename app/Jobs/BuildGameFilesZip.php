@@ -19,6 +19,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
+use Throwable;
 use ZipArchive;
 
 /** Spec 15.3: photos and optional documents of the included people, named by the layout's pattern, on the private disk. */
@@ -26,9 +28,14 @@ class BuildGameFilesZip implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3;
+    // One long attempt: a retry while a killed run is still writing would build the ZIP twice in parallel.
+    // The worker needs --timeout >= 600 and the queue's retry_after above it (README).
+    public $timeout = 600;
 
-    public $backoff = 60;
+    public $tries = 1;
+
+    /** Local working dir, fixed at dispatch so failed() can remove it (the ZIP is "{$dir}.zip"). */
+    public string $dir;
 
     public const KINDS = ['photo_path' => 'photo', 'passport_scan_path' => 'passport', 'cpr_front_path' => 'cpr_front',
         'wada_certificate_path' => 'wada'];
@@ -40,7 +47,17 @@ class BuildGameFilesZip implements ShouldQueue
         public array $columns = [],
         public ?int $associationId = null,
         public ?int $gameSportId = null,
-    ) {}
+    ) {
+        $this->dir = sys_get_temp_dir().'/zip-'.Str::uuid();
+    }
+
+    public function failed(?Throwable $e): void
+    {
+        File::deleteDirectory($this->dir);
+        File::delete("{$this->dir}.zip");
+        Notification::make()->danger()->title('Files ZIP not built')
+            ->body('Something went wrong while building the ZIP. Please try again.')->sendToDatabase($this->user);
+    }
 
     public function handle(GameFileExporter $exporter): void
     {
@@ -67,7 +84,7 @@ class BuildGameFilesZip implements ShouldQueue
         $people = $exporter->people($game, $this->layout->type, $this->associationId, $this->gameSportId);
 
         // Files are copied to a local temp dir first: ZipArchive::addFile reads them only on close(), and the disk may be S3.
-        $dir = sys_get_temp_dir().'/zip-'.Str::uuid();
+        $dir = $this->dir;
         $tmp = "{$dir}.zip";
         File::ensureDirectoryExists($dir);
         $who = $this->layout->type === PersonType::Athlete ? 'athletes' : 'officials';
@@ -75,7 +92,9 @@ class BuildGameFilesZip implements ShouldQueue
         $count = 0;
         try {
             $zip = new ZipArchive;
-            $zip->open($tmp, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+            // Every ZipArchive call is checked: a corrupt or empty ZIP must never be offered as ready.
+            $ok = fn (bool $done, string $what) => $done ?: throw new RuntimeException("ZIP {$what} failed.");
+            $ok($zip->open($tmp, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true, 'open');
             $used = [];
             foreach ($people as ['person' => $p, 'association' => $a]) {
                 foreach ($columns as $column) {
@@ -92,13 +111,13 @@ class BuildGameFilesZip implements ShouldQueue
                     stream_copy_to_stream($in, $out);
                     fclose($in);
                     fclose($out);
-                    $zip->addFile($local, self::fileName($this->layout->zip_pattern, $p, $a, $kind, pathinfo($file, PATHINFO_EXTENSION), $used));
+                    $ok($zip->addFile($local, self::fileName($this->layout->zip_pattern, $p, $a, $kind, pathinfo($file, PATHINFO_EXTENSION), $used)), 'addFile');
                 }
             }
             if ($missing || $count === 0) {
-                $zip->addFromString('missing.txt', implode("\n", $missing ?: ['No files.'])."\n");
+                $ok($zip->addFromString('missing.txt', implode("\n", $missing ?: ['No files.'])."\n"), 'addFromString');
             }
-            $zip->close();
+            $ok($zip->close(), 'close');
 
             $stream = fopen($tmp, 'r');
             $disk->put($path, $stream);
@@ -124,7 +143,8 @@ class BuildGameFilesZip implements ShouldQueue
     }
 
     /**
-     * Zip-slip safe: path separators, Windows-reserved and control characters become "_", leading/trailing dots and spaces go.
+     * Zip-slip safe: path separators, Windows-reserved and control characters become "_", bidi controls and leading/trailing
+     * dots and spaces go, reserved device names (CON, COM1…) get "_" appended, and the name is capped at 200 characters.
      *
      * @param  array<string, true>  $used  lower-cased names already in the ZIP (duplicates get -2, -3, …)
      */
@@ -132,7 +152,9 @@ class BuildGameFilesZip implements ShouldQueue
     {
         $base = strtr($pattern, ['{code}' => (string) $p->code, '{passport_no}' => (string) $p->passport_no, '{last_name}' => (string) $p->last_name,
             '{first_name}' => (string) $p->first_name, '{association_code}' => (string) $a->code, '{kind}' => $kind]);
-        $base = trim(preg_replace('/[\\\\\/:*?"<>|\x00-\x1F\x7F]/u', '_', $base), ' .') ?: 'file';
+        $base = preg_replace('/[\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', '', $base); // bidi controls could disguise the extension
+        $base = trim(mb_substr(trim(preg_replace('/[\\\\\/:*?"<>|\x00-\x1F\x7F]/u', '_', $base), ' .'), 0, 200), ' .') ?: 'file';
+        $base = preg_replace('/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?=\.|$)/i', '$1_', $base); // Windows reserved device names
         $ext = preg_replace('/[^a-z0-9]/', '', strtolower($ext)) ?: 'bin';
         $name = "{$base}.{$ext}";
         for ($n = 2; isset($used[mb_strtolower($name)]); $n++) {

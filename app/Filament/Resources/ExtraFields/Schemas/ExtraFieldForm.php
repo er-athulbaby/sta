@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ExtraFields\Schemas;
 use App\Enums\AppliesTo;
 use App\Enums\ExtraFieldType;
 use App\Models\ExtraField;
+use App\Models\Person;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -32,7 +33,8 @@ class ExtraFieldForm
                 ->helperText('Type an option and press Enter. Order is kept.'),
             TextInput::make('help_text')->maxLength(255),
             Toggle::make('required')->label('Required to be complete'),
-            Toggle::make('sensitive')->helperText('Hidden from STA users without "View medical & health data".'),
+            Toggle::make('sensitive')->helperText('Hidden from STA users without "View medical & health data". Only they can change it.')
+                ->disabled(fn () => ! Person::canViewMedical(auth()->user())),
             Toggle::make('is_active')->label('Active')->default(true),
         ]);
     }

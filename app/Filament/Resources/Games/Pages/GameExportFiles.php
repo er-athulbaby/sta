@@ -110,6 +110,7 @@ class GameExportFiles extends Page
 
     public function save(): void
     {
+        $this->authorizeExport();
         $state = $this->form->getState();
         $layouts = [];
         $errors = [];
@@ -160,9 +161,9 @@ class GameExportFiles extends Page
                         ->body('You will be notified here with a download link when it is ready.')->send();
                 }),
             Action::make('copy')->label('Copy layouts from another game')->color('gray')
-                ->modalDescription('Replaces both layouts of this game.')
+                ->modalDescription('Replaces this game\'s layouts with the layouts the chosen game has; a layout it does not have is kept.')
                 ->schema([Select::make('game_id')->label('Game')->required()
-                    ->options(fn () => Game::whereKeyNot($this->record->id)->whereHas('exportLayouts')->orderBy('name')->pluck('name', 'id'))])
+                    ->options(fn () => Game::whereKeyNot($this->record->id)->whereNotNull('published_at')->whereHas('exportLayouts')->orderBy('name')->pluck('name', 'id'))])
                 ->action(fn (array $data) => $this->copyFrom(Game::findOrFail($data['game_id']))),
         ];
     }
@@ -206,7 +207,7 @@ class GameExportFiles extends Page
         if ($table['left_out'] || $table['gone']) {
             Notification::make()->warning()->title('Some columns were left out')->body(implode("\n", array_filter([
                 $table['left_out'] ? 'They need "View medical & health data": '.implode(', ', $table['left_out']) : null,
-                $table['gone'] ? 'Their source no longer exists: '.implode(', ', $table['gone']) : null,
+                $table['gone'] ? 'Their source is no longer available: '.implode(', ', $table['gone']) : null,
             ])))->send();
         }
 
@@ -222,6 +223,7 @@ class GameExportFiles extends Page
 
     private function copyFrom(Game $source): void
     {
+        $this->authorizeExport();
         $all = ExportSources::all();
         $medic = Person::canViewMedical(auth()->user());
         $dropped = [];

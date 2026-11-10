@@ -42,7 +42,7 @@ final class GameFileExporter
             ->values();
     }
 
-    /** @return array{headings: list<string>, rows: list<list<scalar|null>>, left_out: list<string>, gone: list<string>} left_out: medical columns the user may not see; gone: columns whose source no longer exists */
+    /** @return array{headings: list<string>, rows: list<list<scalar|null>>, left_out: list<string>, gone: list<string>} left_out: medical columns the user may not see; gone: columns whose source no longer exists or is an inactive extra field */
     public function table(ExportLayout $layout, ?User $user, ?int $associationId = null, ?int $gameSportId = null): array
     {
         $game = $layout->game;
@@ -53,7 +53,7 @@ final class GameFileExporter
         $gone = [];
         foreach ($layout->columns as $c) {
             $s = $sources[$c['source']] ?? null;
-            if (! $s) {
+            if (! $s || ! $s['active']) { // an inactive extra field is no longer available, like a gone one
                 $gone[] = $c['heading'];
 
                 continue;
@@ -65,7 +65,7 @@ final class GameFileExporter
             }
             $columns[] = [...$c, 'kind' => $s['kind']];
         }
-        $extraIds = ExtraField::pluck('id', 'key');
+        $extraIds = ExtraField::active()->pluck('id', 'key');
         $rows = [];
         foreach ($this->people($game, $layout->type, $associationId, $gameSportId) as $r) {
             $groups = $layout->row_mode === 'one_per_event' ? $r['entries']->map(fn (Entry $e) => collect([$e])) : [$r['entries']];
