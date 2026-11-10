@@ -53,7 +53,7 @@ final class People extends Subject
     protected function define(): array
     {
         // Same rule as Person::missingFields(), as "filled or not" only: cpr_no's value never leaves the database.
-        $complete = fn (string $type) => implode(' AND ', array_map(fn (string $c) => Sql::filled("people.{$c}"), array_keys(Person::REQUIRED_FOR_COMPLETE[$type])));
+        $complete = fn (string $type) => implode(' AND ', array_map(fn (string $c) => Sql::filled("people.{$c}", $c === 'passport_issue_date'), array_keys(Person::REQUIRED_FOR_COMPLETE[$type])));
 
         return [
             Field::text('full_name', 'Name', 'Person', Sql::fullName()),

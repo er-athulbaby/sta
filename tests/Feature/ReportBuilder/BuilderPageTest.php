@@ -119,6 +119,7 @@ it('lets others run a shared report with their own filters but only save a copy'
 
     $copy = SavedReport::where('created_by', $this->other->id)->sole();
     expect($copy)->name->toBe('All people (copy)')->visibility->toBe('private')
+        ->and($copy->definition['filters'])->toHaveCount(1)->and($copy->definition['filters'][0]['value'])->toBe('Bahrain Judo Federation')
         ->and($report->fresh()->definition['filters'])->toBe([])
         ->and($report->fresh()->last_run_at)->not->toBeNull();
 });
@@ -290,4 +291,38 @@ it('records the run time of a saved report on export', function () {
 
     $page->call('export')->assertFileDownloaded('all-people.xlsx');
     expect($report->fresh()->last_run_at->toDateTimeString())->toBe('2026-11-11 09:00:00');
+});
+
+it('exports every row beyond the screen cap', function () {
+    actingInAdmin($this->owner);
+    Person::factory()->count(520)->create(['association_id' => Association::first()->id]);
+
+    $page = livewire(ReportBuilder::class)->set('def.columns', ['full_name'])->call('export');
+    $path = builderXlsx($page);
+    $reader = new Reader;
+    $reader->open($path);
+    $n = 0;
+    foreach ($reader->getSheetIterator() as $sheet) {
+        foreach ($sheet->getRowIterator() as $row) {
+            $n++;
+        }
+    }
+    $reader->close();
+    unlink($path);
+
+    expect($n)->toBe(1 + 523 + 1); // header, 3 + 520 people, total line
+});
+
+it('re-checks view_reports on every request, not only on mount', function () {
+    actingInAdmin($this->owner);
+    $page = livewire(ReportBuilder::class);
+    $page2 = livewire(ReportBuilder::class);
+    $list = livewire(Reports::class);
+
+    $this->owner->revokePermissionTo(StaPermission::ViewReports->value);
+    $this->owner->forgetCachedPermissions();
+
+    $page->call('export')->assertForbidden();
+    $page2->call('addFilter')->assertForbidden();
+    $list->call('$refresh')->assertForbidden();
 });

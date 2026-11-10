@@ -51,15 +51,18 @@ class GameReports extends Page
 
         return response()->streamDownload(function () use ($data) {
             $tmp = tempnam(sys_get_temp_dir(), 'rep');
-            $writer = new Writer;
-            $writer->openToFile($tmp);
-            $writer->addRow(LiteralRow::from($data['headings']));
-            foreach ($data['rows'] as $row) {
-                $writer->addRow(LiteralRow::from($row));
+            try {
+                $writer = new Writer;
+                $writer->openToFile($tmp);
+                $writer->addRow(LiteralRow::from($data['headings']));
+                foreach ($data['rows'] as $row) {
+                    $writer->addRow(LiteralRow::from($row));
+                }
+                $writer->close();
+                readfile($tmp);
+            } finally {
+                @unlink($tmp);
             }
-            $writer->close();
-            readfile($tmp);
-            unlink($tmp);
         }, Str::slug($this->record->name).'-'.Str::kebab($this->report).'.xlsx',
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }

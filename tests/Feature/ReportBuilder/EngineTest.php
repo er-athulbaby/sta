@@ -43,6 +43,11 @@ it('runs the default people report sorted by name', function () {
         ->and($r->lines()[4])->toBe(['kind' => 'total', 'cells' => ['Total (4)', '', '', '', '', '']]);
 });
 
+it('never compares the passport issue date with an empty string (MySQL 8 rejects it)', function () {
+    $sql = Registry::get('people')->fields()['complete']->sql;
+    expect($sql)->toContain('(people.passport_issue_date IS NOT NULL)')->not->toContain("passport_issue_date <> ''");
+});
+
 it('computes age today, completeness and attachments in SQL', function () {
     $r = runPeople(['columns' => ['full_name', 'age', 'complete', 'has_photo'], 'sort' => ['field' => 'age', 'dir' => 'desc']]);
 

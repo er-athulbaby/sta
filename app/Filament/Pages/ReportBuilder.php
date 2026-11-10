@@ -212,15 +212,18 @@ class ReportBuilder extends Page
 
         return response()->streamDownload(function () use ($result) {
             $tmp = tempnam(sys_get_temp_dir(), 'rb');
-            $writer = new Writer;
-            $writer->openToFile($tmp);
-            $writer->addRow(LiteralRow::from(array_map(fn (Field $f) => $f->label, $result->columns)));
-            foreach ($result->lines() as $line) {
-                $writer->addRow(LiteralRow::from($line['cells']));
+            try {
+                $writer = new Writer;
+                $writer->openToFile($tmp);
+                $writer->addRow(LiteralRow::from(array_map(fn (Field $f) => $f->label, $result->columns)));
+                foreach ($result->lines() as $line) {
+                    $writer->addRow(LiteralRow::from($line['cells']));
+                }
+                $writer->close();
+                readfile($tmp);
+            } finally {
+                @unlink($tmp);
             }
-            $writer->close();
-            readfile($tmp);
-            unlink($tmp);
         }, (Str::slug($this->name) ?: 'report').'.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 

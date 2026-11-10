@@ -41,9 +41,10 @@ final class Sql
         return "'".now()->toDateString()."'";
     }
 
-    public static function filled(string $column): string
+    /** Dates only get IS NOT NULL: MySQL 8 rejects comparing a DATE column with ''. */
+    public static function filled(string $column, bool $date = false): string
     {
-        return "({$column} IS NOT NULL AND {$column} <> '')";
+        return $date ? "({$column} IS NOT NULL)" : "({$column} IS NOT NULL AND {$column} <> '')";
     }
 
     /** The person's full name, else first, second, third and last name with blanks skipped (like Person::fullName()). */
