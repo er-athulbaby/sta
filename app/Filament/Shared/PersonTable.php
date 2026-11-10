@@ -11,6 +11,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 final class PersonTable
 {
@@ -18,6 +19,7 @@ final class PersonTable
     public static function configure(Table $table, bool $withAssociation = false): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('fieldValues')) // missingFields() per row
             ->columns([
                 ImageColumn::make('photo_path')->label('')->circular()->disk(config('filesystems.private'))->visibility('private'),
                 TextColumn::make('code')->searchable()->sortable(),

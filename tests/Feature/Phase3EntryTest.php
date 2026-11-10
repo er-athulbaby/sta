@@ -11,6 +11,7 @@ use App\Filament\Portal\Resources\People\PersonResource;
 use App\Models\Association;
 use App\Models\Entry;
 use App\Models\Event;
+use App\Models\ExtraField;
 use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
@@ -241,4 +242,14 @@ it('creates an athlete from Add athlete even if the form sends another type', fu
 
 it('lazy-loads grid photos', function () {
     expect(file_get_contents(resource_path('views/filament/portal/pages/phase3-entry.blade.php')))->toContain('<img loading="lazy"');
+});
+
+it('saves extra field values from the Add athlete slide-over', function () {
+    $field = ExtraField::factory()->create(['label' => 'Shirt name']);
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->callAction('addAthlete', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male', 'extra' => [$field->id => 'HAMAD'],
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->assertHasNoActionErrors();
+
+    expect(Person::where('first_name', 'Hamad')->sole()->extraValues())->toBe([$field->id => 'HAMAD']);
 });

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AppliesTo;
 use App\Enums\EventGender;
 use App\Enums\PersonGender;
 use App\Enums\PhaseStatus;
@@ -8,6 +9,7 @@ use App\Models\Association;
 use App\Models\ClothingItem;
 use App\Models\Entry;
 use App\Models\Event;
+use App\Models\ExtraField;
 use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
@@ -150,4 +152,16 @@ it('treats a person of another association as not in the registry', function () 
 
     expect($this->checks->errors($this->sub, [$this->m60->id => [$other->id]], []))
         ->toBe(["athletes.{$this->m60->id}" => "Men -60kg: Choose people from your association's registry."]);
+});
+
+it('blocks submit while a required extra field is empty', function () {
+    $field = ExtraField::factory()->create(['label' => 'Shirt name', 'required' => true, 'applies_to' => AppliesTo::Athlete]);
+    Entry::create(['submission_id' => $this->sub->id, 'person_id' => $this->man->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+    $admin = User::factory()->assocAdmin($this->assoc)->create();
+
+    expect(fn () => app(SubmissionWorkflow::class)->submit($this->sub, $admin))
+        ->toThrow(ValidationException::class, 'Ali Hasan is incomplete: Shirt name.');
+
+    $this->man->syncExtraValues([$field->id => 'HASAN']);
+    expect(app(SubmissionWorkflow::class)->submit($this->sub->fresh(), $admin)->status)->toBe(SubmissionStatus::Submitted);
 });

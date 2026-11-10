@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Contracts\Activity;
 use Spatie\Activitylog\LogOptions;
@@ -219,11 +220,73 @@ class Person extends Model
         });
     }
 
+    public function fieldValues(): HasMany
+    {
+        return $this->hasMany(PersonFieldValue::class)->orderBy('id'); // stable order (SQLite would follow the unique index)
+    }
+
+    /** @return array<int, string> extra_field_id => value; with a user, sensitive fields the user may not see are left out */
+    public function extraValues(?User $user = null): array
+    {
+        $hidden = $user && ! self::canViewMedical($user) ? ExtraField::where('sensitive', true)->pluck('id')->all() : [];
+
+        return $this->fieldValues->whereNotIn('extra_field_id', $hidden)->pluck('value', 'extra_field_id')->all();
+    }
+
+    /**
+     * The only write path for extra values (form, import). Blank deletes. Unknown fields, fields of the other type and,
+     * with a user, sensitive fields the user may not see are skipped. One audit entry; sensitive values are never logged.
+     *
+     * @param  array<int|string, mixed>  $values  extra_field_id => raw value
+     */
+    public function syncExtraValues(array $values, ?User $user = null): void
+    {
+        $fields = ExtraField::whereKey(array_keys($values))->get()->keyBy('id');
+        $old = $this->fieldValues()->pluck('value', 'extra_field_id');
+        $changes = [];
+        $sensitiveChanged = false;
+
+        foreach ($values as $id => $raw) {
+            $field = $fields->get((int) $id);
+            if (! $field || ! $field->applies_to->includes($this->type) || ($user && ! $field->visibleTo($user))) {
+                continue;
+            }
+            $value = $field->normalise($raw);
+            $validator = Validator::make(['value' => $value], ['value' => $field->rules()], [], ['value' => $field->label]);
+            if ($validator->fails()) {
+                throw ValidationException::withMessages(["extra.{$field->id}" => $validator->errors()->first('value')]);
+            }
+            $before = $old[$field->id] ?? null;
+            if ($value === $before) {
+                continue;
+            }
+            $value === null
+                ? $this->fieldValues()->where('extra_field_id', $field->id)->delete()
+                : $this->fieldValues()->updateOrCreate(['extra_field_id' => $field->id], ['value' => $value]);
+            if ($field->sensitive) {
+                $sensitiveChanged = true;
+            } else {
+                $changes[$field->key] = ['old' => $before, 'new' => $value];
+            }
+        }
+        $this->unsetRelation('fieldValues');
+
+        if ($changes || $sensitiveChanged) {
+            activity()->performedOn($this)->event('updated')
+                ->withProperties(array_filter(['extra_fields' => $changes, 'sensitive_changed' => $sensitiveChanged ?: null]))
+                ->log('extra fields updated');
+        }
+    }
+
     /** @return array<int, string> */
     public function missingFields(): array
     {
+        $values = $this->fieldValues->pluck('value', 'extra_field_id');
+
         return collect(self::REQUIRED_FOR_COMPLETE[$this->type->value])
-            ->filter(fn (string $label, string $column) => blank($this->{$column}))->values()->all();
+            ->filter(fn (string $label, string $column) => blank($this->{$column}))->values()
+            ->merge(ExtraField::requiredFor($this->type)->reject(fn (ExtraField $f) => $values->has($f->id))->pluck('label'))
+            ->all();
     }
 
     public function isComplete(): bool

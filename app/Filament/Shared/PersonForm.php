@@ -2,14 +2,17 @@
 
 namespace App\Filament\Shared;
 
+use App\Enums\ExtraFieldType;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Models\ClothingItem;
+use App\Models\ExtraField;
 use App\Models\Person;
 use App\Models\PersonInjury;
 use App\Models\PersonVisa;
 use Closure;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -21,6 +24,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -112,6 +116,9 @@ final class PersonForm
                 Grid::make(3)->columnSpanFull()
                     ->schema(fn (Get $get) => self::sizeFields(PersonType::tryFrom((string) $get('type')) ?? PersonType::Athlete)),
             ]),
+            Section::make('Additional information')->hidden(fn (Get $get) => self::extraFields($get)->isEmpty())->schema([
+                Grid::make(2)->schema(fn (Get $get) => self::extraFields($get)->map(fn (ExtraField $f) => self::extraInput($f))->all()),
+            ]),
             // One section for both types (field names must be unique in a schema); title and type-only fields switch on type.
             // The whole section is left out of the schema (->hidden, not just invisible) for STA users without view_medical.
             Section::make(fn (Get $get) => $isOfficial($get) ? 'Health' : 'Medical')->columns(2)->hidden(fn () => ! $medical())->schema([
@@ -188,6 +195,27 @@ final class PersonForm
             ->map(fn (ClothingItem $item) => Select::make("sizes.{$item->id}")->label($item->name)
                 ->options(array_combine($item->sizes, $item->sizes)))
             ->all();
+    }
+
+    /** Active extra fields of the chosen type that the user may see (sensitive ones need view_medical in /admin). */
+    private static function extraFields(Get $get): Collection
+    {
+        return ExtraField::shownTo(PersonType::tryFrom((string) $get('type')) ?? PersonType::Athlete, auth()->user());
+    }
+
+    private static function extraInput(ExtraField $f): Field
+    {
+        $name = "extra.{$f->id}";
+
+        $input = match ($f->type) {
+            ExtraFieldType::Text => TextInput::make($name)->maxLength(255),
+            ExtraFieldType::Number => TextInput::make($name)->numeric(),
+            ExtraFieldType::Date => DatePicker::make($name),
+            ExtraFieldType::Choice => Select::make($name)->options(array_combine($f->options ?? [], $f->options ?? [])),
+            ExtraFieldType::YesNo => Select::make($name)->options(['1' => 'Yes', '0' => 'No']),
+        };
+
+        return $input->label($f->label)->helperText($f->help_text);
     }
 
     private static function options(array $cases): array

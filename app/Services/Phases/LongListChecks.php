@@ -117,7 +117,7 @@ final class LongListChecks
     {
         [$athletes, $officials] = $this->selection($s);
         $errors = array_values($this->errors($s, $athletes, $officials));
-        $people = Person::withoutGlobalScopes()->where('association_id', $s->association_id)
+        $people = Person::withoutGlobalScopes()->with('fieldValues')->where('association_id', $s->association_id)
             ->whereIn('id', collect([...$athletes, ...$officials])->flatten()->unique())->orderBy('last_name')->orderBy('first_name')->get();
         foreach ($people as $p) {
             if ($missing = $p->missingFields()) {
@@ -207,7 +207,7 @@ final class LongListChecks
         $saved = $s->entries()->pluck('person_id')->map(fn ($id) => (int) $id)->all();
         $details = $s->details()->get()->keyBy('person_id');
 
-        return Person::withoutGlobalScopes()->with('sizes')->where('association_id', $s->association_id)->whereKey(array_keys($roles))
+        return Person::withoutGlobalScopes()->with(['sizes', 'fieldValues'])->where('association_id', $s->association_id)->whereKey(array_keys($roles))
             ->orderBy('type')->orderBy('last_name')->orderBy('first_name')->get()
             ->map(fn (Person $p) => [
                 'person' => $p,
