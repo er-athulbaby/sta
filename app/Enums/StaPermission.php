@@ -14,6 +14,7 @@ enum StaPermission: string
     case ViewReports = 'view_reports';
     case ViewAuditLog = 'view_audit_log';
     case ViewMedical = 'view_medical';
+    case ExportGameFiles = 'export_game_files';
 
     public function label(): string
     {
@@ -28,6 +29,7 @@ enum StaPermission: string
             self::ViewReports => 'View reports and export Excel',
             self::ViewAuditLog => 'View the audit log',
             self::ViewMedical => 'View medical & health data',
+            self::ExportGameFiles => 'Export files for game systems — includes passport numbers',
         };
     }
 }

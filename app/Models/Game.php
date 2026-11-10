@@ -61,6 +61,11 @@ class Game extends Model
         return $this->hasMany(Submission::class);
     }
 
+    public function exportLayouts(): HasMany
+    {
+        return $this->hasMany(ExportLayout::class);
+    }
+
     public function phase(int $n): GamePhase
     {
         return $this->phases->firstWhere('phase', $n) ?? $this->phases()->where('phase', $n)->firstOrFail();

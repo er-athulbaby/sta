@@ -180,6 +180,9 @@ class GameDashboard extends Page
             Action::make('editGame')->label('Edit game')->color('gray')
                 ->url(fn () => GameResource::getUrl('edit', ['record' => $this->record]))
                 ->visible(fn () => $this->canManage()),
+            Action::make('gameFiles')->label('Game system files')->color('gray')
+                ->url(fn () => GameResource::getUrl('export-files', ['record' => $this->record]))
+                ->visible(fn () => $this->record->isPublished() && auth()->user()->can(StaPermission::ExportGameFiles->value)),
             Action::make('reports')->label('Reports')->color('gray')
                 ->url(fn () => GameResource::getUrl('reports', ['record' => $this->record]))
                 ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value)),

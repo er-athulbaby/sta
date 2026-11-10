@@ -1,0 +1,166 @@
+<?php
+
+namespace App\Filament\Resources\Games\Pages;
+
+use App\Enums\PersonType;
+use App\Enums\StaPermission;
+use App\Filament\Resources\Games\GameResource;
+use App\Models\ExportLayout;
+use App\Models\Game;
+use App\Models\Person;
+use App\Services\GameFiles\ExportSources;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Filament\Resources\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Illuminate\Support\Arr;
+
+/** Spec 15.2/15.3: the game's athlete and official upload-file layouts, the upload file and the files ZIP. */
+class GameExportFiles extends Page
+{
+    use InteractsWithRecord;
+
+    protected static string $resource = GameResource::class;
+
+    public ?array $data = [];
+
+    public static function canAccess(array $parameters = []): bool
+    {
+        return (bool) auth()->user()?->can(StaPermission::ExportGameFiles->value);
+    }
+
+    public function mount(int|string $record): void
+    {
+        $this->record = $this->resolveRecord($record);
+        abort_unless($this->record->isPublished(), 404); // spec 16.6: drafts have no game system files
+        $this->fillLayouts();
+    }
+
+    public function getTitle(): string
+    {
+        return $this->record->name.' - game system files';
+    }
+
+    private function fillLayouts(): void
+    {
+        $this->form->fill(collect(PersonType::cases())->mapWithKeys(fn (PersonType $t) => [
+            $t->value => ExportLayout::for($this->record, $t)->only(['file_format', 'row_mode', 'zip_pattern', 'columns']),
+        ])->all());
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Tabs::make('layouts')->tabs([
+                Tab::make('Athlete layout')->schema($this->layoutFields(PersonType::Athlete)),
+                Tab::make('Official layout')->schema($this->layoutFields(PersonType::Official)),
+            ]),
+        ])->statePath('data');
+    }
+
+    private function layoutFields(PersonType $type): array
+    {
+        $p = $type->value;
+        $keep = array_column(ExportLayout::for($this->record, $type)->columns ?? [], 'source');
+        $options = ExportSources::options(auth()->user(), $keep);
+        $all = ExportSources::all();
+        $formats = fn (Get $get) => ExportSources::FORMATS[$all[$get('source')]['kind'] ?? 'number'];
+
+        return [
+            Grid::make(3)->schema([
+                Select::make("{$p}.file_format")->label('File type')->options(ExportLayout::FORMATS)->required(),
+                Select::make("{$p}.row_mode")->label('Rows')->options(ExportLayout::ROW_MODES)->required(),
+                TextInput::make("{$p}.zip_pattern")->label('ZIP file names')->required()->maxLength(200)
+                    ->helperText('Tokens: {code} {passport_no} {last_name} {first_name} {association_code} {kind}'),
+            ]),
+            Repeater::make("{$p}.columns")->label('Columns')->reorderable()->defaultItems(0)->addActionLabel('Add column')->columns(4)->schema([
+                Select::make('source')->options($options)->searchable()->required()->live()
+                    ->in(collect($options)->flatMap(fn (array $group) => array_keys($group))->all())
+                    ->afterStateUpdated(fn (Set $set) => $set('format', null)),
+                TextInput::make('heading')->required()->maxLength(100),
+                Select::make('format')->options($formats)->placeholder('Default')->visible(fn (Get $get) => $formats($get) !== []),
+                TextInput::make('value')->label('Fixed text')->required()->maxLength(100)->visible(fn (Get $get) => $get('source') === 'text'),
+            ]),
+        ];
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([
+            Form::make([EmbeddedSchema::make('form')])->id('form')->livewireSubmitHandler('save')
+                ->footer([Actions::make([Action::make('save')->label('Save layouts')->submit('save')])]),
+        ]);
+    }
+
+    public function save(): void
+    {
+        $state = $this->form->getState();
+        $layouts = [];
+        $errors = [];
+        foreach (PersonType::cases() as $t) {
+            $layout = ExportLayout::for($this->record, $t);
+            // Fixed key order (source, heading, format, value) whatever order the form state holds them in.
+            $keys = array_fill_keys(['source', 'heading', 'format', 'value'], null);
+            $columns = array_map(fn (array $c) => array_filter(array_replace($keys, array_intersect_key($c, $keys)), fn ($v) => filled($v)),
+                array_values($state[$t->value]['columns'] ?? []));
+            foreach (ExportSources::validate($columns, auth()->user(), array_column($layout->columns ?? [], 'source')) as $line) {
+                $errors[] = $t->label().' layout, '.lcfirst($line);
+            }
+            $layouts[] = $layout->fill([...Arr::only($state[$t->value], ['file_format', 'row_mode', 'zip_pattern']), 'columns' => $columns]);
+        }
+        if ($errors) {
+            Notification::make()->danger()->title('Layouts not saved')->body(implode("\n", $errors))->send();
+
+            return;
+        }
+        foreach ($layouts as $layout) {
+            $layout->save();
+        }
+        Notification::make()->success()->title('Layouts saved')->send();
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('copy')->label('Copy layouts from another game')->color('gray')
+                ->modalDescription('Replaces both layouts of this game.')
+                ->schema([Select::make('game_id')->label('Game')->required()
+                    ->options(fn () => Game::whereKeyNot($this->record->id)->whereHas('exportLayouts')->orderBy('name')->pluck('name', 'id'))])
+                ->action(fn (array $data) => $this->copyFrom(Game::findOrFail($data['game_id']))),
+        ];
+    }
+
+    private function copyFrom(Game $source): void
+    {
+        $all = ExportSources::all();
+        $medic = Person::canViewMedical(auth()->user());
+        $dropped = [];
+        foreach ($source->exportLayouts as $from) {
+            $columns = collect($from->columns)->reject(function (array $c) use ($all, $medic, &$dropped) {
+                $leave = ! $medic && ($all[$c['source']]['medical'] ?? false);
+                if ($leave) {
+                    $dropped[] = $c['heading'];
+                }
+
+                return $leave;
+            })->values()->all();
+            ExportLayout::for($this->record, $from->type)
+                ->fill([...$from->only(['file_format', 'row_mode', 'zip_pattern']), 'columns' => $columns])->save();
+        }
+        $this->fillLayouts();
+        Notification::make()->success()->title("Layouts copied from {$source->name}")
+            ->body($dropped ? 'Left out (needs "View medical & health data"): '.implode(', ', $dropped) : null)->send();
+    }
+}
