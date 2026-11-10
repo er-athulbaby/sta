@@ -6,6 +6,7 @@ use App\Enums\StaPermission;
 use App\Enums\SubmissionStatus;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\GamePhase;
+use App\Models\Phase2SportTotal;
 use App\Models\Submission;
 use App\Notifications\NewComment;
 use App\Services\Phases\LongListChecks;
@@ -64,6 +65,15 @@ class SubmissionView extends Page
 
         return $this->record->phase2SportsFor($this->submission->association)->flatMap(fn ($gs) => $gs->gameEvents->map(
             fn ($ge) => ['sport' => $gs->sport->name, 'event' => $ge->event->name, 'count' => (int) ($counts[$ge->id] ?? 0)]));
+    }
+
+    /** @return Collection<int, array{sport: string, male: ?int, female: ?int, gold: ?int, silver: ?int, bronze: ?int}> */
+    public function phase2SportTotals(): Collection
+    {
+        $totals = $this->submission->sportTotals()->get()->keyBy('game_sport_id');
+
+        return $this->record->phase2SportsFor($this->submission->association)->map(fn ($gs) => ['sport' => $gs->sport->name,
+            ...collect(Phase2SportTotal::DIGITS)->map(fn ($digits, $field) => $totals->get($gs->id)?->{$field})->all()]);
     }
 
     /** @return list<string> e.g. "Judo: 2 male athletes (limit 1)" */

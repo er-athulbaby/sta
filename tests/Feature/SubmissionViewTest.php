@@ -91,3 +91,11 @@ it('logs the long list detail in the trail without policy number or vaccinations
         ->and(json_encode($a->properties))->not->toContain('insurance_policy_no')->not->toContain('POL-777')
         ->not->toContain('vaccinations')->not->toContain('Yellow fever');
 });
+
+it('shows phase 2 participants and expected medals', function () {
+    $p2 = Submission::for($this->game, $this->assoc, 2);
+    $p2->sportTotals()->create(['game_sport_id' => $this->m60->game_sport_id, 'male' => 7, 'female' => 5, 'silver' => 2]);
+    actingInAdmin($this->viewer);
+    livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $p2])
+        ->assertSee('Participants and expected medals')->assertSeeHtml('<td class="py-1">7</td>')->assertSeeHtml('<td class="py-1">5</td>');
+});

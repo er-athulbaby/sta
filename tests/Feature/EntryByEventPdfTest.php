@@ -62,11 +62,32 @@ it('renders the expected content', function () {
         'gameSport' => GameSport::factory()->make(['entry_policy' => 'Max 1 per category']), 'sportName' => 'Weightlifting',
         'rows' => [['event' => 'Men 61kg', 'gender' => 'men', 'count' => 1], ['event' => 'Team', 'gender' => 'mixed', 'count' => 2]],
         'totals' => ['men' => 1, 'women' => 0, 'total' => 3],
+        'participants' => ['male' => 3, 'female' => 0], 'medals' => ['gold' => 1, 'silver' => null, 'bronze' => 2],
         'referenceNo' => 'BWF-G001-P2-R1', 'declaration' => 'I confirm.', 'nocLogo' => 'data:image/png;base64,AA==', 'gameLogo' => null,
     ])->render();
 
     expect($html)->toContain('Entry by Event')->toContain('Men 61kg')->toContain('Max 1 per category')
-        ->toContain('BWF-G001-P2-R1')->toContain('I confirm.')->toContain('Stamp')->toContain('(mixed)')->toContain('All events (incl. mixed)')->toContain('max-height:60px');
+        ->toContain('BWF-G001-P2-R1')->toContain('I confirm.')->toContain('Stamp')->toContain('(mixed)')->toContain('All events (incl. mixed)')->toContain('max-height:60px')
+        ->toContain('Total number of participants')->toContain('Expected medals')->toContain('Gold')->toContain('Bronze');
+});
+
+it('passes the sport participants and medals to the view', function () {
+    Storage::fake(config('filesystems.private'));
+    $assoc = Association::factory()->create(['code' => 'BWF']);
+    $game = Game::factory()->create();
+    $gs = GameSport::factory()->create(['game_id' => $game->id, 'sport_id' => Sport::factory()->create(['association_id' => $assoc->id])->id]);
+    $s = Submission::for($game, $assoc, 2);
+    $s->update(['status' => SubmissionStatus::Submitted, 'reference_no' => 'BWF-G001-P2-R1', 'revision' => 1]);
+    $s->sportTotals()->create(['game_sport_id' => $gs->id, 'male' => 4, 'female' => 2, 'gold' => 1]);
+    $captured = null;
+    view()->composer('pdf.entry-by-event', function ($v) use (&$captured) {
+        $captured = $v->getData();
+    });
+
+    (new GenerateEntryByEventPdfs($s))->handle();
+
+    expect($captured['participants'])->toBe(['male' => 4, 'female' => 2])
+        ->and($captured['medals'])->toBe(['gold' => 1, 'silver' => null, 'bronze' => null]);
 });
 
 it('orders rows men, women, mixed then by event name', function () {

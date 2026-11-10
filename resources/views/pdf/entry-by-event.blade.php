@@ -60,6 +60,14 @@
         <td class="c" colspan="2"><strong>{{ $totals['total'] }}</strong></td>
     </tr>
 </table>
+<table class="grid" style="margin-top:8px">
+    <tr><th style="text-align:left">Total number of participants</th><th style="width:15%">Male</th><th style="width:15%">Female</th></tr>
+    <tr><td>Athletes (each counted once)</td><td class="c">{{ $participants['male'] ?? '–' }}</td><td class="c">{{ $participants['female'] ?? '–' }}</td></tr>
+</table>
+<table class="grid" style="margin-top:8px">
+    <tr><th style="text-align:left">Expected medals</th><th style="width:15%">Gold</th><th style="width:15%">Silver</th><th style="width:15%">Bronze</th></tr>
+    <tr><td></td><td class="c">{{ $medals['gold'] ?? '–' }}</td><td class="c">{{ $medals['silver'] ?? '–' }}</td><td class="c">{{ $medals['bronze'] ?? '–' }}</td></tr>
+</table>
 <p style="margin-top:14px">{{ $declaration }}</p>
 <table class="grid" style="margin-top:10px">
     <tr>

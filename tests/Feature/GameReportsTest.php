@@ -86,13 +86,16 @@ it('lists phase 1 answers', function () {
     ]);
 });
 
-it('totals phase 2 numbers per event and per sport', function () {
+it('totals phase 2 numbers per event and per sport with participants and medals', function () {
+    Submission::where(['game_id' => $this->game->id, 'association_id' => $this->judoFed->id, 'phase' => 2])->sole()
+        ->sportTotals()->create(['game_sport_id' => $this->judo->id, 'male' => 2, 'female' => 0, 'gold' => 1]);
+
     expect($this->reports->phase2Totals($this->game))->toBe([
-        'headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count'],
+        'headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count', 'Male participants', 'Female participants', 'Gold', 'Silver', 'Bronze'],
         'rows' => [
-            ['Bahrain Judo Federation', 'Judo', 'Men -60kg', 'Male', 2],
-            ['Bahrain Judo Federation', 'Judo', 'Women -52kg', 'Female', 0],
-            ['Bahrain Judo Federation', 'Judo', 'Total', null, 2],
+            ['Bahrain Judo Federation', 'Judo', 'Men -60kg', 'Male', 2, null, null, null, null, null],
+            ['Bahrain Judo Federation', 'Judo', 'Women -52kg', 'Female', 0, null, null, null, null, null],
+            ['Bahrain Judo Federation', 'Judo', 'Total', null, 2, 2, 0, 1, null, null],
         ],
     ]);
 });

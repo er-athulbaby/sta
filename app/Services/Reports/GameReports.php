@@ -46,20 +46,22 @@ final class GameReports
     public function phase2Totals(Game $game): array
     {
         $rows = [];
-        foreach ($this->submitted($game, 2, ['numbers']) as $s) {
+        foreach ($this->submitted($game, 2, ['numbers', 'sportTotals']) as $s) {
             $counts = $s->numbers->pluck('count', 'game_event_id');
+            $totals = $s->sportTotals->keyBy('game_sport_id');
             foreach ($game->phase2SportsFor($s->association) as $gs) {
                 $total = 0;
                 foreach ($gs->gameEvents->sortBy('event.name') as $ge) {
                     $n = (int) ($counts[$ge->id] ?? 0);
                     $total += $n;
-                    $rows[] = [$s->association->name, $gs->sport->name, $ge->event->name, $ge->event->gender->label(), $n];
+                    $rows[] = [$s->association->name, $gs->sport->name, $ge->event->name, $ge->event->gender->label(), $n, null, null, null, null, null];
                 }
-                $rows[] = [$s->association->name, $gs->sport->name, 'Total', null, $total];
+                $t = $totals->get($gs->id);
+                $rows[] = [$s->association->name, $gs->sport->name, 'Total', null, $total, $t?->male, $t?->female, $t?->gold, $t?->silver, $t?->bronze];
             }
         }
 
-        return ['headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count'], 'rows' => $rows];
+        return ['headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count', 'Male participants', 'Female participants', 'Gold', 'Silver', 'Bronze'], 'rows' => $rows];
     }
 
     public function longList(Game $game): array

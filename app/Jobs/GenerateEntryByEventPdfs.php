@@ -29,6 +29,7 @@ class GenerateEntryByEventPdfs implements ShouldQueue
         $disk = Storage::disk(config('filesystems.private'));
         $paths = [];
         $counts = $s->numbers()->pluck('count', 'game_event_id');
+        $sportTotals = $s->sportTotals()->get()->keyBy('game_sport_id');
         foreach ($s->game->phase2SportsFor($s->association) as $gs) {
             $order = ['men' => 0, 'women' => 1, 'mixed' => 2];
             $rows = $gs->gameEvents->map(fn ($ge) => [
@@ -36,9 +37,12 @@ class GenerateEntryByEventPdfs implements ShouldQueue
             ])->sortBy([fn ($a, $b) => ($order[$a['gender']] ?? 3) <=> ($order[$b['gender']] ?? 3), ['event', 'asc']])->values()->all();
             $totals = ['men' => collect($rows)->where('gender', 'men')->sum('count'), 'women' => collect($rows)->where('gender', 'women')->sum('count'),
                 'total' => collect($rows)->sum('count')];
+            $t = $sportTotals->get($gs->id);
             $html = view('pdf.entry-by-event', [
                 'game' => $s->game, 'association' => $s->association, 'gameSport' => $gs, 'sportName' => $gs->sport->name,
                 'rows' => $rows, 'totals' => $totals, 'referenceNo' => $s->reference_no,
+                'participants' => ['male' => $t?->male, 'female' => $t?->female],
+                'medals' => ['gold' => $t?->gold, 'silver' => $t?->silver, 'bronze' => $t?->bronze],
                 'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
                 'nocLogo' => self::dataUri(Setting::get(Setting::NOC_LOGO)), 'gameLogo' => self::dataUri($s->game->logo_path),
             ])->render();

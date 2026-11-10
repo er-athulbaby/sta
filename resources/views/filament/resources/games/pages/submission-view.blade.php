@@ -53,6 +53,16 @@
                 </tbody>
             </table>
         </x-filament::section>
+        <x-filament::section heading="Participants and expected medals">
+            <table class="w-full text-sm">
+                <thead><tr class="text-left text-gray-500"><th class="py-1">Sport</th><th class="py-1">Male</th><th class="py-1">Female</th><th class="py-1">Gold</th><th class="py-1">Silver</th><th class="py-1">Bronze</th></tr></thead>
+                <tbody>
+                    @foreach ($this->phase2SportTotals() as $r)
+                        <tr class="border-t border-gray-200 dark:border-white/10"><td class="py-1">{{ $r['sport'] }}</td>@foreach (['male', 'female', 'gold', 'silver', 'bronze'] as $f)<td class="py-1">{{ $r[$f] ?? '–' }}</td>@endforeach</tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </x-filament::section>
     @elseif ($s->phase === 3)
         <x-filament::section heading="Long List">
             @include('filament.shared.long-list-people', ['rows' => $this->longListRows(), 'showDetails' => true, 'showMedical' => $showMedical])
