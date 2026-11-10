@@ -68,41 +68,13 @@ trait EditsPhase3
             }
             DB::transaction(function () {
                 $this->claimOrHalt();
-                $this->syncEntries();
+                app(LongListChecks::class)->sync($this->submission, $this->athletes, $this->officials);
             });
         } catch (Halt) {
             return; // notification already sent; loadedVersion unchanged so submit knows nothing was saved
         }
         $this->refreshLoadedAt();
         Notification::make()->success()->title('Saved')->send();
-    }
-
-    /** Makes the saved entries equal to the visible selection; entries and travel details outside it are deleted. */
-    private function syncEntries(): void
-    {
-        [$sports, $events] = app(LongListChecks::class)->visible($this->submission);
-        $want = collect();
-        foreach ($this->athletes as $geId => $ids) {
-            if ($ge = $events->get((int) $geId)) {
-                foreach ((array) $ids as $id) {
-                    $want->push(['person_id' => (int) $id, 'game_event_id' => $ge->id, 'game_sport_id' => $ge->game_sport_id]);
-                }
-            }
-        }
-        foreach ($this->officials as $gsId => $ids) {
-            if ($sports->has((int) $gsId)) {
-                foreach ((array) $ids as $id) {
-                    $want->push(['person_id' => (int) $id, 'game_event_id' => null, 'game_sport_id' => (int) $gsId]);
-                }
-            }
-        }
-        $key = fn (array $e) => $e['person_id'].'-'.($e['game_event_id'] ?? 'official').'-'.$e['game_sport_id'];
-        $want = $want->keyBy($key);
-        $have = $this->submission->entries()->get()->keyBy(fn ($e) => $key($e->only(['person_id', 'game_event_id', 'game_sport_id'])));
-
-        $have->diffKeys($want)->each->delete();
-        $want->diffKeys($have)->each(fn (array $row) => $this->submission->entries()->create($row));
-        $this->submission->details()->whereNotIn('person_id', $want->pluck('person_id')->unique()->all())->get()->each->delete();
     }
 
     public function travelAction(): Action

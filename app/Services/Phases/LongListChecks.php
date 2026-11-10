@@ -219,4 +219,37 @@ final class LongListChecks
                 'on_list' => in_array($p->id, $saved, true),
             ]);
     }
+
+    /**
+     * Makes the saved entries equal to the visible selection; entries and travel details outside it are deleted.
+     *
+     * @param  array<int|string, mixed>  $athletes  game_event_id => person ids
+     * @param  array<int|string, mixed>  $officials  game_sport_id => person ids
+     */
+    public function sync(Submission $s, array $athletes, array $officials): void
+    {
+        [$sports, $events] = $this->visible($s);
+        $want = collect();
+        foreach ($athletes as $geId => $ids) {
+            if ($ge = $events->get((int) $geId)) {
+                foreach ((array) $ids as $id) {
+                    $want->push(['person_id' => (int) $id, 'game_event_id' => $ge->id, 'game_sport_id' => $ge->game_sport_id]);
+                }
+            }
+        }
+        foreach ($officials as $gsId => $ids) {
+            if ($sports->has((int) $gsId)) {
+                foreach ((array) $ids as $id) {
+                    $want->push(['person_id' => (int) $id, 'game_event_id' => null, 'game_sport_id' => (int) $gsId]);
+                }
+            }
+        }
+        $key = fn (array $e) => $e['person_id'].'-'.($e['game_event_id'] ?? 'official').'-'.$e['game_sport_id'];
+        $want = $want->keyBy($key);
+        $have = $s->entries()->get()->keyBy(fn ($e) => $key($e->only(['person_id', 'game_event_id', 'game_sport_id'])));
+
+        $have->diffKeys($want)->each->delete();
+        $want->diffKeys($have)->each(fn (array $row) => $s->entries()->create($row));
+        $s->details()->whereNotIn('person_id', $want->pluck('person_id')->unique()->all())->get()->each->delete();
+    }
 }

@@ -35,6 +35,7 @@ class Games extends Page
                     1 => Phase1Entry::class,
                     2 => Phase2Entry::class,
                     3 => Phase3Entry::class,
+                    4 => Phase4Entry::class,
                     default => null,
                 };
 
