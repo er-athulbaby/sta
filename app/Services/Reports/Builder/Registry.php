@@ -7,6 +7,12 @@ final class Registry
 {
     public const SUBJECTS = [
         Subjects\People::class,
+        Subjects\Entries::class,
+        Subjects\Submissions::class,
+        Subjects\Phase1Answers::class,
+        Subjects\Phase2Numbers::class,
+        Subjects\Phase2SportTotals::class,
+        Subjects\ClothingSizes::class,
     ];
 
     /** @return array<string, Subject> */
