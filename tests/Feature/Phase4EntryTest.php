@@ -16,6 +16,7 @@ use App\Models\Sport;
 use App\Models\Submission;
 use App\Models\User;
 use App\Services\Phases\ShortListChecks;
+use App\Services\Phases\SubmissionWorkflow;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
 
@@ -157,4 +158,28 @@ it('preloads once on open and the first save succeeds without a stale error', fu
     $page->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->set("officials.{$this->judo->id}", [])->call('save')
         ->assertNotNotified('This entry was changed by someone else — reload to see the latest.');
     expect(phase4()->entries()->pluck('person_id')->all())->toBe([$this->ali->id])->and(phase4()->lock_version)->toBe(2);
+});
+
+it('refuses save and hides submit while the Long List is a draft, then preloads once it is submitted', function () {
+    $this->p3->update(['status' => SubmissionStatus::Draft]);
+    $page = livewire(Phase4Entry::class, ['game' => $this->game->id])->assertActionHidden('submit')
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->call('save')->assertNotified(ShortListChecks::LONG_LIST_FIRST);
+    expect(phase4()->entries()->count())->toBe(0)->and(phase4()->lock_version)->toBe(0);
+
+    $this->p3->update(['status' => SubmissionStatus::Submitted]);
+    livewire(Phase4Entry::class, ['game' => $this->game->id])
+        ->assertSet("athletes.{$this->m60->id}", [(string) $this->ali->id, (string) $this->omar->id]);
+    expect(phase4()->entries()->count())->toBe(3);
+});
+
+it('preloads after STA extended the Phase 4 deadline before the Long List was submitted', function () {
+    $this->p3->update(['status' => SubmissionStatus::Draft]);
+    $p4 = Submission::for($this->game, $this->assoc, 4);
+    app(SubmissionWorkflow::class)->extend($p4, User::factory()->sta()->create(), now()->addDays(5));
+    expect($p4->fresh()->lock_version)->toBeGreaterThan(0);
+
+    $this->p3->update(['status' => SubmissionStatus::Submitted]);
+    livewire(Phase4Entry::class, ['game' => $this->game->id])
+        ->assertSet("athletes.{$this->m60->id}", [(string) $this->ali->id, (string) $this->omar->id]);
+    expect(phase4()->entries()->count())->toBe(3);
 });

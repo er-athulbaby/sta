@@ -28,7 +28,7 @@ class GenerateEntryBySportPdf implements ShouldQueue
         $answers = $s->answers()->pluck('answer', 'game_sport_id');
         $rows = $s->game->sportsFor($s->association)->map(fn ($gs) => [
             'sport' => $gs->sport->name,
-            'answer' => isset($answers[$gs->id]) ? ucfirst($answers[$gs->id]->value) : 'No response',
+            'answer' => isset($answers[$gs->id]) ? $answers[$gs->id]->label() : 'No response',
         ])->all();
         $html = view('pdf.entry-by-sport', [
             'game' => $s->game, 'association' => $s->association, 'rows' => $rows, 'referenceNo' => $s->reference_no,

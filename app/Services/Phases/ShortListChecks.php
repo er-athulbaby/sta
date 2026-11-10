@@ -30,20 +30,23 @@ final class ShortListChecks
         return $p3?->status === SubmissionStatus::Submitted ? $p3 : null;
     }
 
-    /** Copy the submitted Long List into a never-saved, empty Phase 4 submission; claiming lock_version 0 makes it run at most once. */
+    /** Copy the submitted Long List into an empty Phase 4 submission, once: preloaded_at is claimed atomically, so nothing is ever re-copied. */
     public function preload(Submission $phase4): bool
     {
-        if ($phase4->phase !== 4 || (int) $phase4->lock_version !== 0 || ! ($p3 = $this->longList($phase4)) || $phase4->entries()->exists()) {
+        if ($phase4->phase !== 4 || $phase4->preloaded_at !== null || ! ($p3 = $this->longList($phase4)) || $phase4->entries()->exists()) {
             return false;
         }
 
         return DB::transaction(function () use ($phase4, $p3) {
-            if (! $phase4->claimVersion(0)) {
+            $claimed = Submission::withoutGlobalScope('association')->whereKey($phase4->id)->whereNull('preloaded_at')
+                ->update(['preloaded_at' => now()]);
+            if ($claimed !== 1) {
                 return false;
             }
             foreach ($p3->entries()->orderBy('id')->get() as $e) {
                 $phase4->entries()->create($e->only(['person_id', 'game_event_id', 'game_sport_id']));
             }
+            Submission::withoutGlobalScope('association')->whereKey($phase4->id)->increment('lock_version'); // open pages see a stale notice
 
             return true;
         });

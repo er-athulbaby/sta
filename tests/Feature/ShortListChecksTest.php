@@ -59,11 +59,22 @@ it('preloads the submitted Long List into a new Phase 4 submission, once', funct
         ->and($this->p3->entries()->count())->toBe(4);
 });
 
-it('does not preload once the Phase 4 submission has been saved', function () {
+it('preloads only once: emptying the list afterwards does not re-copy', function () {
     $p4 = Submission::for($this->game, $this->assoc, 4);
-    expect($p4->claimVersion(0))->toBeTrue()
-        ->and(app(ShortListChecks::class)->preload($p4->fresh()))->toBeFalse()
-        ->and($p4->entries()->count())->toBe(0);
+    expect(app(ShortListChecks::class)->preload($p4))->toBeTrue()
+        ->and(app(ShortListChecks::class)->preload($p4->fresh()))->toBeFalse();
+    $p4->entries()->delete();
+    expect(app(ShortListChecks::class)->preload($p4->fresh()))->toBeFalse()->and($p4->entries()->count())->toBe(0);
+});
+
+it('still preloads after the deadline was extended before the Long List was submitted', function () {
+    $this->p3->update(['status' => SubmissionStatus::Draft]);
+    $p4 = Submission::for($this->game, $this->assoc, 4);
+    $p4->claimVersion(0); // what STA extend / an early Submit press does
+
+    $this->p3->update(['status' => SubmissionStatus::Submitted]);
+    expect(app(ShortListChecks::class)->preload($p4->fresh()))->toBeTrue()->and($p4->entries()->count())->toBe(4)
+        ->and($p4->fresh()->lock_version)->toBe(2);
 });
 
 it('preloads nothing while the Long List is not submitted, and can later', function () {

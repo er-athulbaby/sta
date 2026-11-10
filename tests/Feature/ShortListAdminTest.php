@@ -94,3 +94,10 @@ it('needs edit_submissions for the STA Short List page', function () {
     actingInAdmin($this->sta);
     $this->get(GameResource::getUrl('submission-edit-4', ['record' => $this->game, 'submission' => $this->p4]))->assertOk();
 });
+
+it('warns on the submission view when a submitted Short List no longer matches the Long List', function () {
+    Submission::where(['game_id' => $this->game->id, 'phase' => 3])->update(['status' => SubmissionStatus::Draft]);
+
+    livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->p4])
+        ->assertSee('Short List needs attention')->assertSee(ShortListChecks::LONG_LIST_FIRST);
+});

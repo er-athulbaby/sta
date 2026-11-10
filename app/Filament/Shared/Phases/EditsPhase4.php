@@ -75,6 +75,10 @@ trait EditsPhase4
     {
         try {
             $this->guardEditable();
+            if (! $this->longListSubmitted()) {
+                Notification::make()->danger()->title(ShortListChecks::LONG_LIST_FIRST)->send();
+                throw new Halt;
+            }
             if (mb_strlen((string) $this->justification) > 2000) {
                 throw ValidationException::withMessages(['justification' => 'The justification may not be longer than 2000 characters.']);
             }

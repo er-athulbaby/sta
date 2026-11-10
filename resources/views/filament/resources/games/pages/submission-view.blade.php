@@ -23,6 +23,14 @@
         </dl>
     </x-filament::section>
 
+    @if ($warnings = $this->shortListWarnings())
+        <x-filament::section heading="Short List needs attention">
+            @foreach ($warnings as $w)
+                <p class="text-sm text-danger-600">{{ $w }}</p>
+            @endforeach
+        </x-filament::section>
+    @endif
+
     @if ($s->phase === 1)
         <x-filament::section heading="Entry by Sport">
             <table class="w-full text-sm">

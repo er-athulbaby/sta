@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Games\Pages;
 
 use App\Enums\StaPermission;
+use App\Enums\SubmissionStatus;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\GamePhase;
 use App\Models\Submission;
@@ -69,6 +70,16 @@ class SubmissionView extends Page
     public function overLimitLines(): array
     {
         return array_map(ShortListChecks::describe(...), app(ShortListChecks::class)->overLimits($this->submission));
+    }
+
+    /** @return list<string> problems with a submitted Short List, e.g. after the Long List was re-opened */
+    public function shortListWarnings(): array
+    {
+        if ($this->submission->phase !== 4 || $this->submission->status !== SubmissionStatus::Submitted) {
+            return [];
+        }
+
+        return app(ShortListChecks::class)->submitErrors($this->submission);
     }
 
     public function longListRows(): Collection
