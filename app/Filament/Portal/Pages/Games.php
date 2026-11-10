@@ -26,7 +26,7 @@ class Games extends Page
     {
         $tenant = Filament::getTenant();
 
-        return Game::whereHas('associations', fn ($q) => $q->whereKey($tenant->getKey()))
+        return Game::whereNotNull('published_at')->whereHas('associations', fn ($q) => $q->whereKey($tenant->getKey()))
             ->with('phases')->orderBy('start_date')->get()
             ->map(fn (Game $g) => ['game' => $g, 'rows' => $g->phases->where('enabled', true)->sortBy('phase')->map(function (GamePhase $p) use ($g, $tenant) {
                 $sub = Submission::withoutGlobalScope('association')

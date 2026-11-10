@@ -185,7 +185,7 @@ class GameDashboard extends Page
                 ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value)),
             Action::make('remindPending')
                 ->label('Remind pending')
-                ->visible(fn () => (bool) auth()->user()->can(StaPermission::SendReminders->value))
+                ->visible(fn () => $this->record->isPublished() && auth()->user()->can(StaPermission::SendReminders->value))
                 ->schema([Select::make('phase')->required()->options(
                     fn () => $this->phases()->where('status', PhaseStatus::Open)
                         ->mapWithKeys(fn ($p) => [$p->phase => "Phase {$p->phase} - ".GamePhase::NAMES[$p->phase]])->all())])

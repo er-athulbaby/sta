@@ -54,7 +54,7 @@ class PhasesRelationManager extends RelationManager
             ->recordActions([
                 EditAction::make(),
                 Action::make('open')->label('Open')->icon(Heroicon::OutlinedLockOpen)->requiresConfirmation()
-                    ->visible(fn (GamePhase $r) => $r->enabled && $r->deadline !== null && $r->status !== PhaseStatus::Open)
+                    ->visible(fn (GamePhase $r) => $r->enabled && $r->deadline !== null && $r->status !== PhaseStatus::Open && $r->game->isPublished())
                     ->action(function (GamePhase $r) {
                         $r->update(['status' => PhaseStatus::Open, 'opens_at' => $r->opens_at ?? now()]);
                         foreach ($r->game->associations as $association) {

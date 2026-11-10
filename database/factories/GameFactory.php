@@ -13,6 +13,12 @@ class GameFactory extends Factory
             'start_date' => now()->addMonths(3),
             'end_date' => now()->addMonths(3)->addDays(10),
             'reminder_days' => [7, 3, 0],
+            'published_at' => now(),
         ];
+    }
+
+    public function draft(): static
+    {
+        return $this->state(['published_at' => null]);
     }
 }

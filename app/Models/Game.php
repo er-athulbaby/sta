@@ -15,11 +15,11 @@ class Game extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['name', 'logo_path', 'start_date', 'end_date', 'reminder_days'];
+    protected $fillable = ['name', 'logo_path', 'start_date', 'end_date', 'reminder_days', 'published_at'];
 
     protected function casts(): array
     {
-        return ['start_date' => 'date', 'end_date' => 'date', 'reminder_days' => 'array'];
+        return ['start_date' => 'date', 'end_date' => 'date', 'reminder_days' => 'array', 'published_at' => 'datetime'];
     }
 
     protected static function booted(): void
@@ -64,6 +64,12 @@ class Game extends Model
     public function phase(int $n): GamePhase
     {
         return $this->phases->firstWhere('phase', $n) ?? $this->phases()->where('phase', $n)->firstOrFail();
+    }
+
+    /** Spec 16.6: associations see a game, and its phases can open, only once STA publishes it. */
+    public function isPublished(): bool
+    {
+        return $this->published_at !== null;
     }
 
     public function isInvited(Association $a): bool

@@ -43,7 +43,7 @@ trait HandlesSubmission
     {
         $this->gameModel = Game::findOrFail($game);
         $tenant = Filament::getTenant();
-        abort_unless($this->gameModel->isInvited($tenant) && $this->gameModel->phase($phase)->enabled, 404);
+        abort_unless($this->gameModel->isPublished() && $this->gameModel->isInvited($tenant) && $this->gameModel->phase($phase)->enabled, 404);
         $this->submission = Submission::for($this->gameModel, $tenant, $phase);
         $this->loadPhase();
         $this->refreshLoadedAt();

@@ -84,7 +84,7 @@ final class SubmissionWorkflow
             $this->fail('Give a new deadline in the future to re-open this entry.');
         }
         $this->change($s, ['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override]);
-        Notification::send(Recipients::association($s->association), new DeadlineChanged($s, reopened: true));
+        $this->notifyDeadline($s, new DeadlineChanged($s, reopened: true));
 
         return $s;
     }
@@ -95,9 +95,17 @@ final class SubmissionWorkflow
             $this->fail('This entry is already submitted — re-open it to change the deadline.');
         }
         $this->change($s, ['deadline_override' => $deadline]);
-        Notification::send(Recipients::association($s->association), new DeadlineChanged($s, reopened: false));
+        $this->notifyDeadline($s, new DeadlineChanged($s, reopened: false));
 
         return $s;
+    }
+
+    /** Spec 16.6: associations never hear about a draft game. */
+    private function notifyDeadline(Submission $s, DeadlineChanged $n): void
+    {
+        if ($s->game->isPublished()) {
+            Notification::send(Recipients::association($s->association), $n);
+        }
     }
 
     private function finalise(Submission $s, User $approver, User $submittedBy): Submission
