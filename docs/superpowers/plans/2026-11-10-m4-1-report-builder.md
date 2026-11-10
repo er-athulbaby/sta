@@ -2795,3 +2795,12 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Date fields are dates (`DATE(...)`): "submitted at" / "approved at" lose their time of day.
 - Group lines are written **before** their rows ("Judo (3)", level 2 prefixed "— "); the grand total is last. No bold styling in Excel.
 - Saved reports are not audit-logged and have no group-count cap; add either if asked.
+
+---
+
+## Amendments after Milestone 4.3 (2026-11-11) — binding over the tasks above
+- Event gender values shown/filtered are labels **Male / Female / Mixed** (spec 16.1): wherever this plan expects `'Men'`/`'Women'` (e.g. Entries subject event gender), use `'Male'`/`'Female'`.
+- Phase 2: add the per-sport `phase2_sport_totals` data (participants male/female, medals gold/silver/bronze) — either as fields on the Phase 2 numbers subject joined by submission + game sport, or a new "Phase 2 sport totals" subject (prefer the new subject; it is one row per submission × sport).
+- Short List limit labels read "male athletes" / "female athletes".
+- Admin-created games start as drafts (`games.published_at` null); game-based subjects list only published games in the game filter unless the user is Super Admin.
+- Every xlsx string cell is written as a literal OpenSpout StringCell (never a formula).

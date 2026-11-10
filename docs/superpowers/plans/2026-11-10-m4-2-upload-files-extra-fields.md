@@ -2778,3 +2778,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 | Naming tokens, default `{code}_{kind}`, bad characters → `_`, duplicates `-2`, `-3` | 7 |
 | `missing.txt` | 7 |
 | Queued job on the private disk, in-app notification with a 5-minute link, audited, `export_game_files` | 7 |
+
+---
+
+## Amendments after Milestone 4.3 (2026-11-11) — binding over the tasks above
+- Drop the `men_women` gender export format (spec 16.1: gender is always Male/Female); keep Male/Female and M/F.
+- Game sport limit labels are "Max male" / "Max female". Export layouts and ZIPs are available only for published games (`games.published_at` not null).
+- Every xlsx string cell is written as a literal OpenSpout StringCell; every CSV value starting with = + - @ is prefixed with an apostrophe (formula-injection guard).
