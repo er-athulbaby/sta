@@ -88,9 +88,10 @@ final class Engine
             $select[] = self::total($fields[$key]->sql, $totals[$key])." AS t{$i}";
         }
         $query->select(DB::raw(implode(', ', $select)));
-        foreach ($groupSql as $sql) {
-            // Grouping by the null flag too (same groups) lets MySQL ONLY_FULL_GROUP_BY accept ordering by it.
-            $query->groupByRaw($sql)->groupByRaw("({$sql}) IS NULL")->orderByRaw("({$sql}) IS NULL")->orderByRaw($sql);
+        foreach (array_keys($groupSql) as $i) {
+            // By the alias, not the expression: MySQL ONLY_FULL_GROUP_BY rejects a repeated correlated subquery
+            // (extra fields reference people.id); ordering by a function of a grouped alias is accepted.
+            $query->groupByRaw("g{$i}")->orderByRaw("g{$i} IS NULL")->orderByRaw("g{$i}");
         }
 
         return array_map(function ($record) use ($groupSql, $aliases) {

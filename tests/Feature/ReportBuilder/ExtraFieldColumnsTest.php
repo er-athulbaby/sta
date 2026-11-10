@@ -30,7 +30,7 @@ beforeEach(function () {
     $this->omar = Person::factory()->complete()->create(['association_id' => $assoc->id]);  // BJF-AT-0002
     $this->ali->syncExtraValues([$this->shirt->id => 'ALI', $this->weight->id => '100', $this->vegan->id => '1',
         $this->arrival->id => '2026-12-01', $this->donor->id => 'B']);
-    $this->omar->syncExtraValues([$this->weight->id => '65', $this->vegan->id => '0', $this->arrival->id => '2026-11-20']);
+    $this->omar->syncExtraValues([$this->weight->id => '65', $this->vegan->id => '0', $this->arrival->id => '2025-11-20']);
 
     $this->game = Game::factory()->create();
     $gs = GameSport::factory()->create(['game_id' => $this->game->id, 'sport_id' => Sport::factory()->create(['association_id' => $assoc->id])->id]);
@@ -77,7 +77,7 @@ it('shows, filters (numbers and dates compared as such) and checks completeness 
 
     expect(shownExtra(runExtra($this->admin, 'people', $columns)))->toBe([
         ['BJF-AT-0001', 'ALI', 100.0, 'Yes', '2026-12-01', 'B', 'Yes'],
-        ['BJF-AT-0002', null, 65.0, 'No', '2026-11-20', null, 'No'], // required "Shirt name" missing
+        ['BJF-AT-0002', null, 65.0, 'No', '2025-11-20', null, 'No'], // required "Shirt name" missing
     ])->and(shownExtra(runExtra($this->admin, 'people', ['code'], [['field' => 'extra_weight_class', 'op' => 'gt', 'value' => 70]])))->toBe([['BJF-AT-0001']])
         ->and(shownExtra(runExtra($this->admin, 'people', ['code'], [['field' => 'extra_weight_class', 'op' => 'lt', 'value' => 70]])))->toBe([['BJF-AT-0002']])
         ->and(shownExtra(runExtra($this->admin, 'people', ['code'], [['field' => 'extra_arrival', 'op' => 'after', 'value' => '2026-11-25']])))->toBe([['BJF-AT-0001']])
@@ -111,4 +111,21 @@ it('fails a saved report whose extra field was deactivated with a clear message'
     } catch (ValidationException $e) {
         expect($e->errors()['fields'][0])->toBe('This report uses fields that are no longer available: Shirt name. Remove them and save again.');
     }
+});
+
+it('groups by extra fields (text, date by year) with correct counts', function () {
+    $groups = fn (array $group) => array_values(array_map(fn (array $g) => $g['label'].' ('.$g['count'].')',
+        app(Engine::class)->run(ReportDefinition::fromArray([...extraDef('people', ['code']), 'groups' => [$group]], $this->admin))->groups));
+
+    ExtraField::factory()->create(['label' => 'Unused']);
+    expect($groups(['field' => 'extra_shirt_name', 'bucket' => null]))->toBe(['ALI (1)', '— (1)'])
+        ->and($groups(['field' => 'extra_arrival', 'bucket' => 'year']))->toBe(['2025 (1)', '2026 (1)']);
+});
+
+it('shows number totals of extra fields as plain numbers (MySQL DECIMAL comes back as "165.0000")', function () {
+    $r = app(Engine::class)->run(ReportDefinition::fromArray([...extraDef('people', ['code', 'extra_weight_class']),
+        'totals' => ['extra_weight_class' => 'sum']], $this->admin));
+
+    expect(array_slice($r->lines(), -1)[0]['cells'])->toEqual(['Total (2)', 165])
+        ->and((string) Registry::get('people')->fields($this->admin)['extra_weight_class']->display('165.0000'))->toBe('165');
 });

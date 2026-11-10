@@ -128,13 +128,13 @@ it('totals numbers and dates over all rows', function () {
         ->and($total('passport_expiry', 'max'))->toBe('2028-06-30');
 });
 
-it('groups by the null flag it orders by, so MySQL ONLY_FULL_GROUP_BY accepts it', function () {
+it('groups and orders the aggregate by the select alias, so MySQL ONLY_FULL_GROUP_BY accepts it', function () {
     DB::enableQueryLog();
     runPeople(['columns' => ['full_name', 'passport_expiry'], 'groups' => [['field' => 'passport_expiry', 'bucket' => 'year']]]);
     $grouped = collect(DB::getQueryLog())->pluck('query')->first(fn (string $sql) => str_contains($sql, 'group by'));
 
     expect($grouped)->not->toBeNull()
-        ->and(Str::between($grouped, 'group by', 'order by'))->toContain('IS NULL');
+        ->and(Str::after($grouped, 'group by'))->toBe(' g0 order by g0 IS NULL, g0');
 });
 
 it('breaks sort ties by the base table id, so screen and Excel get the same rows', function () {
