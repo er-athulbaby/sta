@@ -62,11 +62,12 @@ class Phase3Entry extends Page
             ->color('gray')->slideOver()->createAnother(false)
             ->visible(fn () => $this->readOnlyReason === null)
             ->model(Person::class)
-            ->schema(fn (Schema $schema) => PersonForm::configure($schema, type: $type))
+            ->schema(fn (Schema $schema) => PersonForm::configure($schema, type: $type, lockType: true))
             ->modalSubmitActionLabel('Save as draft')
             // Same as the registry Create page (SavesPersonSizes): sizes are not a column, row and sizes commit together.
             // association_id is set here, never from form state; BelongsToAssociation's creating hook pins it again.
-            ->using(function (array $data): Person {
+            ->using(function (array $data) use ($type): Person {
+                $data['type'] = $type->value;
                 $sizes = $data['sizes'] ?? [];
                 unset($data['sizes']);
 

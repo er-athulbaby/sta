@@ -76,3 +76,13 @@ it('refuses a comment from STA with view_submissions only', function () {
     expect(Comment::count())->toBe(0);
     Notification::assertNothingSent();
 });
+
+it('saves a comment on a draft game without emailing the association', function () {
+    $this->game->update(['published_at' => null]);
+    actingInAdmin($this->sta);
+    livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])
+        ->callAction('comment', ['body' => 'Draft note'])->assertHasNoActionErrors();
+
+    expect(Comment::count())->toBe(1);
+    Notification::assertNothingSent();
+});

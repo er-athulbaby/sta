@@ -213,7 +213,7 @@ it('offers List and Grid views and a link to the registry', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->assertSeeHtml('longListView.'.$this->admin->id)
         ->assertSeeHtml("x-on:click=\"view = 'list'\"")->assertSeeHtml("x-on:click=\"view = 'grid'\"")
-        ->assertSeeHtml("x-show=\"view === 'grid'\"")
+        ->assertSeeHtml("x-if=\"view === 'grid'\"")
         ->assertSee('Open registry')->assertSeeHtml(PersonResource::getUrl('index'));
 });
 
@@ -228,4 +228,17 @@ it('labels the travel modal button Save as draft', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->call('save')
         ->mountAction('travel', ['person' => $this->ali->id])->assertMountedActionModalSee('Save as draft');
+});
+
+it('creates an athlete from Add athlete even if the form sends another type', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->callAction('addAthlete', ['type' => 'official', 'function' => 'Team Manager', 'first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->assertHasNoActionErrors();
+
+    expect(Person::where('first_name', 'Hamad')->sole()->type)->toBe(PersonType::Athlete);
+});
+
+it('lazy-loads grid photos', function () {
+    expect(file_get_contents(resource_path('views/filament/portal/pages/phase3-entry.blade.php')))->toContain('<img loading="lazy"');
 });

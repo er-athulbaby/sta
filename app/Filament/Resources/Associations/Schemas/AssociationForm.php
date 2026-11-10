@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Associations\Schemas;
 
+use App\Filament\Shared\AttachmentActions;
 use App\Models\Association;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -37,8 +38,8 @@ class AssociationForm
             TextInput::make('phone')->tel()->maxLength(50),
             TextInput::make('website')->url()->maxLength(255),
             TextInput::make('address')->maxLength(255)->columnSpanFull(),
-            FileUpload::make('logo_path')->label('Logo')->image()->acceptedFileTypes(['image/jpeg', 'image/png'])->maxSize(2048)
-                ->disk(config('filesystems.private'))->directory('logos')->visibility('private'),
+            AttachmentActions::view(FileUpload::make('logo_path')->label('Logo')->image()->acceptedFileTypes(['image/jpeg', 'image/png'])->maxSize(2048)
+                ->disk(config('filesystems.private'))->directory('logos')->visibility('private')),
         ];
     }
 }

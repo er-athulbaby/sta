@@ -13,7 +13,7 @@ return new class extends Migration
             $t->dateTime('published_at')->nullable()->after('reminder_days');
         });
         // Games created before spec 16.6 are live: keep them visible.
-        DB::table('games')->update(['published_at' => DB::raw('created_at')]);
+        DB::table('games')->update(['published_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)')]);
     }
 
     public function down(): void

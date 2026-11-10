@@ -72,12 +72,13 @@
             <div x-show="view === 'list'">
                 @include('filament.shared.long-list-people', ['rows' => $rows, 'showTravel' => ! $readOnlyReason])
             </div>
-            <div x-show="view === 'grid'" x-cloak class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {{-- Rendered only in Grid view so List view does not fetch every photo on each Livewire render. --}}
+            <template x-if="view === 'grid'"><div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @forelse ($rows as $row)
                     @php $p = $row['person']; @endphp
                     <div wire:key="card-{{ $p->id }}" class="flex gap-3 rounded-lg border border-gray-200 p-3 dark:border-white/10">
                         @if ($p->photo_path)
-                            <img src="{{ \App\Filament\Shared\AttachmentActions::url($p->photo_path) }}" alt="" class="h-16 w-12 rounded object-cover">
+                            <img loading="lazy" src="{{ \App\Filament\Shared\AttachmentActions::url($p->photo_path) }}" alt="" class="h-16 w-12 rounded object-cover">
                         @else
                             <div class="h-16 w-12 rounded bg-gray-100 dark:bg-white/5"></div>
                         @endif
@@ -92,7 +93,7 @@
                 @empty
                     <p class="text-sm text-gray-500">Nobody on the list yet.</p>
                 @endforelse
-            </div>
+            </div></template>
         </div>
     </x-filament::section>
 

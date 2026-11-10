@@ -116,8 +116,11 @@ class SubmissionView extends Page
                 ->schema([Textarea::make('body')->label('Comment (emailed to the association)')->required()->rows(4)->maxLength(5000)])
                 ->action(function (array $data) {
                     $comment = $this->submission->comments()->create(['user_id' => auth()->id(), 'body' => $data['body']]);
-                    NotificationFacade::send(Recipients::association($this->submission->association), new NewComment($comment));
-                    Notification::make()->success()->title('Comment added and emailed to the association')->send();
+                    $published = $this->record->isPublished();
+                    if ($published) {
+                        NotificationFacade::send(Recipients::association($this->submission->association), new NewComment($comment));
+                    }
+                    Notification::make()->success()->title($published ? 'Comment added and emailed to the association' : 'Comment added (not emailed: the game is still a draft)')->send();
                 }),
         ];
     }

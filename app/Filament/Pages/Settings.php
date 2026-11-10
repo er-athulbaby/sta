@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\StaPermission;
 use App\Filament\Concerns\RequiresStaPermission;
+use App\Filament\Shared\AttachmentActions;
 use App\Models\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -38,10 +39,10 @@ class Settings extends Page
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-            FileUpload::make('noc_logo_path')->label('NOC logo (printed on PDFs)')->image()->acceptedFileTypes(['image/jpeg', 'image/png'])->maxSize(2048)
+            AttachmentActions::view(FileUpload::make('noc_logo_path')->label('NOC logo (printed on PDFs)')->image()->acceptedFileTypes(['image/jpeg', 'image/png'])->maxSize(2048)
                 ->disk(config('filesystems.private'))->directory('settings')->visibility('private')
                 // No record backs this page, so allow exactly the currently stored logo path.
-                ->preventFilePathTampering(allowFilePathUsing: fn (string $file) => $file === Setting::get(Setting::NOC_LOGO)),
+                ->preventFilePathTampering(allowFilePathUsing: fn (string $file) => $file === Setting::get(Setting::NOC_LOGO))),
             Textarea::make('pdf_declaration')->label('Declaration printed above signatures')->required()->rows(4),
         ])->statePath('data');
     }

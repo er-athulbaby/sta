@@ -1,5 +1,7 @@
 <?php
 
+use App\Filament\Pages\Settings;
+use App\Filament\Resources\Associations\Schemas\AssociationForm;
 use App\Filament\Shared\AttachmentActions;
 use App\Models\Association;
 use App\Models\Person;
@@ -86,4 +88,11 @@ it('names visa copies after the person code and visa id', function () {
 
 it('makes uploads openable through the 5-minute link', function () {
     expect(AttachmentActions::view(FileUpload::make('photo_path'))->isOpenable())->toBeTrue();
+});
+
+it('makes the association and NOC logo uploads openable', function () {
+    $fields = collect(AssociationForm::profileFields())->first(fn ($f) => $f->getName() === 'logo_path');
+    expect($fields->isOpenable())->toBeTrue();
+    $noc = Settings::class;
+    expect(file_get_contents((new ReflectionClass($noc))->getFileName()))->toContain("AttachmentActions::view(FileUpload::make('noc_logo_path')");
 });

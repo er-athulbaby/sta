@@ -35,7 +35,7 @@ final class PersonForm
     /** @var ?WeakMap<object, array<int, string>> Livewire component => paths it stored from temporary uploads this request */
     private static ?WeakMap $freshUploads = null;
 
-    public static function configure(Schema $schema, bool $withAssociation = false, PersonType $type = PersonType::Athlete): Schema
+    public static function configure(Schema $schema, bool $withAssociation = false, PersonType $type = PersonType::Athlete, bool $lockType = false): Schema
     {
         $isOfficial = fn (Get $get) => $get('type') === PersonType::Official->value;
         $isAthlete = fn (Get $get) => $get('type') !== PersonType::Official->value;
@@ -46,7 +46,7 @@ final class PersonForm
         return $schema->components([
             Section::make('Person')->columns(2)->schema([
                 ...($withAssociation ? [Select::make('association_id')->relationship('association', 'name')->searchable()->preload()->required()] : []),
-                Select::make('type')->options(self::options(PersonType::cases()))->required()->live()->default($type->value),
+                Select::make('type')->options(self::options(PersonType::cases()))->required()->live()->default($type->value)->disabled($lockType)->dehydrated(),
                 TextInput::make('full_name')->label('Full name (as in passport)')->maxLength(200)->columnSpanFull(),
                 TextInput::make('first_name')->required()->maxLength(100),
                 TextInput::make('second_name')->maxLength(100),
