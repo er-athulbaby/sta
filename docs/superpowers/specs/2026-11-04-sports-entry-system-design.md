@@ -332,3 +332,60 @@ Every subject offers **Count of rows**.
 
 ### Left out for now, from the Rental Management builder
 Charts, period comparison, scheduled email delivery and relative date ranges. Each can be added later on top of the same engine.
+
+## 15. Game system upload files and extra fields (decided 2026-11-10)
+
+Each game has its own management or accreditation system, and STA uploads a file of the delegation's athletes and team officials to it. STA decides what that file contains. This is built as Milestone 4.2, after the report builder (section 14).
+
+### 15.1 Extra fields (STA-defined)
+- **Where:** `/admin` → Extra fields. Only Super Admin and STA users with `ManageMasterData` can define them.
+- **What a field has:**
+  - label;
+  - key (generated, unique);
+  - applies to athlete, official or both;
+  - type: text (max 255), number, date, choice (a list of options), or yes/no;
+  - help text;
+  - "Required to be complete";
+  - active.
+- **Changing a field:** a field cannot change type once values exist. Deactivating a field hides it but keeps its values.
+- **Where values live:** on the person, in the registry, in `person_field_values` (person_id, extra_field_id, value as text). They are reused across games like the rest of the registry.
+- **Who fills them in:** the person form shows an "Additional information" section with the active fields for the person's type. Associations fill them in, and STA edits them as for other person fields.
+- **Validation:** a value is checked against its field's type, and a choice must be one of the options.
+- **Completeness:** a field marked "Required to be complete" joins `Person::missingFields()`. It therefore blocks Long List submit through the existing rule (spec 13).
+- **Elsewhere:**
+  - The fields are offered in the report builder's People and Entries subjects.
+  - Changes are audited.
+  - The Excel people import gets one column per active field.
+- **Medical:** extra fields are never medical. A field may be marked "sensitive", which hides it from STA users without `view_medical`, the same as medical data.
+
+### 15.2 Export layouts
+- **Where:** per game, on the game in `/admin`. Each game has an **athlete layout** and an **official layout**. A layout can be copied from another game.
+- **Who:** layouts are edited with the new permission `export_game_files` ("Export files for game systems — includes passport numbers"). Super Admin always has it.
+- **A layout is an ordered list of columns.** Each column has:
+  - **Source:**
+    - any person field;
+    - any extra field;
+    - entry fields: sport, event, event gender and function;
+    - game-derived fields: age at game start;
+    - association code and name;
+    - a fixed text value, such as the NOC code "BRN".
+  - **Heading:** the exact header text the game system expects.
+  - **Format:**
+    - dates: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD or DD-MMM-YYYY;
+    - gender: Male/Female, M/F or Men/Women;
+    - text: as is, UPPER CASE or Title Case;
+    - yes/no: Yes/No, Y/N or 1/0.
+- **File type:** Excel (.xlsx) or CSV (UTF-8, comma).
+- **Which people are included:** for each association, the Short List if its Phase 4 is submitted, otherwise its submitted Long List. The export can be filtered by association and by sport.
+- **Athletes in several events:** either one row per athlete, with events joined by "; " (the default), or one row per athlete per event. This is a layout setting.
+- **Download:** "Download upload file" on the game creates the file. The file name is `{game slug}-{athletes|officials}.{xlsx|csv}`. Every export is audited (who, when, game, layout, row count).
+- **Sensitive data:**
+  - Passport and CPR numbers are allowed in layouts, because game systems need them. The permission above guards them.
+  - Medical and health fields, and sensitive extra fields, can be added and exported only by users with `view_medical`. They are left out of an export by a user without it, with a note.
+
+### 15.3 Photos and documents ZIP
+- **What:** per game and per layout, "Download files ZIP" builds a ZIP of the included people's photos, and optionally their passport scans, CPR front scans and WADA certificates.
+- **File names:** set with a naming pattern built from tokens, for example `{passport_no}`, `{code}`, `{last_name}`, `{first_name}`, `{association_code}` and `{kind}`. The default is `{code}_{kind}`. Characters that are not allowed in file names are replaced with `_`, and duplicate names get `-2`, `-3` and so on.
+- **Missing files:** a person with no file of a kind is listed in a `missing.txt` inside the ZIP.
+- **How it's built:** in a queued job on the private disk. The user is notified in the app with a 5-minute download link when it's ready. The export is audited.
+- **Permission:** `export_game_files`.
