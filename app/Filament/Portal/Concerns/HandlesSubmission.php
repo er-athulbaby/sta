@@ -87,6 +87,14 @@ trait HandlesSubmission
         }
     }
 
+    /** Spec 16.6: Save as draft beside Submit; a draft is never submitted. */
+    protected function saveDraftAction(): Action
+    {
+        return Action::make('saveDraft')->label('Save as draft')->color('gray')
+            ->visible(fn () => $this->readOnlyReason === null)
+            ->action(fn () => $this->save());
+    }
+
     protected function submitAction(): Action
     {
         return Action::make('submit')->label(fn () => auth()->user()->role === Role::AssocAdmin ? 'Submit to STA' : 'Send for approval')

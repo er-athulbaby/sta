@@ -77,7 +77,7 @@ it('keeps the long list hard errors for STA', function () {
 it('keeps phase 2 limits for STA and regenerates the Entry by Event PDFs', function () {
     $s = Submission::for($this->game, $this->assoc, 2);
     $s->update(['status' => SubmissionStatus::Submitted, 'reference_no' => 'BJF-G001-P2-R1', 'revision' => 1]);
-    $page = livewire(StaPhase2Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s]);
+    $page = livewire(StaPhase2Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])->assertSee('Save as draft');
 
     $page->set("counts.{$this->m60->id}", 2)->call('save')->assertHasErrors(["counts.{$this->m60->id}"]);
     Bus::assertNotDispatched(GenerateEntryByEventPdfs::class);

@@ -36,6 +36,7 @@ class Phase4Entry extends Page
 
     protected function getHeaderActions(): array
     {
-        return [$this->submitAction()->visible(fn () => $this->readOnlyReason === null && $this->longListSubmitted()), $this->approveAction(), $this->returnAction()];
+        return [$this->saveDraftAction()->visible(fn () => $this->readOnlyReason === null && $this->longListSubmitted()),
+            $this->submitAction()->visible(fn () => $this->readOnlyReason === null && $this->longListSubmitted()), $this->approveAction(), $this->returnAction()];
     }
 }

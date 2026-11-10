@@ -87,6 +87,7 @@ trait EditsPhase3
     public function travelAction(): Action
     {
         return Action::make('travel')->label('Travel & insurance')->modalHeading('Travel & insurance')
+            ->modalSubmitActionLabel('Save as draft')
             ->visible(fn () => $this->readOnlyReason === null)
             ->fillForm(function (array $arguments): array {
                 $d = $this->travelDetail((int) ($arguments['person'] ?? 0));

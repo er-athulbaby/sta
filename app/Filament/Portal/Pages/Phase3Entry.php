@@ -49,7 +49,7 @@ class Phase3Entry extends Page
     protected function getHeaderActions(): array
     {
         return [$this->addPersonAction(PersonType::Athlete), $this->addPersonAction(PersonType::Official),
-            $this->submitAction(), $this->approveAction(), $this->returnAction()];
+            $this->saveDraftAction(), $this->submitAction(), $this->approveAction(), $this->returnAction()];
     }
 
     /** Spec 16.3: the registry person form, without leaving the page; the new person is in the pickers on the next render. */

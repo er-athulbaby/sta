@@ -183,3 +183,10 @@ it('can save twice on the edit page after an upload is renamed', function () {
     expect($mine->refresh()->passport_scan_path)->toBe($stored);
     Storage::disk(config('filesystems.private'))->assertExists($stored);
 });
+
+it('labels the person form button Save as draft and saves an incomplete person', function () {
+    livewire(CreatePerson::class)->assertSee('Save as draft')->fillForm(athleteData())->call('create')->assertHasNoFormErrors();
+    $p = Person::sole();
+    expect($p->missingFields())->not->toBeEmpty();
+    livewire(EditPerson::class, ['record' => $p->getRouteKey()])->assertSee('Save as draft');
+});

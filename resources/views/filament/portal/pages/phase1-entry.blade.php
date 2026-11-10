@@ -35,7 +35,7 @@
     </x-filament::section>
 
     @unless ($readOnlyReason)
-        <div><x-filament::button wire:click="save">Save</x-filament::button></div>
+        <div><x-filament::button wire:click="save">Save as draft</x-filament::button></div>
     @endunless
     @include('filament.partials.comments', ['comments' => $this->submission->commentsNewestFirst()])
 </x-filament-panels::page>

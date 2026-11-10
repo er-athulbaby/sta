@@ -176,3 +176,10 @@ it('does not save totals for a sport hidden by Phase 1', function () {
     livewire(Phase2Entry::class, ['game' => $this->game->id])->set("totals.{$this->judo->id}.male", '1')->call('save');
     expect(Phase2SportTotal::count())->toBe(0);
 });
+
+it('saves as draft from the header without submitting', function () {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])->assertSee('Save as draft')
+        ->set("counts.{$this->m60->id}", 1)->callAction('saveDraft')->assertNotified('Saved');
+
+    expect(NumberEntry::sole()->count)->toBe(1)->and(Submission::sole()->status)->toBe(SubmissionStatus::Draft);
+});

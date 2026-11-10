@@ -36,6 +36,6 @@ class Phase1Entry extends Page
 
     protected function getHeaderActions(): array
     {
-        return [$this->submitAction(), $this->approveAction(), $this->returnAction()];
+        return [$this->saveDraftAction(), $this->submitAction(), $this->approveAction(), $this->returnAction()];
     }
 }

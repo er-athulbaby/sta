@@ -223,3 +223,9 @@ it('hides the add buttons while the Long List is read-only', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->assertActionHidden('addAthlete')->assertActionHidden('addOfficial');
 });
+
+it('labels the travel modal button Save as draft', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->call('save')
+        ->mountAction('travel', ['person' => $this->ali->id])->assertMountedActionModalSee('Save as draft');
+});
