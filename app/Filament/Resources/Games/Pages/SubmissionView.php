@@ -9,6 +9,7 @@ use App\Models\Submission;
 use App\Notifications\NewComment;
 use App\Services\Phases\LongListChecks;
 use App\Services\Phases\Recipients;
+use App\Services\Phases\ShortListChecks;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -64,6 +65,12 @@ class SubmissionView extends Page
             fn ($ge) => ['sport' => $gs->sport->name, 'event' => $ge->event->name, 'count' => (int) ($counts[$ge->id] ?? 0)]));
     }
 
+    /** @return list<string> e.g. "Judo: 2 men (limit 1)" */
+    public function overLimitLines(): array
+    {
+        return array_map(ShortListChecks::describe(...), app(ShortListChecks::class)->overLimits($this->submission));
+    }
+
     public function longListRows(): Collection
     {
         $checks = app(LongListChecks::class);
@@ -81,7 +88,7 @@ class SubmissionView extends Page
     {
         return [
             Action::make('edit')->label('Edit as STA')
-                ->visible(fn () => auth()->user()->can(StaPermission::EditSubmissions->value) && in_array($this->submission->phase, [1, 2, 3], true))
+                ->visible(fn () => auth()->user()->can(StaPermission::EditSubmissions->value) && in_array($this->submission->phase, [1, 2, 3, 4], true))
                 ->url(fn () => GameResource::getUrl('submission-edit-'.$this->submission->phase, ['record' => $this->record, 'submission' => $this->submission])),
             Action::make('comment')->label('Add comment')
                 ->visible(fn () => (bool) auth()->user()->can(StaPermission::EditSubmissions->value))

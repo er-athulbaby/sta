@@ -49,6 +49,18 @@
         <x-filament::section heading="Long List">
             @include('filament.shared.long-list-people', ['rows' => $this->longListRows(), 'showDetails' => true, 'showMedical' => $showMedical])
         </x-filament::section>
+    @elseif ($s->phase === 4)
+        <x-filament::section heading="Short List">
+            @if ($lines = $this->overLimitLines())
+                <ul class="mb-2 list-disc pl-5 text-sm text-warning-600">
+                    @foreach ($lines as $line)<li>Over the limit: {{ $line }}</li>@endforeach
+                </ul>
+            @endif
+            @if (filled($s->justification))
+                <p class="mb-3 whitespace-pre-line text-sm"><span class="text-gray-500">Justification:</span> {{ $s->justification }}</p>
+            @endif
+            @include('filament.shared.long-list-people', ['rows' => $this->longListRows()])
+        </x-filament::section>
     @endif
 
     @include('filament.partials.comments', ['comments' => $s->commentsNewestFirst()])

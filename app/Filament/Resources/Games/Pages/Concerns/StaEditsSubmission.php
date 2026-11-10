@@ -8,6 +8,7 @@ use App\Filament\Portal\Concerns\HandlesSubmission;
 use App\Filament\Resources\Games\GameResource;
 use App\Jobs\GenerateEntryByEventPdfs;
 use App\Jobs\GenerateLongListPdf;
+use App\Jobs\GenerateShortListPdf;
 use App\Models\Association;
 use App\Models\GamePhase;
 use App\Models\Submission;
@@ -86,6 +87,7 @@ trait StaEditsSubmission
         match ($this->submission->phase) {
             2 => GenerateEntryByEventPdfs::dispatch($this->submission),
             3 => GenerateLongListPdf::dispatch($this->submission),
+            4 => GenerateShortListPdf::dispatch($this->submission),
             default => null,
         };
     }
