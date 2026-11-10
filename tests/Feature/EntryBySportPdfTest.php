@@ -71,6 +71,7 @@ it('is dispatched for phase 1 finalise only', function () {
 
     Bus::fake();
     $p2 = Submission::for($this->game, $this->assoc, 2);
+    $this->game->gameSports->each(fn ($gs) => $p2->sportTotals()->create(['game_sport_id' => $gs->id, 'male' => 0, 'female' => 0]));
     $this->game->phase(2)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
     app(SubmissionWorkflow::class)->submit($p2->fresh(), User::factory()->assocAdmin($this->assoc)->create());
     Bus::assertNotDispatched(GenerateEntryBySportPdf::class);

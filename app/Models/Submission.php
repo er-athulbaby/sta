@@ -51,6 +51,11 @@ class Submission extends Model
         return $this->hasMany(InterestAnswer::class);
     }
 
+    public function sportTotals(): HasMany
+    {
+        return $this->hasMany(Phase2SportTotal::class);
+    }
+
     public function numbers(): HasMany
     {
         return $this->hasMany(NumberEntry::class);

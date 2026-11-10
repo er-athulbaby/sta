@@ -94,6 +94,7 @@ function overLimit($t): GameSport
     ]);
     $ge = GameEvent::factory()->create(['game_id' => $t->game->id, 'game_sport_id' => $gs->id, 'p2_max_athletes' => null]);
     $t->sub->numbers()->create(['game_event_id' => $ge->id, 'count' => 2]);
+    $t->sub->sportTotals()->create(['game_sport_id' => $gs->id, 'male' => 2, 'female' => 0]);
 
     return $gs;
 }
@@ -116,8 +117,22 @@ it('blocks submit and approve over the Phase 2 limits', function () {
 
 it('passes submit within the Phase 2 limits', function () {
     overLimit($this);
-    $this->sub->numbers()->update(['count' => 1]);
+    $this->sub->sportTotals()->update(['male' => 1]); // event count 2 stays: events are not limited by the sport total
     expect($this->wf->submit($this->sub, $this->admin)->status)->toBe(SubmissionStatus::Submitted);
+});
+
+it('requires participant totals for every visible sport on submit', function () {
+    overLimit($this);
+    $this->sub->sportTotals()->update(['female' => null]);
+    expect(fn () => $this->wf->submit($this->sub, $this->admin))->toThrow(ValidationException::class);
+});
+
+it('approves without totals when within limits', function () {
+    $gs = overLimit($this);
+    $this->sub->sportTotals()->delete();
+    $gs->update(['p2_max_total' => null]);
+    $this->sub->update(['status' => SubmissionStatus::AwaitingAssocAdmin, 'submitted_by' => $this->editor->id]);
+    expect($this->wf->approve($this->sub->fresh(), $this->admin)->status)->toBe(SubmissionStatus::Submitted);
 });
 
 it('refuses reopen of a draft and extend of a submitted entry without notifying', function () {

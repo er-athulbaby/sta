@@ -13,18 +13,11 @@
         $men = \App\Enums\EventGender::Men;
         $women = \App\Enums\EventGender::Women;
         $mixed = \App\Enums\EventGender::Mixed;
+        $inputClass = 'w-24 rounded border-gray-300 text-sm dark:bg-white/5';
+        $msg = fn (string $key) => $errors->first($key) ?: ($liveErrors[$key] ?? null);
     @endphp
 
     @forelse ($this->visibleSports() as $gs)
-        @php
-            $sum = ['men' => 0, 'women' => 0, 'total' => 0];
-            foreach ($gs->gameEvents as $ge) {
-                $n = max(0, (int) ($counts[$ge->id] ?? 0));
-                $sum['total'] += $n;
-                if ($ge->event->gender === $men) { $sum['men'] += $n; }
-                if ($ge->event->gender === $women) { $sum['women'] += $n; }
-            }
-        @endphp
         <x-filament::section :heading="$gs->sport->name">
             @if ($gs->entry_policy)
                 <p class="text-sm">{{ $gs->entry_policy }}</p>
@@ -32,6 +25,27 @@
             @if ($gs->dob_from || $gs->dob_to)
                 <p class="text-xs text-gray-500">Born {{ $gs->dob_from ? 'from '.$gs->dob_from->format('j M Y') : '' }} {{ $gs->dob_to ? 'to '.$gs->dob_to->format('j M Y') : '' }}</p>
             @endif
+
+            <fieldset class="mt-3" wire:key="participants-{{ $gs->id }}">
+                <legend class="text-sm font-medium">Total number of participants</legend>
+                <p class="text-xs text-gray-500">Count each athlete once, even if they enter several events.</p>
+                <div class="mt-1 flex flex-wrap items-start gap-4">
+                    @foreach (['male' => ['Male', $gs->p2_max_men], 'female' => ['Female', $gs->p2_max_women]] as $field => [$label, $max])
+                        <div>
+                            <label class="text-sm" for="totals-{{ $gs->id }}-{{ $field }}">{{ $label }}@if ($max !== null) <span class="text-xs text-gray-500">(up to {{ $max }})</span>@endif</label>
+                            <input id="totals-{{ $gs->id }}-{{ $field }}" type="number" min="0" max="999" class="block {{ $inputClass }}"
+                                wire:model.live.debounce.400ms="totals.{{ $gs->id }}.{{ $field }}" @disabled($readOnlyReason)>
+                            @if ($m = $msg("totals.{$gs->id}.{$field}"))<p class="text-xs text-danger-600">{{ $m }}</p>@endif
+                        </div>
+                    @endforeach
+                    @if ($gs->p2_max_total !== null)
+                        <p class="pt-6 text-xs text-gray-500">Male + female: up to {{ $gs->p2_max_total }}</p>
+                    @endif
+                </div>
+                @foreach (['male', 'female', 'total'] as $k)
+                    @if ($m = $msg("sport.{$gs->id}.{$k}"))<p class="mt-1 text-xs text-danger-600">{{ $m }}</p>@endif
+                @endforeach
+            </fieldset>
 
             <table class="mt-3 w-full text-sm">
                 <thead>
@@ -41,26 +55,28 @@
                     @foreach ($gs->gameEvents as $ge)
                         @php
                             $g = $ge->event->gender;
-                            $msg = $errors->first('counts.'.$ge->id) ?: ($liveErrors['counts.'.$ge->id] ?? null);
+                            $eMsg = $msg('counts.'.$ge->id);
                         @endphp
                         <tr class="border-t border-gray-200 align-top dark:border-white/10">
                             <td class="py-2">{{ $ge->event->name }}
-                                @if ($ge->p2_max_athletes !== null)<span class="text-xs text-gray-500">(max {{ $ge->p2_max_athletes }})</span>@endif
+                                @if ($ge->p2_max_athletes !== null)
+                                    <span class="block text-xs text-gray-500">Up to {{ $ge->p2_max_athletes }} {{ \Illuminate\Support\Str::plural('athlete', $ge->p2_max_athletes) }}</span>
+                                @endif
                             </td>
                             @if ($g === $mixed)
                                 <td colspan="2" class="py-2">
-                                    <input type="number" min="0" aria-label="{{ $ge->event->name }} (Mixed)" class="w-24 rounded border-gray-300 text-sm dark:bg-white/5"
+                                    <input type="number" min="0" aria-label="{{ $ge->event->name }} (Mixed)" class="{{ $inputClass }}"
                                         wire:model.live.debounce.400ms="counts.{{ $ge->id }}" @disabled($readOnlyReason)>
                                     <span class="text-xs text-gray-500">Mixed</span>
-                                    @if ($msg)<p class="text-xs text-danger-600">{{ $msg }}</p>@endif
+                                    @if ($eMsg)<p class="text-xs text-danger-600">{{ $eMsg }}</p>@endif
                                 </td>
                             @else
                                 @foreach ([$men, $women] as $col)
                                     @if ($g === $col)
                                         <td class="py-2">
-                                            <input type="number" min="0" aria-label="{{ $ge->event->name }}" class="w-24 rounded border-gray-300 text-sm dark:bg-white/5"
+                                            <input type="number" min="0" aria-label="{{ $ge->event->name }}" class="{{ $inputClass }}"
                                                 wire:model.live.debounce.400ms="counts.{{ $ge->id }}" @disabled($readOnlyReason)>
-                                            @if ($msg)<p class="text-xs text-danger-600">{{ $msg }}</p>@endif
+                                            @if ($eMsg)<p class="text-xs text-danger-600">{{ $eMsg }}</p>@endif
                                         </td>
                                     @else
                                         <td class="bg-gray-100 py-2 dark:bg-white/5"></td>
@@ -70,23 +86,21 @@
                         </tr>
                     @endforeach
                 </tbody>
-                <tfoot>
-                    <tr class="border-t-2 border-gray-300 font-medium dark:border-white/20">
-                        <td class="py-2">Total</td>
-                        <td>{{ $sum['men'] }}@if ($gs->p2_max_men !== null) / {{ $gs->p2_max_men }}@endif</td>
-                        <td>{{ $sum['women'] }}@if ($gs->p2_max_women !== null) / {{ $gs->p2_max_women }}@endif</td>
-                    </tr>
-                    <tr class="text-gray-600 dark:text-gray-400">
-                        <td class="py-1">All events</td>
-                        <td colspan="2">{{ $sum['total'] }}@if ($gs->p2_max_total !== null) / {{ $gs->p2_max_total }}@endif</td>
-                    </tr>
-                </tfoot>
             </table>
 
-            @foreach (['men', 'women', 'total'] as $k)
-                @php($sMsg = $errors->first("sport.{$gs->id}.{$k}") ?: ($liveErrors["sport.{$gs->id}.{$k}"] ?? null))
-                @if ($sMsg)<p class="mt-1 text-xs text-danger-600">{{ $sMsg }}</p>@endif
-            @endforeach
+            <fieldset class="mt-4" wire:key="medals-{{ $gs->id }}">
+                <legend class="text-sm font-medium">Expected medals <span class="text-xs font-normal text-gray-500">(optional)</span></legend>
+                <div class="mt-1 flex flex-wrap items-start gap-4">
+                    @foreach (['gold' => 'Gold', 'silver' => 'Silver', 'bronze' => 'Bronze'] as $field => $label)
+                        <div>
+                            <label class="text-sm" for="totals-{{ $gs->id }}-{{ $field }}">{{ $label }}</label>
+                            <input id="totals-{{ $gs->id }}-{{ $field }}" type="number" min="0" max="99" class="block {{ $inputClass }}"
+                                wire:model.live.debounce.400ms="totals.{{ $gs->id }}.{{ $field }}" @disabled($readOnlyReason)>
+                            @if ($m = $msg("totals.{$gs->id}.{$field}"))<p class="text-xs text-danger-600">{{ $m }}</p>@endif
+                        </div>
+                    @endforeach
+                </div>
+            </fieldset>
 
             @if ($submitted && isset($paths[$gs->id]))
                 <a class="mt-3 inline-block text-sm text-primary-600 underline" href="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.private'))->temporaryUrl($paths[$gs->id], now()->addMinutes(5)) }}">Download Entry by Event PDF</a>

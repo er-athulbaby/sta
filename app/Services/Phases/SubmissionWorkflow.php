@@ -30,7 +30,7 @@ final class SubmissionWorkflow
         if ($reason = $this->gate->denialReason($s)) {
             $this->fail($reason);
         }
-        $this->assertWithinLimits($s);
+        $this->assertWithinLimits($s, requireTotals: true);
         if ($by->role === Role::AssocAdmin) {
             return $this->finalise($s, $by, submittedBy: $by);
         }
@@ -150,7 +150,7 @@ final class SubmissionWorkflow
         }
     }
 
-    private function assertWithinLimits(Submission $s): void
+    private function assertWithinLimits(Submission $s, bool $requireTotals = false): void
     {
         if ($s->phase === 4) {
             $checks = app(ShortListChecks::class);
@@ -174,8 +174,14 @@ final class SubmissionWorkflow
             return;
         }
         $counts = $s->numbers()->pluck('count', 'game_event_id')->all();
+        $totals = $s->sportTotals()->get()->keyBy('game_sport_id');
         foreach ($s->game->phase2SportsFor($s->association) as $gs) {
-            if ($errors = app(Phase2Limits::class)->errors($gs, $counts)) {
+            $t = $totals->get($gs->id);
+            // Totals are required on submit only, so entries already awaiting approval can still be approved.
+            if ($requireTotals && ($t?->male === null || $t->female === null)) {
+                $this->fail("{$gs->sport->name}: enter the total number of male and female participants.");
+            }
+            if ($errors = app(Phase2Limits::class)->errors($gs, $counts, ['male' => $t?->male, 'female' => $t?->female])) {
                 $this->fail(reset($errors));
             }
         }

@@ -2,17 +2,21 @@
 
 namespace App\Services\Phases;
 
-use App\Enums\EventGender;
 use App\Models\GameSport;
 
 final class Phase2Limits
 {
-    /** @param array<int, int|null> $counts game_event_id => count @return array<string, string> */
-    public function errors(GameSport $gs, array $counts): array
+    /**
+     * Spec 16.2: event counts are limited only by each event's maximum; p2_max_men/women/total limit the participant totals.
+     *
+     * @param  array<int, int|null>  $counts  game_event_id => count
+     * @param  array{male?: int|null, female?: int|null}  $totals  participants entered for the sport; a blank one is not checked
+     * @return array<string, string> keyed event.{gameEventId} or sport.{male|female|total}
+     */
+    public function errors(GameSport $gs, array $counts, array $totals = []): array
     {
         $gs->loadMissing(['sport', 'gameEvents.event']);
         $errors = [];
-        $sums = ['men' => 0, 'women' => 0, 'total' => 0];
 
         foreach ($gs->gameEvents as $ge) {
             $n = (int) ($counts[$ge->id] ?? 0);
@@ -24,24 +28,20 @@ final class Phase2Limits
             if ($ge->p2_max_athletes !== null && $n > $ge->p2_max_athletes) {
                 $errors["event.{$ge->id}"] = "{$ge->event->name}: at most {$ge->p2_max_athletes} athletes.";
             }
-            $sums['total'] += $n;
-            if ($ge->event->gender === EventGender::Men) {
-                $sums['men'] += $n;
-            }
-            if ($ge->event->gender === EventGender::Women) {
-                $sums['women'] += $n;
-            }
         }
 
         $sport = $gs->sport->name;
-        if ($gs->p2_max_men !== null && $sums['men'] > $gs->p2_max_men) {
-            $errors['sport.men'] = "{$sport}: men's events total {$sums['men']}, the limit is {$gs->p2_max_men}.";
+        $male = $totals['male'] ?? null;
+        $female = $totals['female'] ?? null;
+        if ($male !== null && $gs->p2_max_men !== null && $male > $gs->p2_max_men) {
+            $errors['sport.male'] = "{$sport}: {$male} male participants, the limit is {$gs->p2_max_men}.";
         }
-        if ($gs->p2_max_women !== null && $sums['women'] > $gs->p2_max_women) {
-            $errors['sport.women'] = "{$sport}: women's events total {$sums['women']}, the limit is {$gs->p2_max_women}.";
+        if ($female !== null && $gs->p2_max_women !== null && $female > $gs->p2_max_women) {
+            $errors['sport.female'] = "{$sport}: {$female} female participants, the limit is {$gs->p2_max_women}.";
         }
-        if ($gs->p2_max_total !== null && $sums['total'] > $gs->p2_max_total) {
-            $errors['sport.total'] = "{$sport}: total {$sums['total']}, the limit is {$gs->p2_max_total}.";
+        $total = (int) $male + (int) $female;
+        if (($male !== null || $female !== null) && $gs->p2_max_total !== null && $total > $gs->p2_max_total) {
+            $errors['sport.total'] = "{$sport}: {$total} participants in total, the limit is {$gs->p2_max_total}.";
         }
 
         return $errors;

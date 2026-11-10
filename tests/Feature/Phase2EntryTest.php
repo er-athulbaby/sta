@@ -13,6 +13,7 @@ use App\Models\GameEvent;
 use App\Models\GameSport;
 use App\Models\InterestAnswer;
 use App\Models\NumberEntry;
+use App\Models\Phase2SportTotal;
 use App\Models\Sport;
 use App\Models\Submission;
 use App\Models\User;
@@ -58,7 +59,8 @@ it('shows limit messages live while typing', function () {
 });
 
 it('submits directly as association admin and generates the PDF job', function () {
-    livewire(Phase2Entry::class, ['game' => $this->game->id])->set("counts.{$this->m60->id}", 1)->callAction('submit');
+    livewire(Phase2Entry::class, ['game' => $this->game->id])->set("counts.{$this->m60->id}", 1)
+        ->set("totals.{$this->judo->id}.male", '1')->set("totals.{$this->judo->id}.female", '0')->callAction('submit');
     expect(Submission::sole()->status)->toBe(SubmissionStatus::Submitted);
     Bus::assertDispatched(GenerateEntryByEventPdfs::class);
 });
@@ -75,7 +77,7 @@ it('leaves the submission draft and writes nothing when a stale save happens dur
     $page = livewire(Phase2Entry::class, ['game' => $this->game->id]);
     $s = Submission::sole();
     $s->claimVersion($s->lock_version);
-    $page->set("counts.{$this->m60->id}", 1)->callAction('submit');
+    $page->set("counts.{$this->m60->id}", 1)->set("totals.{$this->judo->id}.male", '1')->set("totals.{$this->judo->id}.female", '0')->callAction('submit');
 
     expect($s->fresh()->status)->toBe(SubmissionStatus::Draft)->and(NumberEntry::count())->toBe(0);
 });
@@ -102,4 +104,75 @@ it('accepts 999 as a whole number when no limit applies', function () {
     $this->judo->update(['p2_max_men' => null]);
     livewire(Phase2Entry::class, ['game' => $this->game->id])->set("counts.{$this->m60->id}", '999')->call('save')->assertHasNoErrors();
     expect(NumberEntry::sole()->count)->toBe(999);
+});
+
+it('shows how many athletes each event allows', function () {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])->assertSee('Up to 1 athlete')->assertDontSee('(max 1)')
+        ->assertSee('Total number of participants')->assertSee('Expected medals');
+});
+
+it('saves participants and medals with the numbers', function () {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("counts.{$this->m60->id}", 1)
+        ->set("totals.{$this->judo->id}.male", '2')->set("totals.{$this->judo->id}.female", '0')
+        ->set("totals.{$this->judo->id}.gold", '1')
+        ->call('save')->assertHasNoErrors();
+
+    expect(Phase2SportTotal::sole()->only(['game_sport_id', 'male', 'female', 'gold', 'silver', 'bronze']))
+        ->toBe(['game_sport_id' => $this->judo->id, 'male' => 2, 'female' => 0, 'gold' => 1, 'silver' => null, 'bronze' => null]);
+});
+
+it('limits the male participants by the sport maximum, live and on save', function () {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("totals.{$this->judo->id}.male", '3')->assertSee('Judo: 3 male participants, the limit is 2.')
+        ->call('save')->assertHasErrors(["sport.{$this->judo->id}.male"]);
+    expect(Phase2SportTotal::count())->toBe(0);
+});
+
+it('words every over-limit message with Male and Female, never Men or Women', function () {
+    $this->judo->update(['p2_max_women' => 1, 'p2_max_total' => 2]);
+    $html = livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("totals.{$this->judo->id}.male", '3')->set("totals.{$this->judo->id}.female", '2')
+        ->assertSee('Judo: 3 male participants, the limit is 2.')->assertSee('Judo: 2 female participants, the limit is 1.')
+        ->assertSee('Judo: 5 participants in total, the limit is 2.')
+        ->html();
+    preg_match_all('/Judo: \d+ [^<]*?limit is \d+\./', $html, $found);
+    expect($found[0])->toHaveCount(3);
+    foreach ($found[0] as $m) {
+        expect($m)->not->toMatch("/men's|women's|\b(men|women)\b/i");
+    }
+});
+
+it('no longer limits the sum of event counts by the sport maximum', function () {
+    $m66 = GameEvent::factory()->create(['game_id' => $this->game->id, 'game_sport_id' => $this->judo->id, 'p2_max_athletes' => 3,
+        'event_id' => Event::factory()->create(['sport_id' => $this->judo->sport_id, 'name' => 'Men -66kg', 'gender' => EventGender::Men])->id]);
+    // p2_max_men is 2; 1 + 3 event entries is fine because one athlete can enter several events.
+    livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("counts.{$this->m60->id}", 1)->set("counts.{$m66->id}", 3)->call('save')->assertHasNoErrors();
+});
+
+it('rejects out of range participants and medals', function (string $field, string $bad, string $message) {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("totals.{$this->judo->id}.{$field}", $bad)->assertSee($message)
+        ->call('save')->assertHasErrors(["totals.{$this->judo->id}.{$field}"]);
+    expect(Phase2SportTotal::count())->toBe(0);
+})->with([
+    ['male', '1000', 'Judo male participants: enter a whole number from 0 to 999.'],
+    ['female', '-1', 'Judo female participants: enter a whole number from 0 to 999.'],
+    ['gold', '100', 'Judo gold medals: enter a whole number from 0 to 99.'],
+    ['bronze', '1.5', 'Judo bronze medals: enter a whole number from 0 to 99.'],
+]);
+
+it('requires the participant totals to submit but not to save', function () {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("counts.{$this->m60->id}", 1)->call('save')->assertHasNoErrors()
+        ->callAction('submit')->assertNotified('Judo: enter the total number of male and female participants.');
+    expect(Submission::sole()->status)->toBe(SubmissionStatus::Draft);
+});
+
+it('does not save totals for a sport hidden by Phase 1', function () {
+    $this->game->phase(1)->update(['enabled' => true]);
+    InterestAnswer::create(['submission_id' => Submission::for($this->game, $this->assoc, 1)->id, 'game_sport_id' => $this->judo->id, 'answer' => 'no']);
+    livewire(Phase2Entry::class, ['game' => $this->game->id])->set("totals.{$this->judo->id}.male", '1')->call('save');
+    expect(Phase2SportTotal::count())->toBe(0);
 });
