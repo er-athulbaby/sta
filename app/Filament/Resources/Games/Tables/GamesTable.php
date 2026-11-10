@@ -26,6 +26,9 @@ class GamesTable
                 Action::make('dashboard')->icon('heroicon-o-table-cells')
                     ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewSubmissions->value))
                     ->url(fn ($record) => GameResource::getUrl('dashboard', ['record' => $record])),
+                Action::make('reports')->icon('heroicon-o-document-chart-bar')
+                    ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value))
+                    ->url(fn ($record) => GameResource::getUrl('reports', ['record' => $record])),
                 EditAction::make()->visible(fn ($record) => GameResource::getEditAuthorizationResponse($record)->allowed()),
             ]);
     }

@@ -1,7 +1,12 @@
 <?php
 
 use App\Enums\EventGender;
+use App\Enums\StaPermission;
 use App\Enums\SubmissionStatus;
+use App\Filament\Resources\Games\GameResource;
+use App\Filament\Resources\Games\Pages\GameDashboard;
+use App\Filament\Resources\Games\Pages\GameReports as GameReportsPage;
+use App\Filament\Resources\Games\Pages\ListGames;
 use App\Models\Association;
 use App\Models\ClothingItem;
 use App\Models\Event;
@@ -11,8 +16,12 @@ use App\Models\GameSport;
 use App\Models\Person;
 use App\Models\Sport;
 use App\Models\Submission;
+use App\Models\User;
 use App\Services\Reports\GameReports;
 use Illuminate\Support\Facades\DB;
+use OpenSpout\Reader\XLSX\Reader;
+
+use function Pest\Livewire\livewire;
 
 beforeEach(function () {
     $this->game = Game::factory()->create(['name' => 'Asian Indoor Games', 'start_date' => '2026-12-01', 'end_date' => '2026-12-10']);
@@ -174,4 +183,73 @@ it('leaves out sports later answered "no" in Phase 1, except in the Phase 1 answ
         ->and($this->reports->phase2Totals($this->game)['rows'])->toBe([])
         ->and($this->reports->longList($this->game)['rows'])->toBe([])
         ->and($this->reports->overLimit($this->game)['rows'])->toBe([]);
+});
+
+it('opens the reports page only with view_reports', function () {
+    $reporter = User::factory()->sta()->create();
+    $reporter->givePermissionTo(StaPermission::ViewReports->value);
+    actingInAdmin($reporter);
+    $this->get(GameResource::getUrl('reports', ['record' => $this->game]))->assertOk()
+        ->assertSee('Only submitted entries are included');
+
+    $viewer = User::factory()->sta()->create();
+    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    actingInAdmin($viewer);
+    $this->get(GameResource::getUrl('reports', ['record' => $this->game]))->assertForbidden();
+    livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertActionHidden('reports');
+
+    $viewer->givePermissionTo(StaPermission::ViewReports->value);
+    livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertActionVisible('reports');
+});
+
+it('previews the chosen report and exports it to Excel', function () {
+    $reporter = User::factory()->sta()->create();
+    $reporter->givePermissionTo(StaPermission::ViewReports->value);
+    actingInAdmin($reporter);
+
+    $page = livewire(GameReportsPage::class, ['record' => $this->game->getRouteKey()])
+        ->assertSee('Judo')->assertSee('Yes')
+        ->set('report', 'longList')->assertSee('Ali Hasan')->assertSee('Coach Karim')
+        ->call('export')
+        ->assertFileDownloaded('asian-indoor-games-long-list.xlsx',
+            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+    $path = sys_get_temp_dir().'/'.uniqid('report').'.xlsx';
+    file_put_contents($path, base64_decode($page->effects['download']['content']));
+    $reader = new Reader;
+    $reader->open($path);
+    $rows = [];
+    foreach ($reader->getSheetIterator() as $sheet) {
+        foreach ($sheet->getRowIterator() as $row) {
+            $rows[] = $row->toArray();
+        }
+    }
+    $reader->close();
+    unlink($path);
+
+    expect($rows[0])->toBe(GameReports::PERSON_HEADINGS)->and($rows[1][2])->toBe('Ali Hasan')->and(count($rows))->toBe(4);
+});
+
+it('refuses an unknown report', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+    livewire(GameReportsPage::class, ['record' => $this->game->getRouteKey()])->set('report', 'longListX')->assertStatus(404);
+});
+
+it('gives a reports-only user nothing beyond the reports page', function () {
+    $reporter = User::factory()->sta()->create();
+    $reporter->givePermissionTo(StaPermission::ViewReports->value);
+    actingInAdmin($reporter);
+
+    $this->get(GameResource::getUrl('reports', ['record' => $this->game]))->assertOk();
+    $this->get(GameResource::getUrl('edit', ['record' => $this->game]))->assertForbidden();
+    $this->get(GameResource::getUrl('create'))->assertForbidden();
+    $this->get(GameResource::getUrl('dashboard', ['record' => $this->game]))->assertForbidden();
+    $this->get(GameResource::getUrl('submission', ['record' => $this->game, 'submission' => $this->p3]))->assertForbidden();
+    $this->get(GameResource::getUrl('submission-edit-3', ['record' => $this->game, 'submission' => $this->p3]))->assertForbidden();
+
+    livewire(ListGames::class)->assertSuccessful()
+        ->assertTableActionHidden('edit', $this->game)
+        ->assertTableActionHidden('dashboard', $this->game)
+        ->assertTableActionVisible('reports', $this->game)
+        ->assertActionHidden('create');
 });

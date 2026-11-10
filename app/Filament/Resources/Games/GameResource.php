@@ -6,6 +6,7 @@ use App\Enums\StaPermission;
 use App\Filament\Resources\Games\Pages\CreateGame;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Filament\Resources\Games\Pages\GameDashboard;
+use App\Filament\Resources\Games\Pages\GameReports;
 use App\Filament\Resources\Games\Pages\ListGames;
 use App\Filament\Resources\Games\Pages\StaPhase1Edit;
 use App\Filament\Resources\Games\Pages\StaPhase2Edit;
@@ -40,7 +41,8 @@ class GameResource extends Resource
     {
         $u = auth()->user();
 
-        return (bool) ($u?->can(StaPermission::ManageGames->value) || $u?->can(StaPermission::ViewSubmissions->value));
+        return (bool) ($u?->can(StaPermission::ManageGames->value) || $u?->can(StaPermission::ViewSubmissions->value)
+            || $u?->can(StaPermission::ViewReports->value));
     }
 
     public static function getCreateAuthorizationResponse(): Response
@@ -90,6 +92,7 @@ class GameResource extends Resource
             'create' => CreateGame::route('/create'),
             'edit' => EditGame::route('/{record}/edit'),
             'dashboard' => GameDashboard::route('/{record}/dashboard'),
+            'reports' => GameReports::route('/{record}/reports'),
             'submission' => SubmissionView::route('/{record}/submissions/{submission}'),
             'submission-edit-1' => StaPhase1Edit::route('/{record}/submissions/{submission}/edit-phase-1'),
             'submission-edit-2' => StaPhase2Edit::route('/{record}/submissions/{submission}/edit-phase-2'),

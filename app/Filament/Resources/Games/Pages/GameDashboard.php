@@ -180,6 +180,9 @@ class GameDashboard extends Page
             Action::make('editGame')->label('Edit game')->color('gray')
                 ->url(fn () => GameResource::getUrl('edit', ['record' => $this->record]))
                 ->visible(fn () => $this->canManage()),
+            Action::make('reports')->label('Reports')->color('gray')
+                ->url(fn () => GameResource::getUrl('reports', ['record' => $this->record]))
+                ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value)),
             Action::make('remindPending')
                 ->label('Remind pending')
                 ->visible(fn () => (bool) auth()->user()->can(StaPermission::SendReminders->value))
