@@ -16,7 +16,8 @@ return new class extends Migration
             $t->foreignId('game_sport_id')->constrained()->cascadeOnDelete();
             $t->timestamps();
             // Officials have game_event_id null, which a unique index does not compare; the Long List save keeps them unique.
-            $t->unique(['submission_id', 'person_id', 'game_event_id', 'game_sport_id']);
+            // Named explicitly: the generated name is 67 characters and MySQL allows 64.
+            $t->unique(['submission_id', 'person_id', 'game_event_id', 'game_sport_id'], 'entries_slot_unique');
         });
         Schema::create('long_list_details', function (Blueprint $t) {
             $t->id();
