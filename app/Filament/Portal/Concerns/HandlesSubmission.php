@@ -56,7 +56,7 @@ trait HandlesSubmission
     /** Spec 17: phase pages wear their phase colour (theme: .sta-phase-page.sta-ph-N .fi-header). */
     public function getPageClasses(): array
     {
-        return ['sta-phase-page', 'sta-ph-'.$this->submission->phase];
+        return ['sta-canvas-page', 'sta-phase-page', 'sta-ph-'.$this->submission->phase];
     }
 
     public function getHeading(): string|Htmlable

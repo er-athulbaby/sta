@@ -1,20 +1,31 @@
 <x-filament-panels::page>
+    {{-- No portal canvas screen: one card per game with the Main.dc.html phase cards (chip + status pill, name, meta; the open phase ringed). --}}
     @forelse ($this->games as $item)
-        @php $g = $item['game']; @endphp
-        <x-sta.card :heading="$g->name" :description="$g->start_date->format('j M Y').' – '.$g->end_date->format('j M Y')" wire:key="game-{{ $g->id }}">
-            <div class="sta-card-body sta-grid-phase">
+        @php
+            $g = $item['game'];
+            $dates = $g->start_date->format('j M').' – '.$g->end_date->format('j M Y');
+        @endphp
+        <section wire:key="game-{{ $g->id }}" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border-bottom: 1px solid #E2E8F0">
+                <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">{{ $g->name }}</h2>
+                <span style="font-size: 13px; color: #475569">{{ $dates }} · {{ $item['rows']->count() }} {{ \Illuminate\Support\Str::plural('phase', $item['rows']->count()) }}</span>
+            </div>
+            <div style="padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
                 @foreach ($item['rows'] as $row)
+                    @php
+                        $days = $row['status'] === 'Open' ? \App\Support\Sta::daysLeft($row['deadline']) : null;
+                        $meta = $row['status'].($row['deadline'] ? ' · Deadline '.$row['deadline']->format('j M Y').($days ? ' · '.$days : '') : '');
+                    @endphp
                     <x-sta.phase-card :phase="$row['phase']" :name="$row['name']" :status="$row['pill']" :status-label="$row['submission']"
-                        :meta="$row['status'].($row['deadline'] ? ' · Deadline '.$row['deadline']->format('j M Y H:i') : '')"
-                        :active="$row['status'] === 'Open'">
+                        :meta="$meta" :active="$row['status'] === 'Open'">
                         @if ($row['url'])
-                            <a href="{{ $row['url'] }}" class="sta-btn sta-btn-outline" style="align-self: flex-start"
+                            <a href="{{ $row['url'] }}" class="sta-btn sta-btn-outline" style="align-self: flex-start; margin-top: 4px"
                                aria-label="Open Phase {{ $row['phase'] }} {{ $row['name'] }} for {{ $g->name }}">Open</a>
                         @endif
                     </x-sta.phase-card>
                 @endforeach
             </div>
-        </x-sta.card>
+        </section>
     @empty
         <p class="sta-muted">No games yet.</p>
     @endforelse

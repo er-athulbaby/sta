@@ -124,7 +124,7 @@ it('saves participants and medals with the numbers', function () {
 
 it('limits the male participants by the sport maximum, live and on save', function () {
     livewire(Phase2Entry::class, ['game' => $this->game->id])
-        ->set("totals.{$this->judo->id}.male", '3')->assertSee('Judo: 3 male participants, the limit is 2.')
+        ->set("totals.{$this->judo->id}.male", '3')->assertSee('Over the limit: Male 3 of max 2')
         ->call('save')->assertHasErrors(["sport.{$this->judo->id}.male"]);
     expect(Phase2SportTotal::count())->toBe(0);
 });
@@ -133,14 +133,11 @@ it('words every over-limit message with Male and Female, never Men or Women', fu
     $this->judo->update(['p2_max_women' => 1, 'p2_max_total' => 2]);
     $html = livewire(Phase2Entry::class, ['game' => $this->game->id])
         ->set("totals.{$this->judo->id}.male", '3')->set("totals.{$this->judo->id}.female", '2')
-        ->assertSee('Judo: 3 male participants, the limit is 2.')->assertSee('Judo: 2 female participants, the limit is 1.')
-        ->assertSee('Judo: 5 participants in total, the limit is 2.')
+        ->assertSee('Over the limit: Male 3 of max 2 · Female 2 of max 1 · Total 5 of max 2')
         ->html();
-    preg_match_all('/Judo: \d+ [^<]*?limit is \d+\./', $html, $found);
-    expect($found[0])->toHaveCount(3);
-    foreach ($found[0] as $m) {
-        expect($m)->not->toMatch("/men's|women's|\b(men|women)\b/i");
-    }
+    preg_match_all('/Over the limit: [^<]*/', $html, $found);
+    expect($found[0])->toHaveCount(1)
+        ->and($found[0][0])->not->toMatch("/men's|women's|\b(men|women)\b/i");
 });
 
 it('no longer limits the sum of event counts by the sport maximum', function () {

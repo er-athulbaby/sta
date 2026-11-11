@@ -1,3 +1,4 @@
+{{-- User block role line, drawn under the name inside the sidebar user menu (theme: .sta-user-role). --}}
 @auth
-    <p class="sta-user-role">{{ auth()->user()->role->label() }}</p>
+    <span class="sta-user-role">{{ auth()->user()->role->label() }}</span>
 @endauth

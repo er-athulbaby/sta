@@ -23,6 +23,11 @@ class Games extends Page
 
     protected static ?int $navigationSort = 1;
 
+    public function getPageClasses(): array
+    {
+        return ['sta-canvas-page'];
+    }
+
     /** @return Collection<int, array{game: Game, rows: Collection}> */
     public function getGamesProperty(): Collection
     {
@@ -48,7 +53,7 @@ class Games extends Page
                 return [
                     'phase' => $p->phase,
                     'name' => GamePhase::NAMES[$p->phase],
-                    'status' => ucfirst($p->status->value),
+                    'status' => Sta::phaseStatus($p)[0], // Open, Closed or Not opened (canvas wording)
                     'pill' => $sub ? Sta::submissionPill($sub->status) : 'none',
                     'deadline' => $p->effectiveDeadline($sub),
                     'submission' => $sub?->status->label() ?? 'No response',

@@ -20,6 +20,8 @@ class ExtraFieldResource extends Resource
 {
     protected static ?int $navigationSort = 10;
 
+    protected static ?string $navigationLabel = 'Extra fields';
+
     use RequiresStaPermission;
 
     protected static ?string $model = ExtraField::class;

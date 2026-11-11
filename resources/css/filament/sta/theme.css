@@ -40,39 +40,63 @@
 .fi-main { padding: 32px 40px 48px; }
 @media (max-width: 640px) { .fi-main { padding: 16px; } }
 
-.fi-sidebar { background: var(--sta-nav); color: #E2E8F0; }
-.fi-sidebar-header { background: transparent; box-shadow: none; border: 0; height: auto; padding: 24px 16px 8px; }
-.fi-sidebar-header-controls { flex-direction: column; align-items: stretch; gap: 16px; }
-.fi-sidebar-nav { padding: 16px; }
-.fi-sidebar-nav-groups { gap: 4px; }
+/* Menu = canvas <nav> (Main.dc.html, Phase2.dc.html): navy, padding 24px 16px, 24px between brand, items and user block. */
+.fi-sidebar { background: var(--sta-nav); color: #E2E8F0; padding: 24px 16px; gap: 24px; box-sizing: border-box; }
+.fi-sidebar-header-ctn { overflow: visible; }
+.fi-body .fi-sidebar-header { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 16px; height: auto; padding: 0; background: transparent; box-shadow: none; border: 0; }
+.fi-sidebar-header-logo-ctn { flex: none; }
+.fi-sidebar-header-logo-ctn > a { display: block; border-radius: var(--sta-radius-ctl); }
+.fi-sidebar-header-logo-ctn > a:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+.fi-sidebar .sta-brand { padding: 0 8px; }
+.fi-sidebar-nav { padding: 0; gap: 4px; scrollbar-gutter: auto; }
+.fi-sidebar-nav-groups { margin: 0; gap: 4px; }
 .fi-sidebar-group-label { color: var(--sta-nav-muted); }
-.fi-sidebar-item-btn { min-height: var(--sta-target); padding: 0 12px; border-radius: var(--sta-radius-ctl); color: var(--sta-nav-text); font-weight: 500; }
+.fi-sidebar-item-btn { justify-content: flex-start; min-height: var(--sta-target); padding: 0 12px; border-radius: var(--sta-radius-ctl); color: var(--sta-nav-text); font-weight: 500; }
 .fi-sidebar-item-btn:hover, .fi-sidebar-item-btn:focus-visible { background: var(--sta-nav-hover); }
 .fi-sidebar-item-btn:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
-.fi-sidebar-item-label { color: inherit; }
-.fi-sidebar-item-icon { display: none; } /* canvas menu has no icons */
+.fi-sidebar-item-label { color: inherit; font-size: 14px; }
+.fi-sidebar-item-icon, .fi-sidebar-item-btn > .fi-icon { display: none; } /* canvas menu has no icons */
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn { background: var(--sta-nav-active); }
 .fi-sidebar-item.fi-active .fi-sidebar-item-label { color: #FFFFFF; font-weight: 600; }
-.fi-sidebar-footer { margin: 0 16px; padding: 12px 0 0; border-top: 1px solid var(--sta-nav-active); }
-.fi-sidebar .fi-user-menu-trigger, .fi-sidebar .fi-user-menu-trigger-text { color: #FFFFFF; font-weight: 600; font-size: 13px; }
-.fi-sidebar .fi-user-menu-trigger:hover { background: var(--sta-nav-hover); }
-.fi-sidebar .fi-tenant-menu-trigger { background: var(--sta-nav-hover); border-radius: var(--sta-radius-tile); padding: 10px 12px; color: #FFFFFF; min-height: var(--sta-target); }
-.fi-sidebar .fi-tenant-menu-trigger-current-tenant-label { color: var(--sta-nav-muted); font-size: 12px; }
-.fi-sidebar .fi-tenant-menu-trigger-tenant-name { color: #FFFFFF; font-weight: 600; font-size: 13px; }
-.sta-user-role { margin: -8px 16px 16px 62px; font-size: 12px; color: var(--sta-nav-muted); }
 
+/* Portal association block (canvas: #1A3358, radius 12, padding 10px 12px, 64x40 white logo box). */
+.sta-assoc-block { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--sta-radius-tile); background: var(--sta-nav-hover); }
+.sta-assoc-block-logo { display: inline-flex; width: 64px; height: 40px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid var(--sta-border); align-items: center; justify-content: center; }
+.sta-assoc-block-logo img { width: 100%; height: 100%; object-fit: contain; }
+.sta-assoc-block-text { display: flex; flex-direction: column; min-width: 0; }
+.sta-assoc-block-name { font-weight: 600; font-size: 13px; color: #FFFFFF; }
+.sta-assoc-block-code { font-size: 12px; color: var(--sta-nav-muted); }
+
+/* User block (canvas: border-top #23406A, padding 12px 8px, 36px initials circle, name 600 13px, role 12px).
+   Filament's user menu is the trigger, so Profile and Sign out open from it; the role line sits under the name. */
+.fi-sidebar-footer { position: relative; margin: auto 0 0; padding: 12px 8px; gap: 12px; border-top: 1px solid var(--sta-nav-active); }
+.fi-sidebar .fi-user-menu-trigger { justify-content: flex-start; gap: 10px; min-height: var(--sta-target); padding: 0; border-radius: var(--sta-radius-ctl); color: #FFFFFF; }
+.fi-sidebar .fi-user-menu-trigger:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+.fi-sidebar .fi-user-menu-trigger > .fi-icon { display: none; }
+.fi-sidebar .fi-user-menu-trigger .fi-avatar { width: 36px; height: 36px; }
+.fi-sidebar .fi-user-menu-trigger .fi-user-menu-trigger-text { color: #FFFFFF; font-weight: 600; font-size: 13px; line-height: 18px; padding-bottom: 16px; }
+.sta-user-role { position: absolute; left: 54px; bottom: 17px; font-size: 12px; line-height: 16px; color: var(--sta-nav-muted); pointer-events: none; }
+.fi-sidebar .fi-sidebar-database-notifications-btn { justify-content: flex-start; min-height: var(--sta-target); padding: 0 12px; border-radius: var(--sta-radius-ctl); color: var(--sta-nav-text); }
+.fi-sidebar .fi-sidebar-database-notifications-btn:hover { background: var(--sta-nav-hover); }
+.fi-sidebar .fi-sidebar-database-notifications-btn .fi-icon, .fi-sidebar .fi-sidebar-database-notifications-btn-label { color: inherit; }
+
+/* The canvas has no top bar: on desktop the menu runs full height; phones keep the top bar for the menu button. */
 .fi-topbar { background: #FFFFFF; box-shadow: none; border-bottom: 1px solid var(--sta-border); }
+@media (min-width: 1024px) {
+    .fi-topbar-ctn { display: none; }
+    .fi-body.fi-body-has-topbar .fi-sidebar { top: 0; height: 100dvh; }
+}
 
-/* Brand block (sidebar, topbar on phones, login card) */
+/* Brand block (menu and login card) */
 .sta-brand { display: flex; align-items: center; gap: 12px; text-align: left; }
 .sta-brand-logo { width: 40px; height: 56px; padding: 4px; box-sizing: border-box; border-radius: var(--sta-radius-ctl); background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .sta-brand-logo img { width: 100%; height: 100%; object-fit: contain; }
-.sta-brand-text { display: flex; flex-direction: column; line-height: 1.3; }
+.sta-brand-text { display: flex; flex-direction: column; line-height: normal; }
 .sta-brand-org, .sta-brand-panel { font-size: 12px; color: var(--sta-nav-muted); }
 .sta-brand-app { font-family: var(--sta-font-heading); font-weight: 600; font-size: 16px; color: #FFFFFF; }
-.fi-topbar .sta-brand-org, .fi-topbar .sta-brand-panel, .fi-simple-layout .sta-brand-org, .fi-simple-layout .sta-brand-panel { color: var(--sta-text-2); }
-.fi-topbar .sta-brand-app, .fi-simple-layout .sta-brand-app { color: var(--sta-text); }
-.fi-topbar .sta-brand-logo, .fi-simple-layout .sta-brand-logo { border: 1px solid var(--sta-border); }
+.fi-simple-layout .sta-brand-org, .fi-simple-layout .sta-brand-panel { color: var(--sta-text-2); }
+.fi-simple-layout .sta-brand-app { color: var(--sta-text); }
+.fi-simple-layout .sta-brand-logo { border: 1px solid var(--sta-border); }
 
 /* Login and other simple pages */
 .fi-simple-layout { background: var(--sta-bg); }

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Portal\Pages;
 
+use App\Enums\Role;
+use App\Filament\Portal\Concerns\CanvasPhaseHeader;
 use App\Filament\Portal\Concerns\HandlesSubmission;
 use App\Filament\Shared\Phases\EditsPhase2;
 use Filament\Pages\Page;
@@ -10,7 +12,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class Phase2Entry extends Page
 {
-    use EditsPhase2, HandlesSubmission;
+    use CanvasPhaseHeader, EditsPhase2, HandlesSubmission;
 
     protected string $view = 'filament.portal.pages.phase2-entry';
 
@@ -36,6 +38,9 @@ class Phase2Entry extends Page
 
     protected function getHeaderActions(): array
     {
-        return [$this->saveDraftAction(), $this->submitAction(), $this->approveAction(), $this->returnAction()];
+        // Drawn in the aside submit block (canvas Phase2.dc.html wording), mounted by name.
+        return [$this->saveDraftAction(),
+            $this->submitAction()->label(fn () => auth()->user()->role === Role::AssocAdmin ? 'Submit to STA' : 'Submit to association admin'),
+            $this->approveAction(), $this->returnAction()];
     }
 }

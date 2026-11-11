@@ -80,6 +80,18 @@ trait EditsPhase2
         $this->liveErrors = $this->limitErrors();
     }
 
+    /** Canvas −/+ stepper: one step on an event count (0–999); the same live limits as typing, and save() still validates. */
+    public function stepCount(int $gameEventId, int $delta): void
+    {
+        if ($this->readOnlyReason !== null) {
+            return;
+        }
+        $raw = trim((string) ($this->counts[$gameEventId] ?? ''));
+        $current = preg_match('/^\d{1,3}$/', $raw) ? (int) $raw : 0;
+        $this->counts[$gameEventId] = max(0, min(999, $current + ($delta <=> 0)));
+        $this->updatedCounts();
+    }
+
     public function updatedTotals(): void
     {
         $this->liveErrors = $this->limitErrors();

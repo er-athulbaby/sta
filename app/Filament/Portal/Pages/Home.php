@@ -15,6 +15,11 @@ class Home extends Dashboard
 
     protected static ?string $navigationLabel = 'Home';
 
+    public function getPageClasses(): array
+    {
+        return ['sta-canvas-page'];
+    }
+
     public function getGamesProperty(): Collection
     {
         return Games::forTenant(Filament::getTenant());

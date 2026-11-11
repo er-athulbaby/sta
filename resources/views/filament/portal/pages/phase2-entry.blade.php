@@ -1,5 +1,6 @@
 <x-filament-panels::page>
-    @include('filament.portal.partials.phase-top', ['pdfKey' => null, 'pdfLabel' => null])
+    {{-- Canvas: docs/design/canvas/project/Phase2.dc.html (header band is phase-header via getHeader()). --}}
+    @include('filament.portal.partials.phase-top', ['pdfKey' => null, 'pdfLabel' => null, 'canvas' => true])
 
     @php
         $paths = $this->submission->pdf_paths ?? [];
@@ -9,6 +10,9 @@
         $mixedEv = \App\Enums\EventGender::Mixed;
         $msg = fn (string $key) => $errors->first($key) ?: ($liveErrors[$key] ?? null);
         $int = fn ($v) => is_numeric($v) ? (int) $v : 0;
+        $numInput = 'min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 600 16px Inter, sans-serif; background: #FFFFFF';
+        $stepBtn = 'width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 18px Inter, sans-serif; cursor: pointer';
+        $legendTitle = "font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600";
     @endphp
 
     @forelse ($this->visibleSports() as $gs)
@@ -19,86 +23,94 @@
                 'male' => $gs->gameEvents->filter(fn ($ge) => $ge->event->gender === $maleEv)->sum(fn ($ge) => $int($counts[$ge->id] ?? null)),
                 'female' => $gs->gameEvents->filter(fn ($ge) => $ge->event->gender === $femaleEv)->sum(fn ($ge) => $int($counts[$ge->id] ?? null)),
             ];
+            // Over-limit line: shown when Phase2Limits flags the sport (live or on save), in the canvas wording.
+            $overs = collect(['male' => ['Male', $pm, $gs->p2_max_men], 'female' => ['Female', $pf, $gs->p2_max_women], 'total' => ['Total', $pm + $pf, $gs->p2_max_total]])
+                ->filter(fn ($v, $k) => $msg("sport.{$gs->id}.{$k}"))->map(fn ($v) => "{$v[0]} {$v[1]} of max {$v[2]}");
         @endphp
-        <div class="sta-split" wire:key="sport-{{ $gs->id }}">
-            <x-sta.card class="sta-main" :heading="$gs->sport->name" description="Enter how many athletes you plan to send to each event">
-                <fieldset class="sta-fieldset is-tinted" wire:key="participants-{{ $gs->id }}">
-                    <legend>
-                        <span class="sta-legend-title">Total number of participants</span>
-                        <span class="sta-muted">Count each athlete once, even if they enter several events.</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start" wire:key="sport-{{ $gs->id }}">
+
+            <section aria-labelledby="sport-title-{{ $gs->id }}" style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+                <div style="display: flex; flex-direction: column; gap: 2px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+                    <h2 id="sport-title-{{ $gs->id }}" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">{{ $gs->sport->name }}</h2>
+                    <span style="font-size: 13px; color: #475569">Enter how many athletes you plan to send to each event</span>
+                </div>
+
+                <fieldset wire:key="participants-{{ $gs->id }}" style="margin: 0; border: 0; border-bottom: 1px solid #E2E8F0; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; background: #F0FDFA">
+                    <legend style="float: left; padding: 0; display: flex; flex-direction: column; gap: 2px; margin-right: 8px">
+                        <span style="{{ $legendTitle }}">Total number of participants</span>
+                        <span style="font-size: 12px; color: #475569; font-weight: 400">Different athletes — one athlete can enter several events</span>
                     </legend>
-                    @foreach (['male' => ['Male', $gs->p2_max_men], 'female' => ['Female', $gs->p2_max_women]] as $field => [$label, $max])
-                        <label class="sta-inline-field" for="totals-{{ $gs->id }}-{{ $field }}">{{ $label }}@if ($max !== null) <span class="sta-muted">(up to {{ $max }})</span>@endif
-                            <input id="totals-{{ $gs->id }}-{{ $field }}" type="number" min="0" max="999" class="sta-input sta-input-num"
+                    @foreach (['male' => 'Male', 'female' => 'Female'] as $field => $label)
+                        <label style="display: flex; align-items: center; gap: 10px; font-weight: 600">{{ $label }}
+                            <input id="totals-{{ $gs->id }}-{{ $field }}" type="number" min="0" max="999" style="width: 88px; {{ $numInput }}"
                                 wire:model.live.debounce.400ms="totals.{{ $gs->id }}.{{ $field }}" @disabled($readOnlyReason)>
                         </label>
                         @if ($m = $msg("totals.{$gs->id}.{$field}"))<p class="sta-error">{{ $m }}</p>@endif
                     @endforeach
-                    <span class="sta-muted">Total {{ $pm + $pf }}@if ($gs->p2_max_total !== null) · male + female up to {{ $gs->p2_max_total }}@endif</span>
-                    @foreach (['male', 'female', 'total'] as $k)
-                        @if ($m = $msg("sport.{$gs->id}.{$k}"))<p class="sta-error" role="alert">{{ $m }}</p>@endif
-                    @endforeach
+                    <span style="font-size: 13px; color: #334155">Total <strong>{{ $pm + $pf }}</strong></span>
                 </fieldset>
 
-                <div class="sta-scroll">
-                    <table class="sta-table">
+                <div style="overflow-x: auto">
+                    <table style="width: 100%; min-width: 520px; border-collapse: collapse">
                         <thead>
-                            <tr><th scope="col">Event</th><th scope="col" class="sta-c">Male</th><th scope="col" class="sta-c">Female</th></tr>
+                            <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                                <th scope="col" style="padding: 10px 20px; font-weight: 600">Event</th>
+                                <th scope="col" style="padding: 10px 12px; font-weight: 600; text-align: center; width: 170px">Male</th>
+                                <th scope="col" style="padding: 10px 20px; font-weight: 600; text-align: center; width: 170px">Female</th>
+                            </tr>
                         </thead>
                         <tbody>
                             @foreach ($gs->gameEvents as $ge)
                                 @php
                                     $g = $ge->event->gender;
                                     $eMsg = $msg('counts.'.$ge->id);
+                                    $c = $int($counts[$ge->id] ?? null);
+                                    $max = $ge->p2_max_athletes;
                                 @endphp
-                                <tr>
-                                    <th scope="row">
-                                        <span class="sta-who-text">
-                                            <span>{{ $ge->event->name }}</span>
-                                            @if ($ge->p2_max_athletes !== null)
-                                                <span class="sta-allow">Up to {{ $ge->p2_max_athletes }} {{ \Illuminate\Support\Str::plural('athlete', $ge->p2_max_athletes) }}</span>
-                                            @endif
+                                <tr style="border-top: 1px solid #EEF2F6" wire:key="event-{{ $ge->id }}">
+                                    <th scope="row" style="padding: 8px 20px; text-align: left; font-weight: 500">
+                                        <span style="display: flex; flex-direction: column; gap: 2px"><span>{{ $ge->event->name }}</span>
+                                            @if ($max !== null)<span style="font-size: 12px; font-weight: 600; color: #115E59">Up to {{ $max }} {{ \Illuminate\Support\Str::plural('athlete', $max) }}</span>@endif
                                         </span>
                                     </th>
-                                    @if ($g === $mixedEv)
-                                        <td colspan="2" class="sta-c">
-                                            <input type="number" min="0" aria-label="{{ $ge->event->name }} (Mixed)" class="sta-input sta-input-num"
-                                                wire:model.live.debounce.400ms="counts.{{ $ge->id }}" @disabled($readOnlyReason)>
-                                            <span class="sta-muted">Mixed</span>
-                                            @if ($eMsg)<p class="sta-error">{{ $eMsg }}</p>@endif
-                                        </td>
-                                    @else
-                                        @foreach ([$maleEv, $femaleEv] as $col)
-                                            @if ($g === $col)
-                                                <td class="sta-c">
-                                                    <input type="number" min="0" aria-label="{{ $ge->event->name }}" class="sta-input sta-input-num"
-                                                        wire:model.live.debounce.400ms="counts.{{ $ge->id }}" @disabled($readOnlyReason)>
-                                                    @if ($eMsg)<p class="sta-error">{{ $eMsg }}</p>@endif
-                                                </td>
+                                    @foreach ($g === $mixedEv ? ['mixed'] : [$maleEv, $femaleEv] as $i => $col)
+                                        @php $on = $col === 'mixed' || $g === $col; @endphp
+                                        <td @if ($col === 'mixed') colspan="2" @endif style="padding: 8px {{ $i === 0 && $col !== 'mixed' ? '12px' : '20px' }}; text-align: center; background: {{ $on ? '#FFFFFF' : '#E2E8F0' }}">
+                                            @if ($on)
+                                                <div style="display: inline-flex; align-items: center; gap: 6px">
+                                                    <button type="button" aria-label="Fewer athletes in {{ $ge->event->name }}" wire:click="stepCount({{ $ge->id }}, -1)"
+                                                        @disabled($readOnlyReason || $c <= 0) style="{{ $stepBtn }}">−</button>
+                                                    <output aria-live="polite" aria-label="{{ $ge->event->name }}{{ $col === 'mixed' ? ' (Mixed)' : '' }}" style="width: 32px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">{{ $c }}</output>
+                                                    <button type="button" aria-label="More athletes in {{ $ge->event->name }}" wire:click="stepCount({{ $ge->id }}, 1)"
+                                                        @disabled($readOnlyReason || $c >= ($max ?? 999)) style="{{ $stepBtn }}">+</button>
+                                                </div>
+                                                @if ($col === 'mixed')<span class="sta-muted">Mixed</span>@endif
+                                                @if ($eMsg)<p class="sta-error">{{ $eMsg }}</p>@endif
                                             @else
-                                                <td class="sta-off"><span class="sta-sr-only">Not open to this gender</span></td>
+                                                <span class="sta-sr-only">Not open to this gender</span>
                                             @endif
-                                        @endforeach
-                                    @endif
+                                        </td>
+                                    @endforeach
                                 </tr>
                             @endforeach
-                            <tr class="sta-total">
-                                <th scope="row">Event entries</th>
-                                <td class="sta-c">{{ $entries['male'] }}</td>
-                                <td class="sta-c">{{ $entries['female'] }}</td>
+                            <tr style="border-top: 2px solid #E2E8F0; background: #F8FAFC">
+                                <th scope="row" style="padding: 12px 20px; text-align: left; font-weight: 700">Event entries</th>
+                                <td style="padding: 12px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{ $entries['male'] }}</td>
+                                <td style="padding: 12px 20px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{ $entries['female'] }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <fieldset class="sta-fieldset" wire:key="medals-{{ $gs->id }}">
-                    <legend>
-                        <span class="sta-legend-title">Expected medals</span>
-                        <span class="sta-muted">Optional · not linked to an athlete or event</span>
+                <fieldset wire:key="medals-{{ $gs->id }}" style="margin: 0; border: 0; border-top: 1px solid #E2E8F0; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px">
+                    <legend style="float: left; padding: 0; display: flex; flex-direction: column; gap: 2px; margin-right: 8px">
+                        <span style="{{ $legendTitle }}">Expected medals</span>
+                        <span style="font-size: 12px; color: #475569; font-weight: 400">Optional · not linked to an athlete or event</span>
                     </legend>
                     @foreach (['gold' => ['Gold', '#CA8A04'], 'silver' => ['Silver', '#94A3B8'], 'bronze' => ['Bronze', '#B45309']] as $field => [$label, $dot])
-                        <label class="sta-inline-field" for="totals-{{ $gs->id }}-{{ $field }}"><span class="sta-dot" style="background: {{ $dot }}" aria-hidden="true"></span>{{ $label }}
-                            <input id="totals-{{ $gs->id }}-{{ $field }}" type="number" min="0" max="99" class="sta-input sta-input-num"
+                        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600">
+                            <span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 50%; background: {{ $dot }}; flex-shrink: 0"></span>{{ $label }}
+                            <input id="totals-{{ $gs->id }}-{{ $field }}" type="number" min="0" max="99" style="width: 72px; {{ $numInput }}"
                                 wire:model.live.debounce.400ms="totals.{{ $gs->id }}.{{ $field }}" @disabled($readOnlyReason)>
                         </label>
                         @if ($m = $msg("totals.{$gs->id}.{$field}"))<p class="sta-error">{{ $m }}</p>@endif
@@ -108,34 +120,45 @@
                 @if ($submitted && isset($paths[$gs->id]))
                     <div class="sta-card-foot"><a target="_blank" href="{{ \App\Filament\Shared\AttachmentActions::url($paths[$gs->id]) }}">View Entry by Event PDF</a></div>
                 @endif
-            </x-sta.card>
+            </section>
 
-            <aside class="sta-aside" aria-label="{{ $gs->sport->name }} limits and entry policy">
-                <x-sta.card :heading="$gs->sport->name.' limits'" description="Checked against the total number of participants" heading-tag="h3">
-                    <div class="sta-card-body sta-stack" aria-live="polite">
-                        <x-sta.meter label="Male participants" :value="$pm" :max="$gs->p2_max_men" />
-                        <x-sta.meter label="Female participants" :value="$pf" :max="$gs->p2_max_women" />
-                        <x-sta.meter label="Total participants" :value="$pm + $pf" :max="$gs->p2_max_total" />
+            <aside aria-label="{{ $gs->sport->name }} limits and entry policy" style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 16px">
+                <section aria-labelledby="limits-title-{{ $gs->id }}" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px">
+                    <div style="display: flex; flex-direction: column; gap: 2px">
+                        <h2 id="limits-title-{{ $gs->id }}" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">{{ $gs->sport->name }} limits</h2>
+                        <span style="font-size: 12px; color: #475569">Checked against the total number of participants</span>
                     </div>
-                </x-sta.card>
-                <x-sta.card heading="Entry policy" heading-tag="h3">
-                    <div class="sta-card-body sta-stack">
-                        <p>Each event shows how many athletes it allows.</p>
-                        @if ($gs->entry_policy)<p>{{ $gs->entry_policy }}</p>@endif
-                        @if ($gs->dob_from || $gs->dob_to)
-                            <div class="sta-note"><strong>Age eligibility:</strong> born {{ $gs->dob_from ? 'from '.$gs->dob_from->format('j M Y') : '' }} {{ $gs->dob_to ? 'to '.$gs->dob_to->format('j M Y') : '' }}</div>
-                        @endif
-                    </div>
-                </x-sta.card>
+                    <x-sta.meter label="Male participants" :value="$pm" :max="$gs->p2_max_men" />
+                    <x-sta.meter label="Female participants" :value="$pf" :max="$gs->p2_max_women" />
+                    <x-sta.meter label="Total participants" :value="$pm + $pf" :max="$gs->p2_max_total" />
+                    @if ($overs->isNotEmpty())
+                        <div role="alert" style="padding: 10px 12px; border-radius: 10px; background: #FFF7ED; color: #9A3412; font-size: 13px; line-height: 1.45">Over the limit: {{ $overs->implode(' · ') }}</div>
+                    @endif
+                </section>
+
+                <section aria-labelledby="policy-title-{{ $gs->id }}" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+                    <h2 id="policy-title-{{ $gs->id }}" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Entry policy</h2>
+                    <p style="margin: 0; line-height: 1.55; color: #334155">Each event shows how many athletes it allows.</p>
+                    @if ($gs->entry_policy)<p style="margin: 0; line-height: 1.55; color: #334155">{{ $gs->entry_policy }}</p>@endif
+                    @if ($gs->dob_from || $gs->dob_to)
+                        <div style="margin-top: 4px; padding: 10px 12px; border-radius: 10px; background: #F1F5F9; font-size: 13px; color: #334155"><strong>Age eligibility:</strong>
+                            @if ($gs->dob_from && $gs->dob_to) born between {{ $gs->dob_from->format('j M Y') }} and {{ $gs->dob_to->format('j M Y') }}
+                            @elseif ($gs->dob_to) born on or before {{ $gs->dob_to->format('j M Y') }}
+                            @else born on or after {{ $gs->dob_from->format('j M Y') }}
+                            @endif
+                        </div>
+                    @endif
+                </section>
+
+                @if ($loop->last)
+                    @include('filament.portal.partials.submit-block', ['pdfName' => 'Entry by Event'])
+                @endif
             </aside>
         </div>
     @empty
         <p class="sta-muted">No sports to enter for your association in this game.</p>
+        @include('filament.portal.partials.submit-block', ['pdfName' => 'Entry by Event'])
     @endforelse
 
-    <p class="sta-muted">A saved draft is never submitted. After you submit, your association admin approves it before it goes to STA, and a signed Entry by Event PDF is generated.</p>
-    @unless ($readOnlyReason)
-        <div><x-filament::button color="gray" wire:click="save">Save as draft</x-filament::button></div>
-    @endunless
     @include('filament.partials.comments', ['comments' => $this->submission->commentsNewestFirst()])
 </x-filament-panels::page>

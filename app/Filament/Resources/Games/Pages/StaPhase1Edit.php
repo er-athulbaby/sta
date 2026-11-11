@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Games\Pages;
 
+use App\Filament\Portal\Concerns\CanvasPhaseHeader;
 use App\Filament\Resources\Games\GameResource;
 use App\Filament\Resources\Games\Pages\Concerns\StaEditsSubmission;
 use App\Filament\Shared\Phases\EditsPhase1;
@@ -9,7 +10,7 @@ use Filament\Resources\Pages\Page;
 
 class StaPhase1Edit extends Page
 {
-    use EditsPhase1, StaEditsSubmission {
+    use CanvasPhaseHeader, EditsPhase1, StaEditsSubmission {
         StaEditsSubmission::save insteadof EditsPhase1;
         EditsPhase1::save as protected saveEntries;
     }

@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Support\InitialsAvatarProvider;
 use App\Support\Sta;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Enums\DatabaseNotificationsPosition;
 use Filament\Enums\UserMenuPosition;
 use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -35,7 +36,9 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->profile()
             ->multiFactorAuthentication([AppAuthentication::make()])
-            ->databaseNotifications()
+            // Canvas shell: no top bar on desktop, so notifications live in the menu and there is no global search.
+            ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
+            ->globalSearch(false)
             ->brandName('BOC Sports Entry')
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('3.5rem')
@@ -54,7 +57,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarWidth('15.5rem')
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
-            ->renderHook(PanelsRenderHook::SIDEBAR_FOOTER, fn () => view('filament.sidebar-role'))
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.sidebar-role'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

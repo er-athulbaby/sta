@@ -35,6 +35,7 @@ class PortalPanelProvider extends PanelProvider
             ->login()
             ->tenant(Association::class)
             ->tenantProfile(EditAssociationProfile::class)
+            ->tenantMenu(false) // one association per user: the canvas association block replaces the switcher
             ->passwordReset()
             ->brandName('BOC Sports Entry')
             ->brandLogo(fn () => view('filament.brand'))
@@ -54,7 +55,8 @@ class PortalPanelProvider extends PanelProvider
             ->sidebarWidth('15.5rem')
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
-            ->renderHook(PanelsRenderHook::SIDEBAR_FOOTER, fn () => view('filament.sidebar-role'))
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.sidebar-role'))
+            ->renderHook(PanelsRenderHook::SIDEBAR_LOGO_AFTER, fn () => view('filament.sidebar-association'))
             ->navigationItems([
                 NavigationItem::make('Association profile')
                     ->url(fn () => EditAssociationProfile::getUrl())
