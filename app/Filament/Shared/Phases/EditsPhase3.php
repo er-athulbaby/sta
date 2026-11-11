@@ -66,6 +66,55 @@ trait EditsPhase3
         return null;
     }
 
+    /** Chip labels: only people of this submission's association (never another association's). */
+    public function chipPeople(): Collection
+    {
+        $ids = collect([...$this->athletes, ...$this->officials])->flatten()->map(fn ($i) => (int) $i)->unique()->all();
+
+        return Person::withoutGlobalScopes()->where('association_id', $this->association()->getKey())->whereIn('id', $ids)->get()->keyBy('id');
+    }
+
+    /** Chip picker (canvas LongListEvents): edits the selection only; save() runs LongListChecks as before. */
+    public function addAthleteChip(int $gameEventId, int|string $personId): void
+    {
+        $this->athletes[$gameEventId] = $this->withPerson($this->athletes[$gameEventId] ?? [], $personId, PersonType::Athlete);
+    }
+
+    public function removeAthleteChip(int $gameEventId, int|string $personId): void
+    {
+        $this->athletes[$gameEventId] = $this->withoutPerson($this->athletes[$gameEventId] ?? [], $personId);
+    }
+
+    public function addOfficialChip(int $gameSportId, int|string $personId): void
+    {
+        $this->officials[$gameSportId] = $this->withPerson($this->officials[$gameSportId] ?? [], $personId, PersonType::Official);
+    }
+
+    public function removeOfficialChip(int $gameSportId, int|string $personId): void
+    {
+        $this->officials[$gameSportId] = $this->withoutPerson($this->officials[$gameSportId] ?? [], $personId);
+    }
+
+    /** @return list<string> */
+    private function withPerson(array|string $ids, int|string $personId, PersonType $type): array
+    {
+        $ids = array_map('strval', (array) $ids);
+        if ($this->readOnlyReason === null && ! in_array((string) $personId, $ids, true)
+            && $this->candidates($type)->contains('id', (int) $personId)) {
+            $ids[] = (string) $personId;
+        }
+
+        return $ids;
+    }
+
+    /** @return list<string> */
+    private function withoutPerson(array|string $ids, int|string $personId): array
+    {
+        $ids = array_map('strval', (array) $ids);
+
+        return $this->readOnlyReason === null ? array_values(array_diff($ids, [(string) $personId])) : $ids;
+    }
+
     public function save(): void
     {
         try {

@@ -272,3 +272,15 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-seg > label { min-height: 36px; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px Inter, ui-sans-serif, sans-serif; color: var(--sta-text-3); cursor: pointer; }
 .sta-seg > label:has(input:checked) { background: #FFFFFF; color: var(--sta-text); box-shadow: 0 1px 2px rgba(15, 23, 42, .08); }
 .sta-seg > label:has(input:focus-visible) { outline: 2px solid var(--sta-primary); outline-offset: 2px; }
+/* Task 5: Long List */
+.sta-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sta-compare { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; background: #F1F5F9; color: var(--sta-text-3); }
+.sta-compare.is-over { background: #FFEDD5; color: var(--sta-warn); font-weight: 600; }
+.sta-event-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 16px; }
+.sta-event-box { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: var(--sta-radius-tile); border: 1px solid var(--sta-border); background: #FFFFFF; }
+.sta-event-box-officials { background: #F8FAFC; }
+.sta-event-name { font-weight: 700; font-size: 15px; }
+.sta-entered { font-weight: 600; color: var(--sta-primary); }
+.sta-warn-list { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--sta-warn); line-height: 1.4; }
+.sta-banner.sta-warn-list { display: block; padding: 10px 12px; }
+.sta-person-card { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
