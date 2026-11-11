@@ -4,16 +4,20 @@ namespace App\Filament\Portal\Concerns;
 
 use App\Enums\Role;
 use App\Enums\SubmissionStatus;
+use App\Filament\Portal\Pages\Games;
 use App\Models\Association;
 use App\Models\Game;
+use App\Models\GamePhase;
 use App\Models\Submission;
 use App\Services\Phases\PhaseGate;
 use App\Services\Phases\StaleSubmission;
 use App\Services\Phases\SubmissionWorkflow;
+use App\Support\Sta;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 
@@ -47,6 +51,39 @@ trait HandlesSubmission
         $this->submission = Submission::for($this->gameModel, $tenant, $phase);
         $this->loadPhase();
         $this->refreshLoadedAt();
+    }
+
+    /** Spec 17: phase pages wear their phase colour (theme: .sta-phase-page.sta-ph-N .fi-header). */
+    public function getPageClasses(): array
+    {
+        return ['sta-phase-page', 'sta-ph-'.$this->submission->phase];
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        $p = $this->submission->phase;
+        [$phaseState] = Sta::phaseStatus($this->gameModel->phase($p));
+        $status = $this->submission->status;
+        $saved = $status === SubmissionStatus::Draft && $this->submission->updated_at ? ' · saved '.$this->submission->updated_at->format('H:i') : '';
+
+        return Sta::heading($this->phaseHeadingTitle(), $p, "Phase {$p} of 4 · {$phaseState}", Sta::submissionPill($status), $status->label().$saved);
+    }
+
+    public function getSubheading(): ?string
+    {
+        $deadline = $this->submission->gamePhase()->effectiveDeadline($this->submission);
+
+        return $deadline ? 'Deadline '.$deadline->format('j M Y H:i').' · '.Sta::daysLeft($deadline) : 'No deadline set';
+    }
+
+    protected function phaseHeadingTitle(): string
+    {
+        return GamePhase::NAMES[$this->submission->phase];
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [Games::getUrl() => 'Games', $this->gameModel->name];
     }
 
     protected function association(): Association

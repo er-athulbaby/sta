@@ -48,6 +48,20 @@ trait StaEditsSubmission
         return 'Edit '.$this->submission->association->name.' – Phase '.static::PHASE.' · '.GamePhase::NAMES[static::PHASE];
     }
 
+    protected function phaseHeadingTitle(): string
+    {
+        return 'Edit '.$this->submission->association->name.' · '.GamePhase::NAMES[static::PHASE];
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            GameResource::getUrl('dashboard', ['record' => $this->record]) => $this->record->name,
+            GameResource::getUrl('submission', ['record' => $this->record, 'submission' => $this->submission]) => $this->submission->association->name,
+            'Edit',
+        ];
+    }
+
     protected function association(): Association
     {
         return $this->submission->association;

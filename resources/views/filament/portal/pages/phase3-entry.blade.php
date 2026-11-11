@@ -1,11 +1,5 @@
 <x-filament-panels::page>
-    <p class="text-sm text-gray-600 dark:text-gray-400">
-        Deadline: {{ $this->submission->gamePhase()->effectiveDeadline($this->submission)?->format('j M Y H:i') ?? 'none' }}
-    </p>
-
-    @if ($readOnlyReason)
-        <div class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">{{ $readOnlyReason }}</div>
-    @endif
+    @include('filament.portal.partials.phase-top', ['pdfKey' => 'long_list', 'pdfLabel' => 'View Long List PDF'])
 
     @php
         $p2 = $this->phase2Numbers();
@@ -13,12 +7,6 @@
         $officialOptions = $this->candidates(\App\Enums\PersonType::Official);
         $selectClass = 'w-full rounded border-gray-300 text-sm dark:bg-white/5';
     @endphp
-
-    @php $paths = $this->submission->pdf_paths ?? []; @endphp
-    @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['long_list']))
-        <a class="text-sm text-primary-600 underline" target="_blank"
-           href="{{ \App\Filament\Shared\AttachmentActions::url($paths['long_list']) }}">View Long List PDF</a>
-    @endif
 
     @if ($url = $this->registryUrl())
         <p class="text-sm"><a href="{{ $url }}" target="_blank" class="text-primary-600 underline">Open registry</a>

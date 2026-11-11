@@ -1,17 +1,5 @@
 <x-filament-panels::page>
-    <p class="text-sm text-gray-600 dark:text-gray-400">
-        Deadline: {{ $this->submission->gamePhase()->effectiveDeadline($this->submission)?->format('j M Y H:i') ?? 'none' }}
-    </p>
-
-    @if ($readOnlyReason)
-        <div class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">{{ $readOnlyReason }}</div>
-    @endif
-
-    @php $paths = $this->submission->pdf_paths ?? []; @endphp
-    @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['entry_by_sport']))
-        <a class="text-sm text-primary-600 underline" target="_blank"
-           href="{{ \App\Filament\Shared\AttachmentActions::url($paths['entry_by_sport']) }}">View Entry by Sport PDF</a>
-    @endif
+    @include('filament.portal.partials.phase-top', ['pdfKey' => 'entry_by_sport', 'pdfLabel' => 'View Entry by Sport PDF'])
 
     <x-filament::section>
         @forelse ($this->sports as $gs)

@@ -1,25 +1,21 @@
 <x-filament-panels::page>
     @forelse ($this->games as $item)
-        <x-filament::section :heading="$item['game']->name" :description="$item['game']->start_date->format('j M Y').' – '.$item['game']->end_date->format('j M Y')">
-            <div class="divide-y divide-gray-200 dark:divide-white/10">
+        @php $g = $item['game']; @endphp
+        <x-sta.card :heading="$g->name" :description="$g->start_date->format('j M Y').' – '.$g->end_date->format('j M Y')" wire:key="game-{{ $g->id }}">
+            <div class="sta-card-body sta-grid-phase">
                 @foreach ($item['rows'] as $row)
-                    <div class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
-                        <div>
-                            <span class="font-medium">Phase {{ $row['phase'] }} · {{ $row['name'] }}</span>
-                            <span class="ml-2 text-gray-500">{{ $row['status'] }}</span>
-                            @if ($row['deadline'])
-                                <span class="ml-2 text-gray-500">Deadline {{ $row['deadline']->format('j M Y H:i') }}</span>
-                            @endif
-                            <span class="ml-2 text-gray-500">{{ $row['submission'] }}</span>
-                        </div>
+                    <x-sta.phase-card :phase="$row['phase']" :name="$row['name']" :status="$row['pill']" :status-label="$row['submission']"
+                        :meta="$row['status'].($row['deadline'] ? ' · Deadline '.$row['deadline']->format('j M Y H:i') : '')"
+                        :active="$row['status'] === 'Open'">
                         @if ($row['url'])
-                            <a href="{{ $row['url'] }}" class="text-primary-600 underline">Open</a>
+                            <a href="{{ $row['url'] }}" class="sta-btn sta-btn-outline" style="align-self: flex-start"
+                               aria-label="Open Phase {{ $row['phase'] }} {{ $row['name'] }} for {{ $g->name }}">Open</a>
                         @endif
-                    </div>
+                    </x-sta.phase-card>
                 @endforeach
             </div>
-        </x-filament::section>
+        </x-sta.card>
     @empty
-        <p class="text-sm text-gray-500">No games yet.</p>
+        <p class="sta-muted">No games yet.</p>
     @endforelse
 </x-filament-panels::page>

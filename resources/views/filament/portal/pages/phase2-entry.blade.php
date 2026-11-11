@@ -1,11 +1,5 @@
 <x-filament-panels::page>
-    <p class="text-sm text-gray-600 dark:text-gray-400">
-        Deadline: {{ $this->submission->gamePhase()->effectiveDeadline($this->submission)?->format('j M Y H:i') ?? 'none' }}
-    </p>
-
-    @if ($readOnlyReason)
-        <div class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">{{ $readOnlyReason }}</div>
-    @endif
+    @include('filament.portal.partials.phase-top', ['pdfKey' => null, 'pdfLabel' => null])
 
     @php
         $paths = $this->submission->pdf_paths ?? [];

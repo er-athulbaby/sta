@@ -1,17 +1,5 @@
 <x-filament-panels::page>
-    <p class="text-sm text-gray-600 dark:text-gray-400">
-        Deadline: {{ $this->submission->gamePhase()->effectiveDeadline($this->submission)?->format('j M Y H:i') ?? 'none' }}
-    </p>
-
-    @if ($readOnlyReason)
-        <div class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">{{ $readOnlyReason }}</div>
-    @endif
-
-    @php $paths = $this->submission->pdf_paths ?? []; @endphp
-    @if ($this->submission->status === \App\Enums\SubmissionStatus::Submitted && isset($paths['short_list']))
-        <a class="text-sm text-primary-600 underline" target="_blank"
-           href="{{ \App\Filament\Shared\AttachmentActions::url($paths['short_list']) }}">View Short List PDF</a>
-    @endif
+    @include('filament.portal.partials.phase-top', ['pdfKey' => 'short_list', 'pdfLabel' => 'View Short List PDF'])
 
     @if (! $this->longListSubmitted())
         <div class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">Submit the Long List first.</div>
