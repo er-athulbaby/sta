@@ -57,15 +57,22 @@ final class People extends Subject
         return [...parent::fields($user), ...ExtraFields::fields($user)];
     }
 
-    protected function define(): array
+    /**
+     * SQL true when the `people` row is complete. Same rule as Person::missingFields(), as "filled or not" only: cpr_no's
+     * value never leaves the database. Required extra fields (active, for the type) need a value too.
+     */
+    public static function completeSql(): string
     {
-        // Same rule as Person::missingFields(), as "filled or not" only: cpr_no's value never leaves the database.
-        // Required extra fields (active, for the type) need a value too.
         $complete = fn (string $type) => implode(' AND ', array_filter([
             ...array_map(fn (string $c) => Sql::filled("people.{$c}", $c === 'passport_issue_date'), array_keys(Person::REQUIRED_FOR_COMPLETE[$type])),
             ExtraFields::completeSql(PersonType::from($type)),
         ]));
 
+        return "(CASE WHEN people.type = 'athlete' THEN ({$complete('athlete')}) ELSE ({$complete('official')}) END)";
+    }
+
+    protected function define(): array
+    {
         return [
             Field::text('full_name', 'Name', 'Person', Sql::fullName()),
             Field::text('code', 'Person code', 'Person', 'people.code'),
@@ -75,8 +82,7 @@ final class People extends Subject
             Field::date('dob', 'Date of birth', 'Person', 'people.dob'),
             Field::number('age', 'Age (today)', 'Person', Sql::age('people.dob', Sql::today())),
             Field::text('function', 'Function', 'Person', 'people.function'),
-            Field::boolean('complete', 'Complete', 'Person',
-                "(CASE WHEN people.type = 'athlete' THEN ({$complete('athlete')}) ELSE ({$complete('official')}) END)"),
+            Field::boolean('complete', 'Complete', 'Person', self::completeSql()),
             Field::text('association', 'Association', 'Association', 'associations.name'),
             Field::text('association_code', 'Association code', 'Association', 'associations.code'),
             Field::date('passport_expiry', 'Passport expiry', 'Documents', 'people.passport_expiry'),

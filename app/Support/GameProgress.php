@@ -12,28 +12,84 @@ use App\Models\InterestAnswer;
 use App\Models\NumberEntry;
 use App\Models\Person;
 use App\Models\Submission;
+use App\Notifications\PhaseReminder;
 use App\Services\Phases\LongListChecks;
+use App\Services\Phases\Recipients;
 use App\Services\Phases\ShortListChecks;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Notification;
 
 /**
- * Read-only status of one game's submissions (spec 17 game dashboard). Never creates submissions.
+ * Status of one game's submissions (spec 17 game dashboard, admin home). Never creates submissions.
  * Loads phases, invited associations, game sports and every submission once; flags are memoised per association (ruling U3).
+ * many() does the same for several games at once, so the admin home costs the same queries for any number of games.
  */
 final class GameProgress
 {
+    private const RELATIONS = ['phases', 'associations', 'gameSports.sport', 'gameSports.gameEvents'];
+
     /** @var Collection<string, Submission> keyed "associationId-phase" */
     private Collection $subs;
 
     /** @var array<int, array<int, string>> phase => association id => flag */
     private array $flags = [];
 
-    public function __construct(public readonly Game $game)
+    /**
+     * @param  Collection<int, Submission>|null  $subs  this game's submissions, when many() loaded them
+     * @param  array{entries: Collection, numbers: Collection, people: Collection, no: Collection}|null  $shared  the rows flags() needs, loaded by many() for all its games
+     */
+    public function __construct(public readonly Game $game, ?Collection $subs = null, private readonly ?array $shared = null)
     {
-        $game->loadMissing(['phases', 'associations', 'gameSports.sport', 'gameSports.gameEvents']);
-        $this->subs = Submission::withoutGlobalScopes()->where('game_id', $game->id)
-            ->withExists(['answers', 'numbers', 'entries'])->get()->keyBy(fn (Submission $s) => "{$s->association_id}-{$s->phase}");
+        $game->loadMissing(self::RELATIONS);
+        $this->subs = ($subs ?? self::submissions([$game->id]))->keyBy(fn (Submission $s) => "{$s->association_id}-{$s->phase}");
+    }
+
+    /** @return EloquentCollection<int, Submission> */
+    private static function submissions(array $gameIds): EloquentCollection
+    {
+        return Submission::withoutGlobalScopes()->whereIn('game_id', $gameIds)->withExists(['answers', 'numbers', 'entries'])->get();
+    }
+
+    /**
+     * One GameProgress per game; relations, submissions and the flag rows are loaded once for all of them.
+     *
+     * @param  EloquentCollection<int, Game>  $games
+     * @return Collection<int, self>
+     */
+    public static function many(EloquentCollection $games): Collection
+    {
+        $games->loadMissing(self::RELATIONS);
+        $subs = self::submissions($games->modelKeys());
+        $entries = Entry::query()->whereIn('submission_id', $subs->whereIn('phase', [3, 4])->pluck('id'))->orderBy('id')->get();
+        $shared = [
+            'entries' => $entries->groupBy('submission_id'),
+            'numbers' => NumberEntry::query()->whereIn('submission_id', $subs->where('phase', 2)->where('status', SubmissionStatus::Submitted)->pluck('id'))
+                ->get()->groupBy('submission_id'),
+            'people' => Person::withoutGlobalScopes()->whereKey($entries->pluck('person_id')->unique()->all())->get(['id', 'association_id', 'gender']),
+            'no' => InterestAnswer::query()->whereIn('submission_id', $subs->where('phase', 1)->pluck('id'))->where('answer', 'no')
+                ->get(['submission_id', 'game_sport_id']),
+        ];
+        $byGame = $subs->groupBy('game_id');
+
+        return $games->map(fn (Game $g) => new self($g, $byGame->get($g->id, collect()), $shared))->values();
+    }
+
+    /** Sends the phase reminder to each association that has not submitted it; returns how many were reminded. */
+    public function remind(GamePhase $phase, Collection $associations): int
+    {
+        $n = 0;
+        foreach ($associations as $a) {
+            if ($this->status($a, $phase->phase) === 'submitted') {
+                continue;
+            }
+            $deadline = $phase->effectiveDeadline($this->submission($a, $phase->phase));
+            Notification::send(Recipients::association($a), new PhaseReminder($phase, $a, $deadline !== null && now()->greaterThan($deadline)));
+            $n++;
+        }
+
+        return $n;
     }
 
     public function submission(Association $a, int $phase): ?Submission
@@ -129,14 +185,15 @@ final class GameProgress
         if (! in_array($phase, [3, 4], true) || $subs->isEmpty()) {
             return [];
         }
-        $entries = Entry::query()->whereIn('submission_id', $subs->pluck('id'))->orderBy('id')->get()->groupBy('submission_id');
+        // many() already loaded these rows (keyed by submission or person id, so other games' rows are never matched).
+        $entries = $this->shared['entries'] ?? Entry::query()->whereIn('submission_id', $subs->pluck('id'))->orderBy('id')->get()->groupBy('submission_id');
         $no = $this->phase1No();
         if ($phase === 3) {
             $p2 = $this->subs->where('phase', 2)->where('status', SubmissionStatus::Submitted)->keyBy('association_id');
-            $numbers = NumberEntry::query()->whereIn('submission_id', $p2->pluck('id'))->get()->groupBy('submission_id');
+            $numbers = $this->shared['numbers'] ?? NumberEntry::query()->whereIn('submission_id', $p2->pluck('id'))->get()->groupBy('submission_id');
         } else {
-            $ids = $entries->flatten()->pluck('person_id')->unique()->all();
-            $people = Person::withoutGlobalScopes()->whereKey($ids)->get(['id', 'association_id', 'gender'])->groupBy('association_id');
+            $people = ($this->shared['people'] ?? Person::withoutGlobalScopes()->whereKey($entries->flatten()->pluck('person_id')->unique()->all())
+                ->get(['id', 'association_id', 'gender']))->groupBy('association_id');
         }
 
         $out = [];
@@ -169,7 +226,9 @@ final class GameProgress
         }
         $p1 = $this->subs->where('phase', 1)->pluck('association_id', 'id');
 
-        return InterestAnswer::query()->whereIn('submission_id', $p1->keys())->where('answer', 'no')->get(['submission_id', 'game_sport_id'])
-            ->groupBy(fn ($a) => $p1[$a->submission_id])->map(fn ($g) => $g->pluck('game_sport_id')->all())->all();
+        $answers = $this->shared ? $this->shared['no']->whereIn('submission_id', $p1->keys()->all())
+            : InterestAnswer::query()->whereIn('submission_id', $p1->keys())->where('answer', 'no')->get(['submission_id', 'game_sport_id']);
+
+        return $answers->groupBy(fn ($a) => $p1[$a->submission_id])->map(fn ($g) => $g->pluck('game_sport_id')->all())->all();
     }
 }

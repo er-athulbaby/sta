@@ -9,8 +9,6 @@ use App\Filament\Resources\Games\GameResource;
 use App\Models\Association;
 use App\Models\GamePhase;
 use App\Models\Submission;
-use App\Notifications\PhaseReminder;
-use App\Services\Phases\Recipients;
 use App\Services\Phases\SubmissionWorkflow;
 use App\Support\GameProgress;
 use App\Support\Sta;
@@ -25,7 +23,6 @@ use Filament\Resources\Pages\Page;
 use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use OpenSpout\Writer\XLSX\Writer;
@@ -341,18 +338,7 @@ class GameDashboard extends Page
     /** Sends the phase reminder to each association that has not submitted; returns how many were reminded. */
     private function remind(GamePhase $phase, Collection $associations): int
     {
-        $n = 0;
-        foreach ($associations as $a) {
-            $c = $this->cell($a, $phase->phase);
-            if ($c['status'] === 'submitted') {
-                continue;
-            }
-            $deadline = $phase->effectiveDeadline($c['submission']);
-            NotificationFacade::send(Recipients::association($a), new PhaseReminder($phase, $a, $deadline !== null && now()->greaterThan($deadline)));
-            $n++;
-        }
-
-        return $n;
+        return $this->progress()->remind($phase, $associations);
     }
 
     /** Export Excel: the table as shown (switch and search applied). */
