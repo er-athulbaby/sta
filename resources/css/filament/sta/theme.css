@@ -284,3 +284,11 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-warn-list { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--sta-warn); line-height: 1.4; }
 .sta-banner.sta-warn-list { display: block; padding: 10px 12px; }
 .sta-person-card { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+/* Task 6: Short List */
+.sta-subhead { margin: 0; padding: 14px 20px 6px; font-size: 13px; font-weight: 700; color: var(--sta-text-2); text-transform: uppercase; letter-spacing: .05em; }
+.sta-subhead-rule { border-top: 1px solid var(--sta-border); padding-top: 18px; }
+.sta-tick { display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer; }
+.sta-tick input[type='checkbox'] { width: 22px; height: 22px; accent-color: #6D28D9; flex-shrink: 0; }
+.sta-justify { border-width: 2px; border-color: #6D28D9; }
+.sta-justify .sta-warn-list { color: #5B21B6; font-weight: 600; }

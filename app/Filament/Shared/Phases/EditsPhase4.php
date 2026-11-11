@@ -2,6 +2,7 @@
 
 namespace App\Filament\Shared\Phases;
 
+use App\Enums\PersonGender;
 use App\Models\Association;
 use App\Models\GameSport;
 use App\Models\Person;
@@ -58,6 +59,19 @@ trait EditsPhase4
     public function visibleSports(): Collection
     {
         return $this->gameModel->phase2SportsFor($this->association());
+    }
+
+    /** @return array{male: int, female: int, officials: int} people ticked in one sport (spec 17: Short List meters) */
+    public function tickedCounts(GameSport $gs): array
+    {
+        $people = $this->longListPeople();
+        $ids = $gs->gameEvents->flatMap(fn ($ge) => (array) ($this->athletes[$ge->id] ?? []))->map(fn ($id) => (int) $id)->unique();
+
+        return [
+            'male' => $ids->filter(fn ($id) => $people->get($id)?->gender === PersonGender::Male)->count(),
+            'female' => $ids->filter(fn ($id) => $people->get($id)?->gender === PersonGender::Female)->count(),
+            'officials' => collect((array) ($this->officials[$gs->id] ?? []))->unique()->count(),
+        ];
     }
 
     /** @return list<array{sport: string, kind: string, count: int, max: int}> for the ticks on screen */
