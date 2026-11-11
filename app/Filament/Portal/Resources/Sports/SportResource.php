@@ -9,6 +9,8 @@ use Filament\Tables\Table;
 
 class SportResource extends Resource
 {
+    protected static ?int $navigationSort = 7;
+
     protected static ?string $model = Sport::class;
 
     protected static ?string $tenantOwnershipRelationshipName = 'association';

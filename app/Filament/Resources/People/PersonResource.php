@@ -13,13 +13,15 @@ use Filament\Tables\Table;
 
 class PersonResource extends Resource
 {
+    protected static ?int $navigationSort = 5;
+
     use RequiresStaPermission;
 
     protected static ?string $model = Person::class;
 
     protected static ?string $slug = 'people';
 
-    protected static ?string $navigationLabel = 'Athletes & officials';
+    protected static ?string $navigationLabel = 'People';
 
     protected static ?string $modelLabel = 'person';
 

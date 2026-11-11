@@ -19,6 +19,10 @@ use Filament\Tables\Table;
 
 class SportResource extends Resource
 {
+    protected static ?string $navigationLabel = 'Sports & events';
+
+    protected static ?int $navigationSort = 3;
+
     use RequiresStaPermission;
 
     protected static ?string $model = Sport::class;

@@ -13,13 +13,15 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StaUserResource extends Resource
 {
+    protected static ?string $navigationLabel = 'STA users';
+
+    protected static ?int $navigationSort = 8;
+
     protected static ?string $model = User::class;
 
     protected static ?string $slug = 'sta-users';
 
     protected static ?string $modelLabel = 'STA user';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Access';
 
     public static function canAccess(): bool
     {

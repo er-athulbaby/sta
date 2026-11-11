@@ -11,6 +11,8 @@ use Filament\Tables\Table;
 
 class PersonResource extends Resource
 {
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $model = Person::class;
 
     protected static ?string $slug = 'people';

@@ -14,6 +14,8 @@ use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogResource extends Resource
 {
+    protected static ?int $navigationSort = 7;
+
     use RequiresStaPermission;
 
     protected static ?string $model = Activity::class;
@@ -21,8 +23,6 @@ class ActivityLogResource extends Resource
     protected static ?string $slug = 'activity-logs';
 
     protected static ?string $navigationLabel = 'Audit log';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Access';
 
     protected static function requiredPermission(): StaPermission
     {

@@ -14,6 +14,8 @@ use Illuminate\Support\Collection;
 /** Spec 14: "My reports" and "Shared", plus New report. The ready-made M4 reports stay on each game. */
 class Reports extends Page
 {
+    protected static ?int $navigationSort = 6;
+
     use RequiresStaPermission;
 
     protected static ?string $navigationLabel = 'Reports';

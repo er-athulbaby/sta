@@ -2,7 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Support\InitialsAvatarProvider;
+use App\Support\Sta;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Enums\UserMenuPosition;
+use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -11,8 +15,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -33,20 +36,31 @@ class AdminPanelProvider extends PanelProvider
             ->profile()
             ->multiFactorAuthentication([AppAuthentication::make()])
             ->databaseNotifications()
-            ->brandName('STA Admin')
+            ->brandName('BOC Sports Entry')
+            ->brandLogo(fn () => view('filament.brand'))
+            ->brandLogoHeight('3.5rem')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#1F3A5F'),
+                'gray' => Color::Slate,
+                'success' => Color::Green,   // Submitted / Complete
+                'warning' => Color::Orange,  // canvas warnings #9A3412 family
+                'danger' => Color::Red,
+                'info' => Color::Indigo,     // Draft / Male
+                'pink' => Color::Pink,       // Female (event gender badge)
             ])
+            ->font('Inter', url: Sta::FONTS_URL, provider: GoogleFontProvider::class)
+            ->viteTheme('resources/css/filament/sta/theme.css')
+            ->darkMode(false)
+            ->sidebarWidth('15.5rem')
+            ->userMenu(position: UserMenuPosition::Sidebar)
+            ->defaultAvatarProvider(InitialsAvatarProvider::class)
+            ->renderHook(PanelsRenderHook::SIDEBAR_FOOTER, fn () => view('filament.sidebar-role'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

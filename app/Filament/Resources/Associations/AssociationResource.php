@@ -18,6 +18,8 @@ use Filament\Tables\Table;
 
 class AssociationResource extends Resource
 {
+    protected static ?int $navigationSort = 2;
+
     use RequiresStaPermission;
 
     protected static ?string $model = Association::class;

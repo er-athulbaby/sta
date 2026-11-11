@@ -19,6 +19,8 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ImportPeople extends Page
 {
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $title = 'Import people from Excel';
 
     protected static ?string $navigationLabel = 'Excel import';

@@ -18,6 +18,8 @@ use Filament\Schemas\Schema;
 
 class Settings extends Page
 {
+    protected static ?int $navigationSort = 9;
+
     use RequiresStaPermission;
 
     public ?array $data = [];

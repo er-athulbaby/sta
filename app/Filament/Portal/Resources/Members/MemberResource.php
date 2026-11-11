@@ -13,6 +13,8 @@ use Filament\Tables\Table;
 
 class MemberResource extends Resource
 {
+    protected static ?int $navigationSort = 4;
+
     protected static ?string $model = User::class;
 
     protected static ?string $tenantOwnershipRelationshipName = 'association';

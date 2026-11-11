@@ -30,11 +30,11 @@ use Illuminate\Support\Facades\Gate;
 
 class GameResource extends Resource
 {
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $model = Game::class;
 
     protected static ?string $recordTitleAttribute = 'name';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Games';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFlag;
 

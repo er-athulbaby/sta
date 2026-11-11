@@ -18,6 +18,8 @@ use Filament\Tables\Table;
 
 class ExtraFieldResource extends Resource
 {
+    protected static ?int $navigationSort = 10;
+
     use RequiresStaPermission;
 
     protected static ?string $model = ExtraField::class;
