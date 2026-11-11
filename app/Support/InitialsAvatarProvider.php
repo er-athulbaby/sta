@@ -21,10 +21,10 @@ final class InitialsAvatarProvider implements AvatarProvider
 
     public static function svg(string $text, string $fill = '#2B4C7E'): string
     {
-        $size = mb_strlen($text) > 2 ? 18 : 24;
+        $size = mb_strlen($text) > 2 ? 18 : 23; // 23/64 of a 36px circle = the canvas 13px
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">'
             .'<rect width="64" height="64" rx="32" fill="'.$fill.'"/>'
-            .'<text x="32" y="32" dy=".35em" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="'.$size.'" font-weight="700" fill="#FFFFFF">'.e($text).'</text></svg>';
+            .'<text x="32" y="32" dy=".35em" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="'.$size.'" font-weight="600" fill="#FFFFFF">'.e($text).'</text></svg>';
 
         return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }

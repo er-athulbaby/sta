@@ -6,12 +6,14 @@ use App\Filament\Portal\Pages\Games;
 use App\Filament\Portal\Pages\Phase1Entry;
 use App\Filament\Portal\Pages\Phase2Entry;
 use App\Models\Association;
+use App\Models\Comment;
 use App\Models\Event;
 use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
 use App\Models\NumberEntry;
 use App\Models\Sport;
+use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
 
@@ -102,12 +104,62 @@ it('builds Phase 1 in the Phase 2 structure: header band, banner, main card, sub
             'Sports you were invited to', 'Weightlifting', 'Yes', 'No', 'Maybe', 'Save as draft', 'Send for approval', 'Entry by Sport PDF']);
 });
 
-it('shows each game as Main.dc.html phase cards with the canvas status wording', function () {
+it('shows each game as Main.dc.html phase cards: the card is the link, canvas meta wording, no Open button', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->setDate(2026, 9, 28)]);
     $this->game->phase(2)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addDays(6)->addHour()]);
     $this->game->phase(3)->update(['enabled' => true, 'status' => PhaseStatus::Draft]);
     actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+    $p2 = Phase2Entry::getUrl(['game' => $this->game->id]);
 
-    livewire(Games::class)->assertSeeHtml('sta-canvas-page')
-        ->assertSeeInOrder(['Asian Indoor Games', 'Phase 2', 'No response', 'Entry by Number', 'Open · Deadline', '6 days left',
-            'Phase 3', 'Long List', 'Not opened']);
+    $page = livewire(Games::class)->assertSeeHtml('sta-canvas-page')
+        ->assertSeeInOrder(['Asian Indoor Games', 'Phase 1', 'Closed 28 Sep',
+            'Phase 2', 'No response', 'Entry by Number', 'Deadline', '6 days left',
+            'Phase 3', 'Long List', 'Opens after Phase 2 closes'])
+        ->assertDontSee('Open · Deadline')->assertDontSeeHtml('>Open</a>');
+    expect($page->html())
+        ->toMatch('/<a\s+href="'.preg_quote(e($p2), '/').'"[^>]*class="sta-phase-card is-active is-link"[^>]*aria-label="Phase 2 Entry by Number for Asian Indoor Games: No response · Deadline/')
+        ->not->toMatch('/<a[^>]*href="[^"]*phase-3"/');
+});
+
+it('keeps Games the active menu item on every phase page', function () {
+    foreach ([1, 2, 3, 4] as $n) {
+        $this->game->phase($n)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->subDay()]);
+    }
+    actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+
+    foreach ([1, 2, 3, 4] as $n) {
+        $html = $this->get("/portal/{$this->assoc->id}/games/{$this->game->id}/phase-{$n}")->assertOk()->getContent();
+        preg_match_all('/<li[^>]*class="[^"]*fi-sidebar-item[^"]*fi-active[^"]*".*?fi-sidebar-item-label[^>]*>\s*([^<]+?)\s*</s', $html, $m);
+        expect($m[1])->toBe(['Games']);
+    }
+});
+
+it('draws the comments card only when STA has commented', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
+    $editor = User::factory()->assocEditor($this->assoc)->create();
+    actingInPortal($editor);
+
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('Comments from STA')->assertDontSee('No comments.');
+
+    Comment::create(['submission_id' => Submission::for($this->game, $this->assoc, 1)->id,
+        'user_id' => User::factory()->superAdmin()->create()->id, 'body' => 'Check the weights.']);
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertSee('Comments from STA')->assertSee('Check the weights.');
+});
+
+it('disables − at 0 and clears the over-limit alert when back within limits', function () {
+    $this->game->phase(2)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
+    actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+
+    $page = livewire(Phase2Entry::class, ['game' => $this->game->id]);
+    expect($page->html())->toMatch('/aria-label="Fewer athletes in 60kg"[^>]*disabled/');
+    $page->set("totals.{$this->gs->id}.male", '5')->assertSee('Over the limit: Male 5 of max 4')
+        ->set("totals.{$this->gs->id}.male", '4')->assertDontSee('Over the limit');
+});
+
+it('hides the reminder line on a read-only phase', function () {
+    $this->game->phase(2)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->addDay()]);
+    actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+
+    livewire(Phase2Entry::class, ['game' => $this->game->id])->assertSee('Deadline')
+        ->assertDontSee('Reminder emails go out automatically');
 });

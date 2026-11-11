@@ -12,17 +12,10 @@
             </div>
             <div style="padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
                 @foreach ($item['rows'] as $row)
-                    @php
-                        $days = $row['status'] === 'Open' ? \App\Support\Sta::daysLeft($row['deadline']) : null;
-                        $meta = $row['status'].($row['deadline'] ? ' · Deadline '.$row['deadline']->format('j M Y').($days ? ' · '.$days : '') : '');
-                    @endphp
+                    {{-- The card itself is the link (open and closed phases); a phase not opened yet is not a link. --}}
                     <x-sta.phase-card :phase="$row['phase']" :name="$row['name']" :status="$row['pill']" :status-label="$row['submission']"
-                        :meta="$meta" :active="$row['status'] === 'Open'">
-                        @if ($row['url'])
-                            <a href="{{ $row['url'] }}" class="sta-btn sta-btn-outline" style="align-self: flex-start; margin-top: 4px"
-                               aria-label="Open Phase {{ $row['phase'] }} {{ $row['name'] }} for {{ $g->name }}">Open</a>
-                        @endif
-                    </x-sta.phase-card>
+                        :meta="$row['meta']" :active="$row['status'] === 'Open'" :href="$row['url']"
+                        :aria-label="$row['url'] ? 'Phase '.$row['phase'].' '.$row['name'].' for '.$g->name.': '.$row['submission'].' · '.$row['meta'] : null" />
                 @endforeach
             </div>
         </section>
