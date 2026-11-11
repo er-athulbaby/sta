@@ -77,6 +77,19 @@ final class Sta
         };
     }
 
+    /** "Today, 10:42", "Yesterday" or "7 Oct" (canvas Last activity). */
+    public static function when(CarbonInterface $t): string
+    {
+        $t = $t->copy()->timezone('Asia/Bahrain');
+        $today = now('Asia/Bahrain');
+
+        return match (true) {
+            $t->isSameDay($today) => 'Today, '.$t->format('H:i'),
+            $t->isSameDay($today->copy()->subDay()) => 'Yesterday',
+            default => $t->format('j M'),
+        };
+    }
+
     /** Event label with its gender ("Male 60kg") unless the event name already says it. */
     public static function eventLabel(Event $event): string
     {

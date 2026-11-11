@@ -229,13 +229,11 @@ class SetupPhases extends Page
                 $s = Submission::for($this->record, $a, (int) $data['phase']);
                 $when = Carbon::parse($data['deadline'], self::TZ);
                 try {
-                    $reopen ? app(SubmissionWorkflow::class)->reopen($s, auth()->user(), $when) : app(SubmissionWorkflow::class)->extend($s, auth()->user(), $when);
+                    $note = $data['note'] ?? null;
+                    $reopen ? app(SubmissionWorkflow::class)->reopen($s, auth()->user(), $when, $note) : app(SubmissionWorkflow::class)->extend($s, auth()->user(), $when, $note);
                 } catch (ValidationException $e) {
                     Notification::make()->danger()->title(collect($e->errors())->flatten()->first())->send();
-
-                    return;
                 }
-                $s->update(['deadline_note' => filled($data['note'] ?? null) ? $data['note'] : null, 'deadline_change' => $reopen ? 'reopened' : 'extended']);
             });
     }
 }

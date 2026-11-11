@@ -36,7 +36,7 @@ it('shows the status matrix', function () {
 
 it('hides fully submitted rows when pending only', function () {
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
-        ->set('pendingOnly', true)->assertDontSee('Done Fed')->assertSee('Late Fed');
+        ->set('show', 'pending')->assertDontSee('Done Fed')->assertSee('Late Fed');
 });
 
 it('reminds only pending associations', function () {

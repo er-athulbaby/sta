@@ -361,3 +361,6 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .fi-icon-btn.sta-row-remove { width: 44px; height: 44px; border-radius: var(--sta-radius-ctl); border: 1px solid var(--sta-border-strong); background: #FFFFFF; color: #991B1B; }
 .fi-icon-btn.sta-row-remove .fi-icon { color: #991B1B; }
 .sta-repeater textarea.fi-input[rows="1"] { min-height: 44px; padding-block: 11px; resize: vertical; }
+
+/* Task 10: the game dashboard (canvas Main.dc.html) spaces its sections 24px apart. */
+.sta-dashboard-page .fi-page-main, .sta-dashboard-page .fi-page-content { row-gap: 24px; }

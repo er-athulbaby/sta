@@ -74,7 +74,8 @@ final class SubmissionWorkflow
         return $s;
     }
 
-    public function reopen(Submission $s, User $by, ?CarbonInterface $newDeadline = null): Submission
+    /** $note is the optional STA note shown with the new deadline (submissions.deadline_note). */
+    public function reopen(Submission $s, User $by, ?CarbonInterface $newDeadline = null, ?string $note = null): Submission
     {
         if (! in_array($s->status, [SubmissionStatus::Submitted, SubmissionStatus::AwaitingAssocAdmin], true)) {
             $this->fail('This entry is not submitted, so there is nothing to re-open.');
@@ -83,18 +84,19 @@ final class SubmissionWorkflow
         if ($effective === null || $effective->isPast()) {
             $this->fail('Give a new deadline in the future to re-open this entry.');
         }
-        $this->change($s, ['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override]);
+        $this->change($s, ['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override,
+            'deadline_change' => 'reopened', 'deadline_note' => filled($note) ? $note : null]);
         $this->notifyDeadline($s, new DeadlineChanged($s, reopened: true));
 
         return $s;
     }
 
-    public function extend(Submission $s, User $by, CarbonInterface $deadline): Submission
+    public function extend(Submission $s, User $by, CarbonInterface $deadline, ?string $note = null): Submission
     {
         if ($s->status === SubmissionStatus::Submitted) {
             $this->fail('This entry is already submitted — re-open it to change the deadline.');
         }
-        $this->change($s, ['deadline_override' => $deadline]);
+        $this->change($s, ['deadline_override' => $deadline, 'deadline_change' => 'extended', 'deadline_note' => filled($note) ? $note : null]);
         $this->notifyDeadline($s, new DeadlineChanged($s, reopened: false));
 
         return $s;
