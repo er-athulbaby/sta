@@ -10,6 +10,7 @@ use App\Models\Sport;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
@@ -49,6 +50,7 @@ class ListSports extends ListRecords
     }
 
     /** @return Collection<int, string> */
+    #[Unexposed]
     public function associationOptions(): Collection
     {
         return Association::query()->orderBy('name')->pluck('name', 'id');
@@ -61,6 +63,7 @@ class ListSports extends ListRecords
         $this->resetErrorBag();
     }
 
+    #[Unexposed]
     public function panelSport(): ?Sport
     {
         $records = $this->getTableRecords();
@@ -69,6 +72,7 @@ class ListSports extends ListRecords
     }
 
     /** @return Collection<int, int> games per event id (canvas "Used in games") */
+    #[Unexposed]
     public function gamesUsing(Sport $sport): Collection
     {
         return GameEvent::query()->whereIn('event_id', $sport->events->modelKeys())
@@ -81,7 +85,7 @@ class ListSports extends ListRecords
         $sport = Sport::query()->findOrFail($id);
         $rules = [
             'name' => ['required', 'string', 'max:255', Rule::unique('sports', 'name')->ignore($sport->id)],
-            'association_id' => ['required', Rule::exists('associations', 'id')],
+            'association_id' => ['required', 'integer', Rule::exists('associations', 'id')],
             'is_active' => ['boolean'],
         ];
         abort_unless(isset($rules[$field]), 404);

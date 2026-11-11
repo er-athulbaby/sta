@@ -116,7 +116,7 @@
                                     <td style="padding: 10px 20px; font-weight: 600; color: {{ $e->is_active ? '#0F172A' : '#475569' }}">{{ $e->name }}</td>
                                     <td style="padding: 10px 12px"><span style="{{ $genderStyle[$e->gender->value] }}">{{ $e->gender->label() }}</span></td>
                                     <td style="padding: 10px 12px; color: #334155">{{ $n ? $n.($n === 1 ? ' game' : ' games') : 'Not yet' }}</td>
-                                    <td style="padding: 0 20px">
+                                    <td style="padding: 2px 20px">
                                         <button type="button" role="switch" aria-checked="{{ $e->is_active ? 'true' : 'false' }}" aria-label="Active: {{ $e->name }} {{ $e->gender->label() }}" wire:click="toggleEvent({{ $e->id }})" style="display: inline-flex; align-items: center; min-height: 44px; border: 0; padding: 0; background: transparent; cursor: pointer">
                                             <span style="position: relative; width: 48px; height: 28px; border-radius: 999px; background: {{ $e->is_active ? '#1F3A5F' : '#CBD5E1' }}"><span style="position: absolute; top: 3px; left: {{ $e->is_active ? '23px' : '3px' }}; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></span>
                                         </button>

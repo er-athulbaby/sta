@@ -61,8 +61,8 @@ it('deactivates users, resends and revokes invitations from the aside, never tou
     $page->callAction(TestAction::make('resendInvite')->arguments(['id' => $inv->id]))->assertNotified();
     expect($inv->fresh()->status())->toBe('revoked');
     $new = Invitation::query()->pending()->where('email', 'new@x.bh')->sole();
-    expect($page->get('inviteLinks'))->toHaveKey('new@x.bh');
-    $page->assertSee($page->get('inviteLinks')['new@x.bh']);
+    expect($page->get('inviteLinks'))->toHaveKey($a->id.':new@x.bh');
+    $page->assertSee($page->get('inviteLinks')[$a->id.':new@x.bh']);
 
     $page->callAction(TestAction::make('revokeInvite')->arguments(['id' => $new->id]));
     expect($new->fresh()->status())->toBe('revoked');
@@ -70,6 +70,39 @@ it('deactivates users, resends and revokes invitations from the aside, never tou
     expect(fn () => livewire(ListAssociations::class)->callAction(TestAction::make('deactivateUser')->arguments(['id' => $sta->id])))
         ->toThrow(ModelNotFoundException::class);
     expect($sta->fresh()->is_active)->toBeTrue();
+});
+
+it('keeps a sent link to its own association when the same email is invited by two', function () {
+    Mail::fake();
+    [$a, $b] = Association::factory()->count(2)->create();
+    $mk = fn (Association $x) => Invitation::create(['association_id' => $x->id, 'email' => 'same@x.bh', 'role' => Role::AssocEditor,
+        'token_hash' => hash('sha256', 'same'.$x->id), 'expires_at' => now()->addDays(7)]);
+    $invA = $mk($a);
+    $mk($b);
+
+    $page = livewire(ListAssociations::class)->call('selectAssociation', $a->id)
+        ->callAction(TestAction::make('resendInvite')->arguments(['id' => $invA->id]));
+    $link = $page->get('inviteLinks')[$a->id.':same@x.bh'];
+    $page->assertSee($link);
+
+    $page->call('selectAssociation', $b->id)
+        ->assertDontSee($link)->assertSeeHtml('The link is shown only on the page that sent it.');
+});
+
+it('shows the link sent by the aside Invite admin under that association\'s invitation', function () {
+    Mail::fake();
+    $a = Association::factory()->create(['email' => 'Info@Judo.bh']);
+
+    $page = livewire(ListAssociations::class)->call('selectAssociation', $a->id)
+        ->callAction(TestAction::make('invite')->table($a), data: ['email' => 'Info@Judo.bh']);
+
+    $link = $page->get('inviteLinks')[$a->id.':info@judo.bh'];
+    expect($link)->toContain('/invitations/');
+    $page->assertSee($link)->assertSee('info@judo.bh')->assertDontSeeHtml('The link is shown only on the page that sent it.');
+});
+
+it('forbids Sports & events to STA without manage_master_data', function () {
+    $this->actingAs(User::factory()->sta()->create())->get('/admin/sports')->assertForbidden();
 });
 
 it('searches associations by name or email', function () {

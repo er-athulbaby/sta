@@ -26,8 +26,9 @@ final class InvitationActions
             ->schema([TextInput::make('email')->email()->required()->default($defaultEmail)])
             ->action(function (array $data, ?Association $record, $livewire) use ($role, $association) {
                 self::guard(function () use ($data, $record, $role, $association, $livewire) {
-                    $url = app(InvitationService::class)->invite($association($record), $data['email'], $role, auth()->user());
-                    self::linkNotification($url, $livewire, $data['email']);
+                    $target = $association($record);
+                    $url = app(InvitationService::class)->invite($target, $data['email'], $role, auth()->user());
+                    self::linkNotification($url, $livewire, $target->id, $data['email']);
                 });
             });
     }
@@ -37,7 +38,7 @@ final class InvitationActions
         return Action::make('resend')->icon('heroicon-o-arrow-path')
             ->visible(fn (Invitation $record) => in_array($record->status(), ['pending', 'expired'], true))
             ->action(fn (Invitation $record, $livewire) => self::guard(function () use ($record, $livewire) {
-                self::linkNotification(app(InvitationService::class)->invite($record->association, $record->email, $record->role, auth()->user()), $livewire, $record->email);
+                self::linkNotification(app(InvitationService::class)->invite($record->association, $record->email, $record->role, auth()->user()), $livewire, $record->association_id, $record->email);
             }));
     }
 
@@ -66,12 +67,13 @@ final class InvitationActions
         }
     }
 
-    private static function linkNotification(string $url, mixed $livewire = null, ?string $email = null): void
+    private static function linkNotification(string $url, mixed $livewire = null, ?int $associationId = null, ?string $email = null): void
     {
         // Pages with an `inviteLinks` map (canvas Associations "Invitation link" + Copy) keep the new link for this
         // page visit only: the token is stored hashed, so a link can never be shown again later.
-        if ($email !== null && is_object($livewire) && property_exists($livewire, 'inviteLinks')) {
-            $livewire->inviteLinks[Str::lower(trim($email))] = $url;
+        // Keyed by association too: the same email can be invited by two associations.
+        if ($associationId !== null && $email !== null && is_object($livewire) && property_exists($livewire, 'inviteLinks')) {
+            $livewire->inviteLinks[$associationId.':'.Str::lower(trim($email))] = $url;
         }
         Notification::make()->success()->persistent()
             ->title('Invitation sent')

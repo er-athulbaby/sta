@@ -104,7 +104,7 @@
             <section aria-labelledby="inv-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
                 <h3 id="inv-title" style="margin: 0; padding: 14px 20px; border-bottom: 1px solid #E2E8F0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Invitations</h3>
                 @forelse ($sel->invitations as $inv)
-                    @php $link = $this->inviteLinks[$inv->email] ?? null; @endphp
+                    @php $link = $this->inviteLinks[$sel->id.':'.mb_strtolower($inv->email)] ?? null; @endphp
                     <div wire:key="assoc-inv-{{ $inv->id }}" style="padding: 14px 20px; display: flex; flex-direction: column; gap: 10px{{ $loop->first ? '' : '; border-top: 1px solid #EEF2F6' }}">
                         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
                             <span style="display: flex; flex-direction: column">

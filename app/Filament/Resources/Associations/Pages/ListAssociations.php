@@ -12,6 +12,7 @@ use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\View\View as ViewContract;
 
 /**
@@ -56,6 +57,7 @@ class ListAssociations extends ListRecords
         $this->selected = $id;
     }
 
+    #[Unexposed]
     public function panelAssociation(): ?Association
     {
         $records = $this->getTableRecords();
