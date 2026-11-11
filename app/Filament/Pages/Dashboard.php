@@ -16,6 +16,7 @@ use App\Models\Invitation;
 use App\Models\User;
 use App\Services\Reports\Builder\Subjects\People;
 use App\Support\GameProgress;
+use App\Support\Sta;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -194,9 +195,10 @@ class Dashboard extends BaseDashboard
             $rows = DB::table('people')->join('associations', 'associations.id', '=', 'people.association_id')
                 ->selectRaw('people.association_id as id, associations.code as code, associations.name as name, people.type as type, COUNT(*) as total, '
                     .'SUM(CASE WHEN '.People::completeSql().' THEN 1 ELSE 0 END) as complete, '
-                    .'SUM(CASE WHEN people.passport_expiry < ? THEN 1 ELSE 0 END) as expiring', [now()->addMonths(6)->toDateString()])
+                    // Same predicate as the People page's "expiring" tile the banner links to.
+                    .'SUM(CASE WHEN people.passport_expiry < ? THEN 1 ELSE 0 END) as expiring', [now()->addMonths(6)])
                 ->groupBy('people.association_id', 'associations.code', 'associations.name', 'people.type')->get();
-            $per = $rows->groupBy('id')->map(fn ($g) => ['code' => $g[0]->code ?? $g[0]->name, 'complete' => (int) $g->sum('complete'), 'total' => (int) $g->sum('total')]);
+            $per = $rows->groupBy('id')->map(fn ($g) => ['code' => $g[0]->code ?? Sta::initials($g[0]->name), 'complete' => (int) $g->sum('complete'), 'total' => (int) $g->sum('total')]);
 
             return [
                 'athletes' => (int) $rows->where('type', 'athlete')->sum('total'),

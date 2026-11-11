@@ -69,14 +69,17 @@ it('hides the registry columns of the associations table without manage_people (
 it('counts the registry in SQL with the Person::isComplete rule and passports expiring within 6 months', function () {
     actingInAdmin(User::factory()->superAdmin()->create());
     Person::factory()->create(['association_id' => $this->assoc->id, 'passport_expiry' => now()->addMonths(2)]);
+    $done = Person::factory()->official()->complete()->create(['association_id' => $this->assoc->id]);
+    $open = Person::factory()->official()->create(['association_id' => $this->assoc->id]);
+    expect($done->fresh()->isComplete())->toBeTrue()->and($open->fresh()->isComplete())->toBeFalse();
 
     $r = livewire(Dashboard::class)->instance()->registry();
 
-    expect($r['athletes'] + $r['officials'])->toBe(2)
+    expect($r['athletes'])->toBe(2)->and($r['officials'])->toBe(2)
         ->and($r['complete'])->toBe(Person::withoutGlobalScopes()->get()->filter->isComplete()->count())
-        ->and($r['complete'] + $r['incomplete'])->toBe(2)
-        ->and($r['expiring'])->toBe(Person::withoutGlobalScopes()->where('passport_expiry', '<', now()->addMonths(6))->count())
-        ->and($r['top'][0])->toMatchArray(['code' => 'BWF', 'total' => 2]);
+        ->and($r['complete'] + $r['incomplete'])->toBe(4)
+        ->and($r['expiring'])->toBe(Person::query()->whereNotNull('passport_expiry')->where('passport_expiry', '<', now()->addMonths(6))->count())
+        ->and($r['top'][0])->toMatchArray(['code' => 'BWF', 'total' => 4]);
 });
 
 it('lists pending invitations in the attention list', function () {
