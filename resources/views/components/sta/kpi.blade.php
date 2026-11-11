@@ -1,4 +1,4 @@
-@props(['label', 'value', 'hint' => null, 'tone' => null])
+@props(['label', 'value' => null, 'hint' => null, 'tone' => null])
 <div {{ $attributes->class('sta-kpi') }}>
     <span class="sta-kpi-label">{{ $label }}</span>
     <span @class(['sta-kpi-value', 'sta-tone-'.$tone => $tone])>{{ $value }}</span>

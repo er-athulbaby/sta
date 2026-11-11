@@ -51,3 +51,64 @@ it('builds a page heading with chip and pill', function () {
     expect((string) Sta::heading('Long List', 3, 'Phase 3', 'draft', 'Draft'))
         ->toContain('Long List')->toContain('sta-ph-3')->toContain('sta-pill-draft');
 });
+
+it('maps every cell, submission and phase state', function () {
+    foreach (['submitted' => 'submitted', 'awaiting' => 'awaiting', 'draft' => 'draft', 'overdue' => 'overdue', 'no_response' => 'none', 'bogus' => 'none'] as $in => $out) {
+        expect(Sta::cellPill($in))->toBe($out);
+    }
+    expect(Sta::submissionPill(SubmissionStatus::Submitted))->toBe('submitted')
+        ->and(Sta::submissionPill(SubmissionStatus::AwaitingAssocAdmin))->toBe('awaiting')
+        ->and(Sta::submissionPill(SubmissionStatus::Draft))->toBe('draft');
+
+    $game = Game::factory()->create();
+    $p = $game->phase(2);
+    foreach ([[PhaseStatus::Draft, ['Not opened', 'none']], [PhaseStatus::Open, ['Open', 'open']], [PhaseStatus::Closed, ['Closed', 'closed']]] as [$s, $want]) {
+        $p->update(['enabled' => true, 'status' => $s]);
+        expect(Sta::phaseStatus($p->fresh()))->toBe($want);
+    }
+    $p->update(['enabled' => false]);
+    expect(Sta::phaseStatus($p->fresh()))->toBe(['Skipped', 'skipped']);
+});
+
+it('words the days left', function () {
+    $this->travelTo(now()->startOfDay()->addHours(12));
+
+    expect(Sta::daysLeft(null))->toBeNull()
+        ->and(Sta::daysLeft(now()->subHour()))->toBe('Overdue')
+        ->and(Sta::daysLeft(now()->addHours(3)))->toBe('Due today')
+        ->and(Sta::daysLeft(now()->addDay()->addHour()))->toBe('1 day left')
+        ->and(Sta::daysLeft(now()->addDays(5)->addHour()))->toBe('5 days left');
+});
+
+it('escapes user text in every component', function () {
+    $x = '<script>x</script>"quote"';
+    $a = Association::factory()->create(['name' => $x, 'code' => $x]);
+    $html = Blade::render(
+        '<x-sta.heading :title="$x" /><x-sta.pill status="draft">{{ $x }}</x-sta.pill><x-sta.kpi :label="$x" value="1" :hint="$x" />'
+        .'<x-sta.meter :label="$x" :value="1" :max="2" /><x-sta.person-avatar :name="$x" /><x-sta.assoc-avatar :association="$a" />'
+        .'<x-sta.phase-card :phase="1" :name="$x" status="draft" :status-label="$x" :meta="$x" />'
+        .'<x-sta.card :heading="$x" :description="$x">body</x-sta.card>',
+        ['x' => $x, 'a' => $a]);
+
+    expect($html)->not->toContain('<script>x</script>')->not->toContain('"quote"')->toContain('&lt;script&gt;x&lt;/script&gt;');
+});
+
+it('renders card, phase card, person avatar and the logo branch', function () {
+    $a = Association::factory()->create(['name' => 'Judo', 'logo_path' => 'logos/x.png']);
+    $html = Blade::render(
+        '<x-sta.card heading="Sports" description="d" band="blue">body<x-slot:icon>I</x-slot:icon><x-slot:actions>ACT</x-slot:actions><x-slot:footer>FOOT</x-slot:footer></x-sta.card>'
+        .'<x-sta.phase-card :phase="2" name="By Number" status="open" status-label="Open" meta="m" :active="true" />'
+        .'<x-sta.person-avatar name="Ali Hassan" size="xl" /><x-sta.assoc-avatar :association="$a" size="lg" />',
+        ['a' => $a]);
+
+    expect($html)->toContain('sta-band sta-band-blue')->toContain('sta-band-icon')->toContain('ACT')->toContain('FOOT')
+        ->toContain('is-active')->toContain('aria-current="true"')->toContain('sta-avatar-xl')->toContain('aria-label="Ali Hassan"')
+        ->toContain('>AH<')->toContain('sta-logo sta-logo-lg')->toContain('Judo logo');
+});
+
+it('tolerates missing props', function () {
+    $html = Blade::render('<x-sta.meter label="M" /><x-sta.meter label="Z" :value="3" :max="0" /><x-sta.kpi label="K" /><x-sta.assoc-avatar /><x-sta.phase-card :phase="1" />'
+        .'<x-sta.meter label="O" :value="5" :max="4" />');
+
+    expect($html)->not->toContain('aria-valuemax="0"')->toContain('aria-valuetext="5 of 4"');
+});
