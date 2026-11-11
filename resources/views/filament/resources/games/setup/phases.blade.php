@@ -103,9 +103,9 @@
               <td style="padding: 14px 20px; font-weight: 600">{{ $s->association->name }}</td>
               <td style="padding: 14px 12px"><x-sta.phase-chip :phase="$s->phase" :label="$s->phase.' · '.\App\Models\GamePhase::NAMES[$s->phase]" /></td>
               <td style="padding: 14px 12px">
-                @if ($phaseDeadline)<span style="color: #475569; text-decoration: line-through">{{ $phaseDeadline->timezone($tz)->format('d M') }}</span> → @endif<strong>{{ $s->deadline_override->timezone($tz)->format('d M') }}</strong>
+                @if ($s->deadline_change === 'reopened')Re-opened → @elseif ($phaseDeadline)<span style="color: #475569; text-decoration: line-through">{{ $phaseDeadline->timezone($tz)->format('d M') }}</span> → @endif<strong>{{ $s->deadline_override->timezone($tz)->format('d M') }}</strong>
               </td>
-              <td style="padding: 14px 20px; color: #334155">{{ $s->status->label() }}</td>
+              <td style="padding: 14px 20px; color: #334155">{{ $s->deadline_note }}</td>
             </tr>
           @empty
             <tr><td colspan="4" style="padding: 14px 20px; color: #475569">No extensions yet.</td></tr>

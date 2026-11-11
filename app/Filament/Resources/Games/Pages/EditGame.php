@@ -66,12 +66,20 @@ class EditGame extends Page
 
     public function toggleAssociation(int $id): void
     {
-        $this->invited = in_array($id, $this->invited, true) ? array_values(array_diff($this->invited, [$id])) : [...$this->invited, $id];
+        if (in_array($id, $this->invited, true)) {
+            $this->invited = array_values(array_diff($this->invited, [$id]));
+        } elseif (Association::whereKey($id)->where('is_active', true)->exists()) {
+            $this->invited = [...$this->invited, $id];
+        }
     }
 
     public function toggleSport(int $id): void
     {
-        $this->picked = in_array($id, $this->picked, true) ? array_values(array_diff($this->picked, [$id])) : [...$this->picked, $id];
+        if (in_array($id, $this->picked, true)) {
+            $this->picked = array_values(array_diff($this->picked, [$id]));
+        } elseif (Sport::whereKey($id)->where('is_active', true)->exists()) {
+            $this->picked = [...$this->picked, $id];
+        }
     }
 
     /** Ticks every association that matches the search, or clears them when they are all ticked. */
@@ -99,6 +107,9 @@ class EditGame extends Page
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ]);
         $game = $this->record;
+        // Public state can be set from the browser: keep only active associations (or ones already invited).
+        $allowed = Association::where('is_active', true)->pluck('id')->merge($game->associations()->pluck('associations.id'))->map(fn ($id) => (int) $id);
+        $this->invited = collect($this->invited)->map(fn ($id) => (int) $id)->intersect($allowed)->unique()->values()->all();
         $attributes = ['name' => $data['name'], 'start_date' => $data['start_date'], 'end_date' => $data['end_date']];
         if ($this->logo) {
             $attributes['logo_path'] = $this->logo->store('game-logos', ['disk' => config('filesystems.private'), 'visibility' => 'private']);

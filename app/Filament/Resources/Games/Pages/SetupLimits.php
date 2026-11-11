@@ -151,13 +151,18 @@ class SetupLimits extends Page
             'men' => ['nullable', 'integer', 'min:0'], 'women' => ['nullable', 'integer', 'min:0'], 'total' => ['nullable', 'integer', 'min:0'],
             'dobFrom' => ['nullable', 'date'], 'dobTo' => ['nullable', 'date', 'after_or_equal:dobFrom'],
             'policy' => ['nullable', 'string', 'max:5000'],
+            'events.*.max' => ['nullable', 'integer', 'min:0'],
         ]);
         $kept = [];
         DB::transaction(function () use ($gs, &$kept) {
             $gs->update(['p2_max_men' => $this->men, 'p2_max_women' => $this->women, 'p2_max_total' => $this->total,
                 'dob_from' => $this->dobFrom ?: null, 'dob_to' => $this->dobTo ?: null, 'entry_policy' => $this->policy ?: null]);
             $have = $gs->gameEvents()->get()->keyBy('event_id');
+            $mine = $gs->sport->events()->pluck('id')->all();
             foreach ($this->events as $eventId => $row) {
+                if (! in_array((int) $eventId, $mine, true)) {
+                    continue; // never attach another sport's event
+                }
                 $ge = $have->get($eventId);
                 if ($row['offered'] && ! $ge) {
                     GameEvent::create(['game_id' => $gs->game_id, 'game_sport_id' => $gs->id, 'event_id' => $eventId, 'p2_max_athletes' => $row['max']]);

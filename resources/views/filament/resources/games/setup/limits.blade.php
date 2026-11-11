@@ -51,6 +51,7 @@
               <output style="flex: 1; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700">{{ $this->{$field} ?? '–' }}</output>
               <button type="button" aria-label="Raise {{ $label }}" wire:click="bump('{{ $field }}', 1)" style="width: 44px; height: 44px; {{ $stepBtn }}">+</button>
             </div>
+            @error($field) <span role="alert" style="font-size: 12px; color: #991B1B">{{ $message }}</span> @enderror
           </div>
         @endforeach
       </div>
@@ -60,6 +61,7 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
         <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Born on or after (optional)
           <input type="date" wire:model="dobFrom" style="{{ $inputStyle }}">
+          @error('dobFrom') <span role="alert" style="font-weight: 400; color: #991B1B">{{ $message }}</span> @enderror
         </label>
         <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Born on or before
           <input type="date" wire:model="dobTo" style="{{ $inputStyle }}">
@@ -68,6 +70,7 @@
       </div>
       <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Entry policy (shown to associations and printed on the Entry by Event PDF)
         <textarea rows="3" wire:model="policy" style="padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px/1.5 Inter, sans-serif; resize: vertical"></textarea>
+        @error('policy') <span role="alert" style="font-weight: 400; color: #991B1B">{{ $message }}</span> @enderror
       </label>
     </section>
 

@@ -295,3 +295,8 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 
 /* Task 7: person pages use the canvas soft background */
 .fi-body:has(.sta-bg-alt) { background: var(--sta-bg-home); }
+
+/* Canvas pages: no extra Filament padding above the header and a 20px gap between sections. */
+.sta-canvas-page .fi-page-header-main-ctn { padding-block: 0; row-gap: 20px; }
+.sta-canvas-page .fi-page-main, .sta-canvas-page .fi-page-content { row-gap: 20px; }
+.sta-avatar-invite { width: 34px; height: 34px; font-size: 11px; }

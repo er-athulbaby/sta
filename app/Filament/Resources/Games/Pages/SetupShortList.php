@@ -50,7 +50,11 @@ class SetupShortList extends Page
 
     public function toggleItem(int $id): void
     {
-        $this->items = in_array($id, $this->items, true) ? array_values(array_diff($this->items, [$id])) : [...$this->items, $id];
+        if (in_array($id, $this->items, true)) {
+            $this->items = array_values(array_diff($this->items, [$id]));
+        } elseif (ClothingItem::whereKey($id)->where('is_active', true)->exists()) {
+            $this->items = [...$this->items, $id];
+        }
     }
 
     public function bump(int $gameSportId, string $kind, int $delta): void
@@ -109,8 +113,11 @@ class SetupShortList extends Page
             'items' => ['array'], 'items.*' => ['integer', 'exists:clothing_items,id'],
             'caps.*.men' => ['nullable', 'integer', 'min:0'], 'caps.*.women' => ['nullable', 'integer', 'min:0'], 'caps.*.officials' => ['nullable', 'integer', 'min:0'],
         ]);
-        DB::transaction(function () use ($valid) {
-            $this->record->clothingItems()->sync($valid['items']);
+        // Only active items, or ones already ticked that were deactivated since.
+        $allowed = ClothingItem::where('is_active', true)->pluck('id')->merge($this->record->clothingItems()->pluck('clothing_items.id'))->map(fn ($id) => (int) $id);
+        $items = collect($valid['items'])->map(fn ($id) => (int) $id)->intersect($allowed)->unique()->values()->all();
+        DB::transaction(function () use ($items) {
+            $this->record->clothingItems()->sync($items);
             foreach ($this->record->gameSports()->get() as $gs) {
                 if (isset($this->caps[$gs->id])) {
                     $c = $this->caps[$gs->id];

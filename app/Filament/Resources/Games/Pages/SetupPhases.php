@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Collection;
@@ -45,6 +46,11 @@ class SetupPhases extends Page
     /** Every phase edit is saved at once; there is nothing pending to save. */
     public function save(): void {}
 
+    public function saveDraft(): void
+    {
+        Notification::make()->info()->title('No changes to save')->body('Changes on this screen are saved as you make them.')->send();
+    }
+
     /** @return Collection<int, GamePhase> */
     public function phases(): Collection
     {
@@ -53,7 +59,7 @@ class SetupPhases extends Page
 
     public function anyOpen(): bool
     {
-        return $this->record->phases()->where('enabled', true)->where('status', PhaseStatus::Open)->exists();
+        return $this->record->phases()->where('status', PhaseStatus::Open)->exists();
     }
 
     /** What the phase card says about the associations' progress. */
@@ -117,7 +123,13 @@ class SetupPhases extends Page
     {
         abort_unless(in_array($field, ['opens_at', 'deadline'], true), 404);
         $p = $this->record->phase($phase);
-        $when = filled($value) ? ($field === 'deadline' ? Carbon::parse($value, self::TZ)->setTime(23, 59) : Carbon::parse($value, self::TZ)->startOfDay()) : null;
+        try {
+            $when = filled($value) ? ($field === 'deadline' ? Carbon::parse($value, self::TZ)->setTime(23, 59) : Carbon::parse($value, self::TZ)->startOfDay()) : null;
+        } catch (\Throwable) {
+            Notification::make()->danger()->title('Give a valid date.')->send();
+
+            return;
+        }
         if ($field === 'deadline' && $when === null && $p->status === PhaseStatus::Open) {
             Notification::make()->danger()->title('An open phase needs a deadline.')->send();
 
@@ -135,7 +147,17 @@ class SetupPhases extends Page
 
     public function toggleReminder(int $days): void
     {
+        if ($days < 0 || $days > 60) {
+            Notification::make()->danger()->title('Reminder days must be between 0 and 60.')->send();
+
+            return;
+        }
         $have = collect($this->record->reminder_days ?? []);
+        if ($have->contains($days) && $have->count() === 1) {
+            Notification::make()->danger()->title('Keep at least one reminder day.')->send();
+
+            return;
+        }
         $this->record->update(['reminder_days' => ($have->contains($days) ? $have->reject(fn ($d) => $d === $days) : $have->push($days))
             ->map(fn ($d) => (int) $d)->unique()->sortDesc()->values()->all()]);
     }
@@ -192,20 +214,28 @@ class SetupPhases extends Page
     {
         return Action::make('addExtension')->label('Add extension')->modalHeading('Add extension')
             ->schema([
+                Select::make('type')->label('What to do')->required()->default('extend')->options([
+                    'extend' => 'Extend the deadline (not yet submitted)', 'reopen' => 'Re-open a submitted phase for corrections']),
                 Select::make('association')->required()->options(fn () => $this->record->associations()->orderBy('name')->pluck('associations.name', 'associations.id')),
                 Select::make('phase')->required()->options(fn () => $this->record->phases()->where('enabled', true)->orderBy('phase')
                     ->get()->mapWithKeys(fn ($p) => [$p->phase => "Phase {$p->phase} · ".GamePhase::NAMES[$p->phase]])),
-                DateTimePicker::make('deadline')->required()->seconds(false)->after('now'),
+                DateTimePicker::make('deadline')->label('New deadline')->required()->seconds(false)->after('now'),
+                TextInput::make('note')->maxLength(255),
             ])
             ->action(function (array $data) {
                 $a = $this->record->associations()->find($data['association']);
                 abort_unless($a && $this->record->phases()->where('enabled', true)->where('phase', $data['phase'])->exists(), 404);
+                $reopen = $data['type'] === 'reopen';
+                $s = Submission::for($this->record, $a, (int) $data['phase']);
+                $when = Carbon::parse($data['deadline'], self::TZ);
                 try {
-                    app(SubmissionWorkflow::class)->extend(Submission::for($this->record, $a, (int) $data['phase']), auth()->user(),
-                        Carbon::parse($data['deadline'], self::TZ));
+                    $reopen ? app(SubmissionWorkflow::class)->reopen($s, auth()->user(), $when) : app(SubmissionWorkflow::class)->extend($s, auth()->user(), $when);
                 } catch (ValidationException $e) {
                     Notification::make()->danger()->title(collect($e->errors())->flatten()->first())->send();
+
+                    return;
                 }
+                $s->update(['deadline_note' => filled($data['note'] ?? null) ? $data['note'] : null, 'deadline_change' => $reopen ? 'reopened' : 'extended']);
             });
     }
 }

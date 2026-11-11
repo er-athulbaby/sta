@@ -33,6 +33,12 @@ trait SetupPage
 
     protected function loadState(): void {}
 
+    /** Canvas spacing: theme.css removes Filament's extra page padding and gaps for this class. */
+    public function getPageClasses(): array
+    {
+        return ['sta-canvas-page'];
+    }
+
     public function getTitle(): string|Htmlable
     {
         return 'Game setup';

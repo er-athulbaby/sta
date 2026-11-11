@@ -30,7 +30,7 @@
           <span style="font-weight: 600; font-size: 15px">{{ $c->name }}</span>
           <input type="checkbox" @checked($on) wire:click="toggleItem({{ $c->id }})" style="width: 20px; height: 20px; accent-color: #1F3A5F">
         </span>
-        <span style="font-size: 13px; color: #475569">{{ $c->applies_to->label() }}</span>
+        <span style="font-size: 13px; color: #475569">{{ ['athlete' => 'Athletes only', 'official' => 'Team officials only', 'both' => 'Athletes and officials'][$c->applies_to->value] }}</span>
         <span style="font-size: 12px; color: #334155">Sizes: {{ implode(', ', $c->sizes ?? []) }}</span>
       </label>
     @endforeach

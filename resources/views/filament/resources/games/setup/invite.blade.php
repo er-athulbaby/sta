@@ -2,8 +2,8 @@
 @php
     $all = $this->associations();
     $shown = $this->visible();
-    $invitedCount = $all->whereIn('id', $invited)->count();
-    $sportsCount = $all->whereIn('id', $invited)->sum(fn ($a) => $a->sports->whereIn('id', $picked)->count());
+    $invitedCount = $shown->whereIn('id', $invited)->count();
+    $sportsCount = $shown->whereIn('id', $invited)->sum(fn ($a) => $a->sports->whereIn('id', $picked)->count());
     $logoUrl = $this->logoUrl();
     $inputStyle = 'min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif';
 @endphp
@@ -49,7 +49,7 @@
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #E2E8F0">
       <div style="display: flex; flex-direction: column; gap: 2px">
         <h2 id="invite-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600">Invited associations &amp; sports</h2>
-        <span style="font-size: 13px; color: #475569">{{ $invitedCount }} of {{ $all->count() }} shown invited · {{ $sportsCount }} sports ticked</span>
+        <span style="font-size: 13px; color: #475569">{{ $invitedCount }} of {{ $shown->count() }} shown invited · {{ $sportsCount }} sports ticked</span>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
         <label style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px">
@@ -66,7 +66,7 @@
         <li wire:key="assoc-{{ $a->id }}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 20px; border-top: 1px solid #EEF2F6{{ $on ? '' : '; background: #FAFBFC' }}">
           <label style="display: flex; align-items: center; gap: 12px; min-height: 44px; flex: 1 1 280px; cursor: pointer">
             <input type="checkbox" @checked($on) wire:click="toggleAssociation({{ $a->id }})" style="width: 20px; height: 20px; accent-color: #1F3A5F">
-            <x-sta.assoc-avatar :association="$a" />
+            <x-sta.assoc-avatar :association="$a" size="invite" />
             <span style="display: flex; flex-direction: column">
               <span style="font-weight: 600">{{ $a->name }}</span>
               <span style="font-size: 12px; color: #475569">{{ $a->email }}</span>

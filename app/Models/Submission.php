@@ -17,7 +17,7 @@ class Submission extends Model
     use BelongsToAssociation, HasFactory, LogsActivity;
 
     protected $fillable = ['game_id', 'association_id', 'phase', 'status', 'reference_no', 'revision', 'deadline_override',
-        'submitted_by', 'submitted_at', 'approved_by', 'approved_at', 'pdf_paths', 'justification'];
+        'submitted_by', 'submitted_at', 'approved_by', 'approved_at', 'pdf_paths', 'justification', 'deadline_note', 'deadline_change'];
 
     protected function casts(): array
     {
