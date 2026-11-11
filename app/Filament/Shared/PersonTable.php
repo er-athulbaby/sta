@@ -13,6 +13,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,14 +24,19 @@ final class PersonTable
     public static function configure(Table $table, bool $withAssociation = false): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['fieldValues', 'sizes'])) // missingFields() and sizes per row
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['fieldValues', 'sizes', ...($withAssociation ? ['association'] : [])])) // missingFields() and sizes per row
+            ->deferFilters(false) // the canvas list applies its association select and "Expiring passports" toggle at once
             ->description('Passport dates in orange expire within 6 months.')
             ->columns([
                 ImageColumn::make('photo_path')->label('')->circular()->disk(config('filesystems.private'))->visibility('private')
                     ->defaultImageUrl(fn (Person $record) => InitialsAvatarProvider::svg(Sta::initials($record->fullName()))),
                 TextColumn::make('last_name')->label('Name')->formatStateUsing(fn (Person $record) => $record->fullName())
                     ->description(fn (Person $record) => $record->code)->weight(FontWeight::SemiBold)
-                    ->searchable(['first_name', 'last_name'])->sortable(),
+                    // Canvas "Search by name or passport" / "Name, passport or CPR": document numbers match exactly (blind index).
+                    ->searchable(query: fn (Builder $query, string $search) => $query->where(fn (Builder $q) => $q
+                        ->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('passport_no_hash', Person::blindIndex($search))->orWhere('cpr_no_hash', Person::blindIndex($search))))
+                    ->sortable(),
                 TextColumn::make('code')->searchable()->sortable()->toggleable(isToggledHiddenByDefault: true),
                 ...($withAssociation ? [TextColumn::make('association.name')->searchable()] : []),
                 TextColumn::make('type')->label('Type')
@@ -49,7 +55,11 @@ final class PersonTable
             ])
             ->filters([
                 SelectFilter::make('type')->options(collect(PersonType::cases())->mapWithKeys(fn ($t) => [$t->value => $t->label()])),
-                ...($withAssociation ? [SelectFilter::make('association')->relationship('association', 'name')] : []),
+                ...($withAssociation ? [
+                    SelectFilter::make('association')->relationship('association', 'name'),
+                    Filter::make('expiring')->label('Expiring passports')
+                        ->query(fn (Builder $query) => $query->whereNotNull('passport_expiry')->where('passport_expiry', '<', now()->addMonths(6))),
+                ] : []),
             ])
             ->recordActions([
                 AttachmentActions::group(),

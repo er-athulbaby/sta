@@ -19,7 +19,7 @@ final class ReadPassportAction
     {
         return Action::make('readPassport')
             ->label('Read details from passport')
-            ->icon('heroicon-o-identification')
+            ->icon('heroicon-o-identification')->button()->extraAttributes(['class' => 'sta-read-passport'])
             ->visible(fn (Get $get) => filled($get('passport_scan_path')))
             ->action(function (FileUpload $component, Get $get, Set $set) {
                 $state = $get('passport_scan_path');

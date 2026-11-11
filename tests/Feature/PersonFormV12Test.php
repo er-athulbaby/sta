@@ -44,7 +44,7 @@ it('labels the mobile by person type', function () {
     actingInPortal(User::factory()->assocEditor($this->assoc)->create());
     $label = fn (string $expected) => fn (Field $f) => $f->getLabel() === $expected;
 
-    livewire(CreatePerson::class)->assertFormFieldExists('phone', $label('Player Mobile'))
+    livewire(CreatePerson::class)->assertFormFieldExists('phone', $label('Player mobile'))
         ->fillForm(['type' => 'official'])->assertFormFieldExists('phone', $label('Mobile'));
 });
 

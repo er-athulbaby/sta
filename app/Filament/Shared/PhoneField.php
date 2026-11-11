@@ -9,12 +9,19 @@ use Filament\Schemas\Components\Grid;
 
 final class PhoneField
 {
-    /** Columns: {$column}_cc and {$column}. $label goes on the number input (a closure may inject Get). */
-    public static function make(string $column, string|Closure $label): Grid
+    /**
+     * Columns: {$column}_cc and {$column}. Canvas: a 92px native code select beside the number; $label goes on the number
+     * input (a closure may inject Get), the code select is labelled for screen readers only. $number may configure the input.
+     */
+    public static function make(string $column, string|Closure $label, ?Closure $number = null): Grid
     {
-        return Grid::make(['default' => 3])->schema([
-            Select::make($column.'_cc')->label('Code')->options(config('phone_codes'))->default('+973')->searchable()->required(),
-            TextInput::make($column)->label($label)->tel()->regex('/^[0-9 ]{4,20}$/')->maxLength(20)->columnSpan(2),
-        ])->columnSpan(1);
+        $codes = array_keys(config('phone_codes'));
+        $input = TextInput::make($column)->label($label)->tel()->regex('/^[0-9 ]{4,20}$/')->maxLength(20);
+
+        return Grid::make(1)->extraAttributes(['class' => 'sta-phone'])->schema([
+            Select::make($column.'_cc')->label('Country code')->hiddenLabel()->options(array_combine($codes, $codes))->default('+973')
+                ->required()->selectablePlaceholder(false),
+            $number ? $number($input) : $input,
+        ]);
     }
 }
