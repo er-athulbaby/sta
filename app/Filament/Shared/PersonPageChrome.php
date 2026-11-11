@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\DB;
  */
 trait PersonPageChrome
 {
+    /** @var array{tone: string, text: string}|null the "Read details from passport" result box (ReadPassportAction) */
+    public ?array $passportRead = null;
+
     public function getPageClasses(): array
     {
         return ['sta-bg-alt', 'sta-canvas-page', 'sta-person-page'];

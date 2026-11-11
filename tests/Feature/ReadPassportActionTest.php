@@ -42,7 +42,7 @@ it('fills the form from the passport MRZ', function () {
             'last_name' => 'Alsayed', 'passport_no' => 'BH1234567', 'passport_issuing_country' => 'Bahrain', 'nationality' => 'Bahrain',
             'dob' => '2006-05-27', 'gender' => 'female', 'passport_expiry' => '2031-01-15',
         ])
-        ->assertNotified('Passport read — please check the details before saving');
+        ->assertSet('passportRead', ['tone' => 'ok', 'text' => 'Filled 11 fields from the passport: full name, first name, second name, third name, last name, passport number, issuing country, nationality, date of birth, gender, expiry date. Please check them, then save.']);
 });
 
 it('leaves fields whose check digit fails empty and warns', function () {
@@ -51,7 +51,8 @@ it('leaves fields whose check digit fails empty and warns', function () {
     livewire(CreatePerson::class)
         ->fillForm(['passport_scan_path' => UploadedFile::fake()->image('passport.jpg'), 'dob' => null])
         ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
-        ->assertSchemaStateSet(['dob' => null, 'passport_no' => 'BH1234567']);
+        ->assertSchemaStateSet(['dob' => null, 'passport_no' => 'BH1234567'])
+        ->assertSet('passportRead.tone', 'warn');
 });
 
 it('says when the passport cannot be read', function () {
@@ -61,7 +62,7 @@ it('says when the passport cannot be read', function () {
         ->fillForm(['passport_scan_path' => UploadedFile::fake()->image('passport.jpg'), 'first_name' => 'Keep'])
         ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
         ->assertSchemaStateSet(['first_name' => 'Keep'])
-        ->assertNotified("Couldn't read the passport. Try a clearer, flat scan.");
+        ->assertSet('passportRead', ['tone' => 'error', 'text' => "Couldn't read the passport. Try a clearer, flat scan."]);
 });
 
 it('never reads a stored path that does not belong to the record', function () {
@@ -79,7 +80,7 @@ it('never reads a stored path that does not belong to the record', function () {
         ->set('data.first_name', 'Keep')
         ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
         ->assertSchemaStateSet(['first_name' => 'Keep'])
-        ->assertNotified("Couldn't read the passport. Try a clearer, flat scan.");
+        ->assertSet('passportRead', ['tone' => 'error', 'text' => "Couldn't read the passport. Try a clearer, flat scan."]);
 });
 
 it('reads the record\'s own stored passport scan on edit and removes the temp copy', function () {
@@ -119,6 +120,6 @@ it('treats a throwing reader as unreadable and reports it', function () {
     livewire(CreatePerson::class)
         ->fillForm(['passport_scan_path' => UploadedFile::fake()->image('passport.jpg')])
         ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
-        ->assertNotified("Couldn't read the passport. Try a clearer, flat scan.");
+        ->assertSet('passportRead', ['tone' => 'error', 'text' => "Couldn't read the passport. Try a clearer, flat scan."]);
     Exceptions::assertReported(fn (RuntimeException $e) => $e->getMessage() === 'tesseract missing');
 });

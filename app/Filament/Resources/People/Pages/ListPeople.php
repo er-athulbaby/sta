@@ -7,7 +7,6 @@ use App\Exports\LiteralRow;
 use App\Filament\Resources\People\PersonResource;
 use App\Models\Association;
 use App\Models\Person;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
@@ -33,11 +32,6 @@ class ListPeople extends ListRecords
     public function getPageClasses(): array
     {
         return [...parent::getPageClasses(), 'sta-canvas-page'];
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [CreateAction::make()];
     }
 
     public function getHeader(): ?ViewContract

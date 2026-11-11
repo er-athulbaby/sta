@@ -5,7 +5,10 @@
     use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
     $statePath = $getStatePath();
-    $value = collect(\Illuminate\Support\Arr::wrap($field->getRawState()))->filter()->first();
+    // Replace keeps the stored entry until the new upload has arrived (then removes it), so a failed upload never empties
+    // the field; while both are present, show the new one.
+    $values = collect(\Illuminate\Support\Arr::wrap($field->getRawState()))->filter();
+    $value = $values->first(fn ($v) => $v instanceof TemporaryUploadedFile) ?? $values->first();
     $disabled = $isDisabled();
     $inputId = $getId();
     $human = fn (?int $bytes) => $bytes === null ? null : ($bytes >= 1048576 ? round($bytes / 1048576, 1).' MB' : max(1, (int) round($bytes / 1024)).' KB');
@@ -40,9 +43,16 @@
                     const f = $event.target.files[0];
                     if (! f) return;
                     uploading = true; failed = false;
-                    $wire.set(@js($statePath), {}, false);
+                    const old = Object.keys($wire.get(@js($statePath)) || {});
                     $wire.upload(@js($statePath) + '.' + Math.random().toString(36).slice(2) + Date.now().toString(36), f,
-                        () => { uploading = false }, () => { uploading = false; failed = true });
+                        async () => {
+                            for (const fileKey of old) {
+                                await $wire.callSchemaComponentMethod(@js($getKey()), 'removeUploadedFile', { fileKey });
+                            }
+                            uploading = false;
+                            $wire.$refresh();
+                        },
+                        () => { uploading = false; failed = true });
                     $event.target.value = '';
                 ">
         @endunless

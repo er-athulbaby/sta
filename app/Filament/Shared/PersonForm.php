@@ -11,6 +11,7 @@ use App\Models\Person;
 use App\Models\PersonInjury;
 use App\Models\PersonVisa;
 use Closure;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\FileUpload;
@@ -25,6 +26,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -57,6 +59,7 @@ final class PersonForm
         $countries = array_combine(array_values(config('countries')), array_values(config('countries')));
         $scanTypes = self::SCAN_TYPES;
         $scanHelp = 'PDF, JPG or PNG, up to 5 MB';
+        $emptyHelp = fn (string $column, string $help) => fn (Get $get) => blank($get($column)) ? $help : null;
         $section = fn (string $key, string $class = '') => Section::make(fn (Get $get) => self::heading($key, $get))->id(fn (Get $get) => self::anchor($key, $get))
             ->extraAttributes(fn (Get $get) => ['class' => trim('sta-band sta-band-'.self::SECTIONS[$key][2].' sta-form-band '.$class)]);
         $grid = fn (array $fields, int $min = 200) => Grid::make(1)->schema($fields)->extraAttributes(['class' => 'sta-auto-grid', 'style' => "--sta-min: {$min}px"]);
@@ -100,6 +103,7 @@ final class PersonForm
                             ReadPassportAction::make(),
                             Text::make('Reads names, passport number, nationality, date of birth, gender and expiry date from the machine-readable lines at the bottom of the photo page. Check every value before saving. Enter the issue date by hand.')
                                 ->extraAttributes(['class' => 'sta-help']),
+                            View::make('filament.people.passport-read'),
                         ]),
                     $grid([
                         TextInput::make('passport_no')->label('Passport number')->required()->maxLength(30)
@@ -117,35 +121,36 @@ final class PersonForm
                     DatePicker::make('cpr_expiry')->label('CPR expiry')->requiredWith('cpr_no'),
                 ], 240),
                 $grid([
-                    self::upload('cpr_front_path', 'CPR front', 'scans', $scanTypes, 5120)->helperText($scanHelp),
-                    self::upload('cpr_back_path', 'CPR back', 'scans', $scanTypes, 5120)->helperText($scanHelp),
+                    // The canvas shows the file-type hint only under an empty upload.
+                    self::upload('cpr_front_path', 'CPR front', 'scans', $scanTypes, 5120)->helperText($emptyHelp('cpr_front_path', $scanHelp)),
+                    self::upload('cpr_back_path', 'CPR back', 'scans', $scanTypes, 5120)->helperText($emptyHelp('cpr_back_path', $scanHelp)),
                     self::upload('cpr_reader_path', 'CPR reader copy', 'scans', $scanTypes, 5120, uploadLabel: 'Upload reader printout')
-                        ->helperText('Smart-card reader printout · '.$scanHelp),
+                        ->helperText($emptyHelp('cpr_reader_path', 'Smart-card reader printout · '.$scanHelp)),
                 ], 260),
             ]),
             $section('contact')->schema([
                 $grid([
                     // The label sits on the number input; the code select carries "… country code" for screen readers.
-                    PhoneField::make('phone', fn (Get $get) => $isOfficial($get) ? 'Mobile' : 'Player mobile', fn (TextInput $i) => self::need($i, 'phone')),
+                    PhoneField::make('phone', fn (Get $get) => $isOfficial($get) ? 'Mobile' : 'Player mobile', fn (TextInput $i) => self::need($i, 'phone'), 'Mobile country code'),
                     Toggle::make('whatsapp_same')->label('WhatsApp is the same as mobile')->live()->view('filament.people.switch-field'),
-                    PhoneField::make('whatsapp', 'WhatsApp', fn (TextInput $i) => self::need($i, 'whatsapp'))->hidden(fn (Get $get) => (bool) $get('whatsapp_same')),
+                    PhoneField::make('whatsapp', 'WhatsApp', fn (TextInput $i) => self::need($i, 'whatsapp'), 'WhatsApp country code')->hidden(fn (Get $get) => (bool) $get('whatsapp_same')),
                     self::need(TextInput::make('email')->label(fn (Get $get) => $isOfficial($get) ? 'Email' : 'Player email')->email()->maxLength(255), 'email'),
                     TextInput::make('address')->label('Player address')->maxLength(255)->visible($isAthlete)->columnSpanFull(),
                     self::need(TextInput::make('emergency_name')->label('Emergency contact name')->maxLength(200), 'emergency_name'),
                     self::need(TextInput::make('emergency_relationship')->label('Relationship')->maxLength(100), 'emergency_relationship'),
-                    PhoneField::make('emergency_phone', 'Emergency phone', fn (TextInput $i) => self::need($i, 'emergency_phone')),
+                    PhoneField::make('emergency_phone', 'Emergency phone', fn (TextInput $i) => self::need($i, 'emergency_phone'), 'Emergency phone country code'),
                 ], 260),
             ]),
             $section('guardian')->visible($isAthlete)->description(fn (Get $get) => self::guardianNote($get))->schema([
                 $grid([
                     TextInput::make('guardian_name')->maxLength(200),
                     Select::make('guardian_relationship')->label('Relationship')->options(array_combine($g = ['Father', 'Mother', 'Legal guardian'], $g))->placeholder('Select'),
-                    PhoneField::make('guardian_phone', 'Guardian phone'),
+                    PhoneField::make('guardian_phone', 'Guardian phone', codeLabel: 'Guardian phone country code'),
                     TextInput::make('guardian_email')->email()->maxLength(255),
                 ], 240),
             ]),
             $section('visas', 'sta-has-add')->visible($isOfficial)->description('Add one row per country')->schema([
-                Repeater::make('visas')->hiddenLabel()->relationship()->defaultItems(0)->addActionLabel('Add visa')->reorderable(false)
+                Repeater::make('visas')->hiddenLabel()->relationship()->defaultItems(0)->addActionLabel('Add visa')->reorderable(false)->deleteAction(self::removeRow('visa'))
                     ->itemLabel(fn () => null)->extraAttributes(['class' => 'sta-repeater'])->schema([
                         Grid::make(1)->extraAttributes(['class' => 'sta-auto-grid', 'style' => '--sta-min: 170px'])->schema([
                             Select::make('country')->options($countries)->placeholder('Select country')->required(),
@@ -153,7 +158,7 @@ final class PersonForm
                             TextInput::make('visa_no')->label('Visa number')->maxLength(50),
                             DatePicker::make('valid_until'),
                         ]),
-                        self::trustFreshUploads(self::upload('copy_path', 'Visa copy', 'visas', $scanTypes, 5120)),
+                        self::trustFreshUploads(self::upload('copy_path', 'Visa copy', 'visas', $scanTypes, 5120))->helperText($emptyHelp('copy_path', $scanHelp)),
                     ]),
                 // Shown by CSS only while the repeater has no rows (the repeater re-renders alone when a row is added).
                 Text::make('No visas recorded.')->extraAttributes(['class' => 'sta-help sta-empty-note']),
@@ -186,11 +191,12 @@ final class PersonForm
                     ], 240),
                     // Filament loads relationships even for hidden components; load nothing without view_medical.
                     Repeater::make('injuries')->relationship(modifyQueryUsing: fn (Builder $query) => $medical() ? $query : $query->whereRaw('1 = 0'))->visible($isAthlete)
-                        ->defaultItems(0)->addActionLabel('Add injury')->reorderable(false)->itemLabel(fn () => null)
+                        ->defaultItems(0)->addActionLabel('Add injury')->reorderable(false)->deleteAction(self::removeRow('injury'))->itemLabel(fn () => null)
                         ->extraAttributes(['class' => 'sta-repeater'])->extraFieldWrapperAttributes(['class' => 'sta-injuries'])->schema([
                             Grid::make(1)->extraAttributes(['class' => 'sta-auto-grid', 'style' => '--sta-min: 160px'])->schema([
                                 DatePicker::make('injury_date')->label('Date')->required(),
-                                TextInput::make('description')->required()->maxLength(1000)->placeholder('e.g. Right shoulder strain'),
+                                // Same rules as before (a required textarea); one line high like the canvas input.
+                                Textarea::make('description')->required()->rows(1)->placeholder('e.g. Right shoulder strain'),
                                 Select::make('status')->options(array_combine(PersonInjury::STATUSES, PersonInjury::STATUSES))->placeholder('Select')->required(),
                             ]),
                         ]),
@@ -282,6 +288,15 @@ final class PersonForm
         $class = fn (Get $get, ?Model $record) => $applies($get) && $missing($get, $record) ? ['class' => 'is-missing'] : [];
 
         return $field->hint($hint)->extraFieldWrapperAttributes($class, merge: true);
+    }
+
+    /** Canvas row bin: the repeater's own delete action as a 44px button at the end of the row, labelled "Remove {noun} {n}". */
+    private static function removeRow(string $noun): Closure
+    {
+        return fn (Action $action) => $action
+            ->label(fn (array $arguments, Repeater $component) => 'Remove '.$noun.' '.((int) array_search($arguments['item'] ?? null, array_keys($component->getRawState() ?? []), true) + 1))
+            ->icon(new HtmlString('<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>'))
+            ->extraAttributes(['class' => 'sta-row-remove']);
     }
 
     private static function consent(string $name, string $label, string $description): Toggle

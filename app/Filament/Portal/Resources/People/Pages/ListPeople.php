@@ -8,8 +8,6 @@ use App\Filament\Portal\Pages\ImportPeople;
 use App\Filament\Portal\Resources\People\PersonResource;
 use App\Filament\Shared\PersonForm;
 use App\Models\Person;
-use Filament\Actions\Action;
-use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
@@ -51,15 +49,6 @@ class ListPeople extends ListRecords
     public function getPageClasses(): array
     {
         return [...parent::getPageClasses(), 'sta-canvas-page'];
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('importExcel')->label('Import Excel')->color('gray')->url(fn () => ImportPeople::getUrl())
-                ->visible(fn () => ImportPeople::canAccess()),
-            CreateAction::make()->label('Add person'),
-        ];
     }
 
     public function getHeader(): ?ViewContract

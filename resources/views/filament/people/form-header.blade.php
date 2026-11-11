@@ -30,6 +30,9 @@
                         <span class="sta-ph-{{ $phase }}" style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--ph-bg); color: var(--ph-fg); white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: var(--ph-dot); flex-shrink: 0"></span>Phase {{ $phase }} · {{ $phase === 3 ? 'Long List' : 'Short List' }}</span>
                     @endif
                     <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: #E8EEF6; color: #1F3A5F; font: 600 13px 'Space Grotesk', sans-serif; letter-spacing: 0.02em">{{ $person->code }}</span>
+                    @if ($official && filled($person->function))
+                        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: #F1F5F9; color: #334155; font-size: 12px; font-weight: 600">{{ $person->function }}</span>
+                    @endif
                     <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; {{ $missing ? 'background: #FFEDD5; color: #9A3412' : 'background: #DCFCE7; color: #166534' }}">{{ $missing ? 'Incomplete' : 'Complete' }}</span>
                     @if ($missing)
                         <span style="font-size: 13px; color: #9A3412">Missing: {{ implode(', ', array_map($lower, $missing)) }}</span>

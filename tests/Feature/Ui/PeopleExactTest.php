@@ -12,6 +12,7 @@ use App\Models\Association;
 use App\Models\ClothingItem;
 use App\Models\Person;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -170,4 +171,62 @@ it('saves as draft and stays, or saves and returns to the registry', function ()
 
     livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])->fillForm(['first_name' => ''])->call('saveAndClose')
         ->assertHasFormErrors(['first_name' => 'required'])->assertNoRedirect();
+});
+
+it('keeps a stored scan when an upload fails and replaces it only after the new file arrived', function () {
+    actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
+    Storage::disk(config('filesystems.private'))->put('scans/old.pdf', 'old');
+    $p = Person::factory()->create(['association_id' => $this->assoc->id, 'passport_scan_path' => 'scans/old.pdf']);
+
+    $page = livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()]);
+    // The field never empties its state before an upload: a failed upload leaves the state as it was.
+    expect($page->html())->not->toContain('$wire.set(')->toContain("'removeUploadedFile'");
+    $page->call('save')->assertHasNoFormErrors();
+    expect($p->refresh()->passport_scan_path)->not->toBeNull();
+    $stored = $p->passport_scan_path;
+
+    // A successful replace: the new file is added under its own key, then the old key is removed.
+    $oldKey = array_key_first($page->get('data.passport_scan_path'));
+    $page->set('data.passport_scan_path.new', UploadedFile::fake()->create('new.pdf', 10, 'application/pdf'))
+        ->call('callSchemaComponentMethod', 'form.passport_scan_path', 'removeUploadedFile', ['fileKey' => $oldKey])
+        ->call('save')->assertHasNoFormErrors();
+    expect($p->refresh()->passport_scan_path)->not->toBeNull()
+        ->and(Storage::disk(config('filesystems.private'))->get($p->passport_scan_path))->not->toBe('old');
+    expect($stored)->not->toBeNull();
+});
+
+it('draws the official header function chip, row bins, code labels and the passport result box', function () {
+    actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
+    Storage::disk(config('filesystems.private'))->put('scans/front.jpg', 'x');
+    $o = Person::factory()->official()->create(['association_id' => $this->assoc->id, 'cpr_front_path' => 'scans/front.jpg']);
+    $o->visas()->create(['country' => 'Japan', 'status' => 'Applied']);
+
+    $page = livewire(PortalEditPerson::class, ['record' => $o->getRouteKey()]);
+    expectInOrder($page->html(), [$o->code, 'Head Coach', 'Incomplete']);
+    expectInOrder($page->html(), ['Mobile country code', 'WhatsApp country code', 'Emergency phone country code']);
+    expectInOrder($page->html(), ['CPR front', 'CPR back', 'PDF, JPG or PNG, up to 5 MB']);
+    expect(substr_count($page->html(), 'PDF, JPG or PNG, up to 5 MB'))->toBe(4); // passport, CPR back, reader copy, empty visa copy — not under the stored CPR front
+    expect($page->html())->toContain('Remove visa 1')->toContain('sta-row-remove');
+
+    $page->set('passportRead', ['tone' => 'ok', 'text' => 'Filled 7 fields from the passport: first name. Please check them, then save.']);
+    expect($page->html())->toContain('role="status"')->toContain('Filled 7 fields from the passport');
+});
+
+it('keeps the injury description required', function () {
+    actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
+    $p = Person::factory()->create(['association_id' => $this->assoc->id]);
+
+    livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])
+        ->fillForm(['injuries' => [['injury_date' => '2025-01-02', 'status' => 'Recovered', 'description' => '']]])
+        ->call('save')->assertHasFormErrors();
+    expect($p->injuries()->count())->toBe(0);
+});
+
+it('deletes from the admin aside through the table delete action', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+    $p = Person::factory()->create();
+
+    livewire(AdminListPeople::class)->assertSeeHtml("mountTableAction('delete', '{$p->getKey()}')")
+        ->call('mountTableAction', 'delete', (string) $p->getKey())->callMountedAction();
+    expect(Person::find($p->id))->toBeNull();
 });
