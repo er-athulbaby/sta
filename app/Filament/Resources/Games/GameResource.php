@@ -9,13 +9,14 @@ use App\Filament\Resources\Games\Pages\GameDashboard;
 use App\Filament\Resources\Games\Pages\GameExportFiles;
 use App\Filament\Resources\Games\Pages\GameReports;
 use App\Filament\Resources\Games\Pages\ListGames;
+use App\Filament\Resources\Games\Pages\SetupLimits;
+use App\Filament\Resources\Games\Pages\SetupPhases;
+use App\Filament\Resources\Games\Pages\SetupShortList;
 use App\Filament\Resources\Games\Pages\StaPhase1Edit;
 use App\Filament\Resources\Games\Pages\StaPhase2Edit;
 use App\Filament\Resources\Games\Pages\StaPhase3Edit;
 use App\Filament\Resources\Games\Pages\StaPhase4Edit;
 use App\Filament\Resources\Games\Pages\SubmissionView;
-use App\Filament\Resources\Games\RelationManagers\GameSportsRelationManager;
-use App\Filament\Resources\Games\RelationManagers\PhasesRelationManager;
 use App\Filament\Resources\Games\Schemas\GameForm;
 use App\Filament\Resources\Games\Tables\GamesTable;
 use App\Models\Game;
@@ -83,7 +84,8 @@ class GameResource extends Resource
 
     public static function getRelations(): array
     {
-        return [PhasesRelationManager::class, GameSportsRelationManager::class];
+        // The four setup screens are custom pages; the relation managers are no longer shown.
+        return [];
     }
 
     public static function getPages(): array
@@ -92,6 +94,9 @@ class GameResource extends Resource
             'index' => ListGames::route('/'),
             'create' => CreateGame::route('/create'),
             'edit' => EditGame::route('/{record}/edit'),
+            'setup-limits' => SetupLimits::route('/{record}/setup/limits'),
+            'setup-short-list' => SetupShortList::route('/{record}/setup/short-list'),
+            'setup-phases' => SetupPhases::route('/{record}/setup/phases'),
             'dashboard' => GameDashboard::route('/{record}/dashboard'),
             'reports' => GameReports::route('/{record}/reports'),
             'export-files' => GameExportFiles::route('/{record}/export-files'),

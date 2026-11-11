@@ -88,25 +88,16 @@ class GameSportsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()->after(function (GameSport $record) {
-                    $this->addMissingEvents($record);
+                    $record->addMissingEvents();
                 }),
                 Action::make('syncEvents')->label('Sync events')->icon(Heroicon::OutlinedArrowPath)
                     ->action(function () {
-                        $this->getOwnerRecord()->gameSports->each(fn (GameSport $gs) => $this->addMissingEvents($gs));
+                        $this->getOwnerRecord()->gameSports->each(fn (GameSport $gs) => $gs->addMissingEvents());
                     }),
             ])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()->visible(fn (GameSport $r) => ! $r->game->submissions()->exists()),
             ]);
-    }
-
-    // Adds a game event for each active event of the sport that does not have one yet.
-    private function addMissingEvents(GameSport $gs): void
-    {
-        $have = $gs->gameEvents()->pluck('event_id');
-        foreach ($gs->sport->events()->where('is_active', true)->whereNotIn('id', $have)->orderBy('name')->get() as $event) {
-            $gs->gameEvents()->create(['game_id' => $gs->game_id, 'event_id' => $event->id]);
-        }
     }
 }

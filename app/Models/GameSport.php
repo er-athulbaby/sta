@@ -36,6 +36,15 @@ class GameSport extends Model
         return $this->hasMany(GameEvent::class);
     }
 
+    /** Adds a game event for each active event of the sport that does not have one yet. */
+    public function addMissingEvents(): void
+    {
+        $have = $this->gameEvents()->pluck('event_id');
+        foreach ($this->sport->events()->where('is_active', true)->whereNotIn('id', $have)->orderBy('name')->get() as $event) {
+            $this->gameEvents()->create(['game_id' => $this->game_id, 'event_id' => $event->id]);
+        }
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontSubmitEmptyLogs();
