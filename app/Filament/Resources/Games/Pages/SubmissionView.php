@@ -55,7 +55,7 @@ class SubmissionView extends Page
         $answers = $this->submission->answers()->get()->keyBy('game_sport_id');
 
         return $this->record->sportsFor($this->submission->association)
-            ->map(fn ($gs) => ['sport' => $gs->sport->name, 'answer' => $answers->get($gs->id)?->answer->label() ?? 'No response']);
+            ->map(fn ($gs) => ['sport' => $gs->sport->name, 'answer' => $answers->get($gs->id)?->answer->label() ?? 'No response', 'note' => $answers->get($gs->id)?->note]);
     }
 
     /** @return Collection<int, array{sport: string, event: string, count: int}> */

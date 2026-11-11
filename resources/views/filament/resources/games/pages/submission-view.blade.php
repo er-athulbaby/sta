@@ -34,10 +34,10 @@
     @if ($s->phase === 1)
         <x-filament::section heading="Entry by Sport">
             <table class="w-full text-sm">
-                <thead><tr class="text-left text-gray-500"><th class="py-1">Sport</th><th class="py-1">Answer</th></tr></thead>
+                <thead><tr class="text-left text-gray-500"><th class="py-1">Sport</th><th class="py-1">Answer</th><th class="py-1">Note</th></tr></thead>
                 <tbody>
                     @foreach ($this->phase1Rows() as $r)
-                        <tr class="border-t border-gray-200 dark:border-white/10"><td class="py-1">{{ $r['sport'] }}</td><td class="py-1">{{ $r['answer'] }}</td></tr>
+                        <tr class="border-t border-gray-200 dark:border-white/10"><td class="py-1">{{ $r['sport'] }}</td><td class="py-1">{{ $r['answer'] }}</td><td class="py-1">{{ $r['note'] ?? '' }}</td></tr>
                     @endforeach
                 </tbody>
             </table>

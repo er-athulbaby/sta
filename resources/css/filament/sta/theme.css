@@ -254,3 +254,21 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
     .sta-card-head, .sta-card-body, .sta-card-foot { padding-left: 16px; padding-right: 16px; }
     .fi-header-heading { font-size: 24px; }
 }
+
+/* Task 4: phase entry helpers */
+.sta-fieldset { margin: 0; border: 0; border-top: 1px solid var(--sta-border); padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+.sta-card-head + .sta-fieldset { border-top: 0; }
+.sta-fieldset.is-tinted { background: var(--ph-tint, #F8FAFC); }
+.sta-fieldset legend { float: left; display: flex; flex-direction: column; gap: 2px; margin-right: 8px; padding: 0; }
+.sta-legend-title { font-family: var(--sta-font-heading); font-size: 16px; font-weight: 600; }
+.sta-inline-field { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
+.sta-error { color: #B91C1C; font-size: 13px; font-weight: 600; margin: 0; flex-basis: 100%; }
+.sta-c { text-align: center !important; }
+.sta-allow { font-size: 12px; font-weight: 600; color: #115E59; }
+.sta-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.sta-stack { display: flex; flex-direction: column; gap: 14px; }
+.sta-stack > p { margin: 0; line-height: 1.55; color: var(--sta-text-3); }
+.sta-note { padding: 10px 12px; border-radius: var(--sta-radius-ctl); background: #F1F5F9; font-size: 13px; color: var(--sta-text-3); }
+.sta-seg > label { min-height: 36px; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px Inter, ui-sans-serif, sans-serif; color: var(--sta-text-3); cursor: pointer; }
+.sta-seg > label:has(input:checked) { background: #FFFFFF; color: var(--sta-text); box-shadow: 0 1px 2px rgba(15, 23, 42, .08); }
+.sta-seg > label:has(input:focus-visible) { outline: 2px solid var(--sta-primary); outline-offset: 2px; }

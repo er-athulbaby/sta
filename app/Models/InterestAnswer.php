@@ -13,7 +13,7 @@ class InterestAnswer extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['submission_id', 'game_sport_id', 'answer'];
+    protected $fillable = ['submission_id', 'game_sport_id', 'answer', 'note'];
 
     protected function casts(): array
     {
