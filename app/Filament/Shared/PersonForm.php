@@ -23,6 +23,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -48,7 +49,7 @@ final class PersonForm
         $scanTypes = ['application/pdf', 'image/jpeg', 'image/png'];
 
         return $schema->components([
-            Section::make('Person')->columns(2)->schema([
+            Section::make('Person')->extraAttributes(['class' => 'sta-band sta-band-blue'])->icon(Heroicon::OutlinedUser)->columns(2)->schema([
                 ...($withAssociation ? [Select::make('association_id')->relationship('association', 'name')->searchable()->preload()->required()] : []),
                 Select::make('type')->options(self::options(PersonType::cases()))->required()->live()->default($type->value)->disabled($lockType)->dehydrated(),
                 TextInput::make('full_name')->label('Full name (as in passport)')->maxLength(200)->columnSpanFull(),
@@ -64,7 +65,7 @@ final class PersonForm
                 self::upload('photo_path', 'Photo', 'photos', ['image/jpeg', 'image/png'], 2048),
                 Toggle::make('is_active')->default(true),
             ]),
-            Section::make('Passport')->columns(3)->schema([
+            Section::make('Passport')->extraAttributes(['class' => 'sta-band sta-band-indigo'])->icon(Heroicon::OutlinedIdentification)->columns(3)->schema([
                 self::upload('passport_scan_path', 'Passport scan', 'scans', $scanTypes, 5120)->columnSpanFull()
                     ->hintAction(ReadPassportAction::make()),
                 TextInput::make('passport_no')->label('Passport number')->required()->maxLength(30)
@@ -73,7 +74,7 @@ final class PersonForm
                 DatePicker::make('passport_issue_date')->label('Issue date')->maxDate(now()),
                 DatePicker::make('passport_expiry')->label('Expiry date')->required(),
             ]),
-            Section::make('CPR')->columns(3)->schema([
+            Section::make('CPR')->extraAttributes(['class' => 'sta-band sta-band-violet'])->icon(Heroicon::OutlinedCreditCard)->columns(3)->schema([
                 TextInput::make('cpr_no')->label('CPR number')->maxLength(30)
                     ->rule(fn (?Model $record) => self::uniqueDocument('cpr_no_hash', 'CPR', $record)),
                 DatePicker::make('cpr_expiry')->requiredWith('cpr_no'),
@@ -81,7 +82,7 @@ final class PersonForm
                 self::upload('cpr_back_path', 'CPR back', 'scans', $scanTypes, 5120),
                 self::upload('cpr_reader_path', 'CPR reader copy', 'scans', $scanTypes, 5120),
             ]),
-            Section::make('Contact')->columns(2)->schema([
+            Section::make('Contact')->extraAttributes(['class' => 'sta-band sta-band-teal'])->icon(Heroicon::OutlinedPhone)->columns(2)->schema([
                 // The label sits on the number input; a label on the wrapping Grid would not render.
                 PhoneField::make('phone', fn (Get $get) => $isOfficial($get) ? 'Mobile' : 'Player Mobile'),
                 Toggle::make('whatsapp_same')->label('WhatsApp is the same as mobile')->live(),
@@ -92,13 +93,13 @@ final class PersonForm
                 TextInput::make('emergency_relationship')->label('Relationship')->maxLength(100),
                 PhoneField::make('emergency_phone', 'Emergency phone'),
             ]),
-            Section::make('Guardian')->description('For athletes under 18')->columns(2)->visible($isAthlete)->schema([
+            Section::make('Guardian')->extraAttributes(['class' => 'sta-band sta-band-amber'])->icon(Heroicon::OutlinedUserGroup)->description('For athletes under 18')->columns(2)->visible($isAthlete)->schema([
                 TextInput::make('guardian_name')->maxLength(200),
                 Select::make('guardian_relationship')->options(array_combine($g = ['Father', 'Mother', 'Legal guardian'], $g)),
                 PhoneField::make('guardian_phone', 'Guardian phone'),
                 TextInput::make('guardian_email')->email()->maxLength(255),
             ]),
-            Section::make('Team official details')->columns(2)->visible($isOfficial)->schema([
+            Section::make('Team official details')->extraAttributes(['class' => 'sta-band sta-band-cyan'])->icon(Heroicon::OutlinedBriefcase)->columns(2)->visible($isOfficial)->schema([
                 Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->required($isOfficial),
                 TextInput::make('languages')->label('Languages spoken')->maxLength(255),
                 Repeater::make('visas')->relationship()->columnSpanFull()->defaultItems(0)->addActionLabel('Add visa')->columns(3)->schema([
@@ -109,19 +110,19 @@ final class PersonForm
                     self::trustFreshUploads(self::upload('copy_path', 'Visa copy', 'visas', $scanTypes, 5120))->columnSpan(2),
                 ]),
             ]),
-            Section::make('Clothing')->columns(3)->schema([
+            Section::make('Clothing')->extraAttributes(['class' => 'sta-band sta-band-slate'])->icon(Heroicon::OutlinedShoppingBag)->columns(3)->schema([
                 Select::make('fit')->options(["Men's" => 'Male', "Women's" => 'Female', 'Youth' => 'Youth']),
                 TextInput::make('chest_cm')->label('Chest (cm)')->numeric()->minValue(40)->maxValue(200),
                 TextInput::make('waist_cm')->label('Waist (cm)')->numeric()->minValue(40)->maxValue(200),
                 Grid::make(3)->columnSpanFull()
                     ->schema(fn (Get $get) => self::sizeFields(PersonType::tryFrom((string) $get('type')) ?? PersonType::Athlete)),
             ]),
-            Section::make('Additional information')->hidden(fn (Get $get) => self::extraFields($get)->isEmpty())->schema([
+            Section::make('Additional information')->extraAttributes(['class' => 'sta-band sta-band-slate'])->icon(Heroicon::OutlinedAdjustmentsHorizontal)->hidden(fn (Get $get) => self::extraFields($get)->isEmpty())->schema([
                 Grid::make(2)->schema(fn (Get $get) => self::extraFields($get)->map(fn (ExtraField $f) => self::extraInput($f))->all()),
             ]),
             // One section for both types (field names must be unique in a schema); title and type-only fields switch on type.
             // The whole section is left out of the schema (->hidden, not just invisible) for STA users without view_medical.
-            Section::make(fn (Get $get) => $isOfficial($get) ? 'Health' : 'Medical')->columns(2)->hidden(fn () => ! $medical())->schema([
+            Section::make(fn (Get $get) => $isOfficial($get) ? 'Health' : 'Medical')->extraAttributes(['class' => 'sta-band sta-band-rose'])->icon(Heroicon::OutlinedHeart)->columns(2)->hidden(fn () => ! $medical())->schema([
                 Select::make('blood_group')->options(array_combine($b = ['A+', 'A−', 'B+', 'B−', 'AB+', 'AB−', 'O+', 'O−', 'Unknown'], $b)),
                 Select::make('meal_requirement')->visible($isOfficial)
                     ->options(array_combine($m = ['Halal', 'Vegetarian', 'Vegan', 'Gluten-free', 'No restriction'], $m)),
@@ -138,12 +139,12 @@ final class PersonForm
                     Textarea::make('description')->required()->rows(2)->columnSpanFull(),
                 ]),
             ]),
-            Section::make('Consents')->visible($isAthlete)->schema([
+            Section::make('Consents')->extraAttributes(['class' => 'sta-band sta-band-fuchsia'])->icon(Heroicon::OutlinedShieldCheck)->visible($isAthlete)->schema([
                 Toggle::make('consent_data')->label('Consent to store personal data'),
                 Toggle::make('consent_media')->label('Consent to use photos in media'),
                 Toggle::make('consent_medical')->label('Consent for emergency medical treatment'),
             ]),
-            Section::make('Declarations')->visible($isOfficial)->schema([
+            Section::make('Declarations')->extraAttributes(['class' => 'sta-band sta-band-fuchsia'])->icon(Heroicon::OutlinedShieldCheck)->visible($isOfficial)->schema([
                 Toggle::make('decl_conduct')->label('Accepts the delegation code of conduct'),
                 Toggle::make('decl_antidoping')->label('Will follow anti-doping and integrity rules'),
                 Toggle::make('decl_data_sharing')->label('Consents to data being shared with organisers, airline and hotel'),

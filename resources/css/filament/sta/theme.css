@@ -292,3 +292,6 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-tick input[type='checkbox'] { width: 22px; height: 22px; accent-color: #6D28D9; flex-shrink: 0; }
 .sta-justify { border-width: 2px; border-color: #6D28D9; }
 .sta-justify .sta-warn-list { color: #5B21B6; font-weight: 600; }
+
+/* Task 7: person pages use the canvas soft background */
+.fi-body:has(.sta-bg-alt) { background: var(--sta-bg-home); }
