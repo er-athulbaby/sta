@@ -1,15 +1,13 @@
 <x-filament-panels::page>
-    {{-- Canvas: LongList.dc.html (header band via getHeader(), Phase 2 comparison, tabs, List / Grid, Team officials),
-         LongListEvents.dc.html (the sport cards that assign athletes to events), LongListGrid.dc.html (Grid view). --}}
+    {{-- Canvas: LongList.dc.html (header band via getHeader(), Phase 2 comparison, tabs, List / Grid, Team officials, side panel)
+         and LongListGrid.dc.html (Grid view). Assigning athletes to events is phase3-events (LongListEvents.dc.html). --}}
     @include('filament.portal.partials.phase-top', ['pdfKey' => 'long_list', 'pdfLabel' => 'View Long List PDF'])
 
     @php
         $p2 = $this->phase2Numbers();
         $people = $this->chipPeople();
         $sports = $this->visibleSports();
-        $athleteOptions = $readOnlyReason ? collect() : $this->candidates(\App\Enums\PersonType::Athlete);
-        $officialOptions = $readOnlyReason ? collect() : $this->candidates(\App\Enums\PersonType::Official);
-        $canAdd = filament()->getId() === 'portal' && ! $readOnlyReason;
+        $canAdd = property_exists($this, 'panel') && ! $readOnlyReason;
         // Counts use only the people that get a chip (ids of other associations or deleted people are never counted).
         $shown = fn ($ids) => array_values(array_filter(array_map('intval', (array) $ids), fn ($id) => $people->has($id)));
         $Male = \App\Enums\PersonGender::Male;
@@ -24,7 +22,7 @@
 
     @if ($p2 !== null)
         @php
-            $compare = $sports->flatMap->gameEvents->map(fn ($ge) => ['name' => $ge->event->name, 'n' => count($shown($athletes[$ge->id] ?? [])), 'p2' => $p2[$ge->id] ?? 0]);
+            $compare = $sports->flatMap->gameEvents->map(fn ($ge) => ['name' => \App\Support\Sta::eventLabel($ge->event), 'n' => count($shown($athletes[$ge->id] ?? [])), 'p2' => $p2[$ge->id] ?? 0]);
             $differ = $compare->filter(fn ($c) => $c['n'] > $c['p2'])->count();
         @endphp
         <section aria-labelledby="compare-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px">
@@ -45,90 +43,6 @@
         </section>
     @endif
 
-    @forelse ($sports as $gs)
-        @php
-            $sportAthletes = collect($gs->gameEvents)->flatMap(fn ($ge) => $shown($athletes[$ge->id] ?? []))->unique()->count();
-            $chosenOfficials = $shown($officials[$gs->id] ?? []);
-        @endphp
-        <section aria-labelledby="sport-title-{{ $gs->id }}" wire:key="sport-{{ $gs->id }}" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
-                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F3A5F" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
-                    <h2 id="sport-title-{{ $gs->id }}" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{ $gs->sport->name }}</h2>
-                    <span style="font-size: 13px; color: #475569">{{ $gs->gameEvents->count() }} {{ Str::plural('event', $gs->gameEvents->count()) }} · {{ $sportAthletes }} {{ Str::plural('athlete', $sportAthletes) }} · {{ count($chosenOfficials) }} {{ Str::plural('team official', count($chosenOfficials)) }}</span>
-                </div>
-                @if ($canAdd)
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px">
-                        <button type="button" wire:click="mountAction('addAthlete')" style="{{ $outline }}">{!! $plus !!}Add athlete</button>
-                        <button type="button" wire:click="mountAction('addOfficial')" style="{{ $outline }}">{!! $plus !!}Add team official</button>
-                    </div>
-                @endif
-            </div>
-            <p style="margin: 0; padding: 12px 20px 0; font-size: 13px; color: #475569">Pick athletes from your registry for each event. Each picker offers only <strong>active</strong> athletes whose gender matches the event (Mixed events accept Male and Female). One athlete can be in several events.@if ($canAdd) <strong>Add athlete</strong> opens the person form in a side panel; the new person appears in these pickers straight away.@endif</p>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 16px; padding: 16px 20px 20px">
-                @foreach ($gs->gameEvents as $ge)
-                    @php
-                        $chosen = $shown($athletes[$ge->id] ?? []);
-                        $n = count($chosen);
-                        $max = $p2 === null ? null : ($p2[$ge->id] ?? 0);
-                        $err = $errors->first('athletes.'.$ge->id);
-                        $evGender = $ge->event->gender;
-                        $filter = match ($evGender) {
-                            \App\Enums\EventGender::Mixed => 'Active <strong>Male</strong> and <strong>Female</strong> athletes',
-                            default => 'Active <strong>'.e($evGender->label()).'</strong> athletes only',
-                        };
-                        $footer = match ($evGender) {
-                            \App\Enums\EventGender::Mixed => 'Inactive athletes are not listed for this event.',
-                            \App\Enums\EventGender::Men => 'Female and inactive athletes are not listed for this event.',
-                            default => 'Male and inactive athletes are not listed for this event.',
-                        };
-                    @endphp
-                    <div wire:key="event-{{ $ge->id }}" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2E8F0; background: #FFFFFF">
-                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
-                            <label for="event-{{ $ge->id }}" style="font-weight: 700; font-size: 15px">{{ $ge->event->name }}</label>
-                            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-                                <span style="font-size: 13px; color: #334155">Long List <strong>{{ $n }}</strong>@if ($max !== null) / Phase 2: <strong>{{ $max }}</strong>@endif</span>
-                                @if ($max !== null && $n > $max)
-                                    <span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; background: #FFEDD5; color: #9A3412; font-size: 12px; font-weight: 700"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V4"/><path d="M4 4h12l-2 4 2 4H4"/></svg>Over the Phase 2 number</span>
-                                @endif
-                            </div>
-                        </div>
-                        @include('filament.portal.partials.person-picker', [
-                            'id' => 'event-'.$ge->id, 'placeholder' => 'Search athletes…', 'arg' => $ge->id,
-                            'add' => 'addAthleteChip', 'remove' => 'removeAthleteChip', 'chosen' => $chosen, 'error' => $err,
-                            'chips' => array_map(fn ($id) => ['person' => $people[$id], 'sub' => $people[$id]->code,
-                                'removeLabel' => 'Remove '.$people[$id]->fullName().' from '.$ge->event->name,
-                                'bad' => $err && ! \App\Services\Phases\LongListChecks::genderMatches($people[$id]->gender, $evGender)], $chosen),
-                            'options' => $athleteOptions->filter(fn ($p) => \App\Services\Phases\LongListChecks::genderMatches($p->gender, $evGender))
-                                ->map(fn ($p) => ['person' => $p, 'sub' => $p->gender?->label().' · '.$p->dob?->format('Y')])->values()->all(),
-                            'listLabel' => $ge->event->name.' athletes', 'filterHtml' => $filter, 'footer' => $footer,
-                        ])
-                    </div>
-                @endforeach
-            </div>
-
-            <div wire:key="officials-{{ $gs->id }}" style="margin: 0 20px 20px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2E8F0; background: #F8FAFC; display: flex; flex-direction: column; gap: 8px">
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
-                    <label for="officials-{{ $gs->id }}" style="font-weight: 700; font-size: 15px">Team officials</label>
-                    <span style="font-size: 13px; color: #475569">For the whole sport, not one event · active officials only</span>
-                </div>
-                @include('filament.portal.partials.person-picker', [
-                    'id' => 'officials-'.$gs->id, 'placeholder' => 'Search officials by name or function', 'arg' => $gs->id,
-                    'add' => 'addOfficialChip', 'remove' => 'removeOfficialChip', 'chosen' => $chosenOfficials,
-                    'error' => $errors->first('officials.'.$gs->id),
-                    'chips' => array_map(fn ($id) => ['person' => $people[$id], 'sub' => $people[$id]->function, 'bad' => false,
-                        'removeLabel' => 'Remove '.$people[$id]->fullName().' from '.$gs->sport->name.' team officials'], $chosenOfficials),
-                    'options' => $officialOptions->map(fn ($p) => ['person' => $p, 'sub' => (string) $p->function])->values()->all(),
-                    'listLabel' => $gs->sport->name.' team officials', 'filterHtml' => 'Active <strong>team officials</strong> only',
-                    'footer' => 'Inactive team officials are not listed.',
-                ])
-            </div>
-        </section>
-    @empty
-        <p class="sta-muted">No sports to enter for your association in this game.</p>
-    @endforelse
-
     @php
         $rows = $this->listRows();
         $isAthlete = fn ($r) => $r['person']->type === \App\Enums\PersonType::Athlete;
@@ -140,10 +54,19 @@
         $items = $this->gameModel->clothingItems;
         $athleteItems = $items->filter(fn ($i) => $i->applies_to->includes(\App\Enums\PersonType::Athlete))->values();
         $officialItems = $items->filter(fn ($i) => $i->applies_to->includes(\App\Enums\PersonType::Official))->values();
+        // Events of each athlete with their sport, for the EVENT links to the "Assign athletes to events" screen (the sport is named when there are several).
         $oneSport = $sports->count() === 1;
-        // Events of an athlete: "Sport · Event" roles from LongListChecks::rows(), the sport dropped when there is only one.
-        $eventsOf = fn ($r) => collect($r['roles'])->reject(fn ($role) => str_ends_with($role, ' · team official'))
-            ->map(fn ($role) => $oneSport ? Str::after($role, ' · ') : $role)->values();
+        $eventLinks = [];
+        foreach ($sports as $gs) {
+            foreach ($gs->gameEvents as $ge) {
+                foreach ($shown($athletes[$ge->id] ?? []) as $id) {
+                    $eventLinks[$id][] = ['label' => ($oneSport ? '' : $gs->sport->name.' · ').\App\Support\Sta::eventLabel($ge->event), 'url' => $this->eventsUrl($gs->id)];
+                }
+            }
+        }
+        $eventsOf = fn ($r) => $eventLinks[$r['person']->id] ?? [];
+        $athFlagged = $athleteRows->filter($flagged)->count();
+        $offFlagged = $officialRows->filter($flagged)->count();
         $sizeOf = fn ($r, $item) => $r['person']->sizes->firstWhere('clothing_item_id', $item->id)?->size;
         $startDay = $this->gameModel->start_date?->format('j M');
         $showTravel = ! $readOnlyReason;
@@ -166,8 +89,8 @@
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-bottom: 6px">
                 <span style="font-size: 13px; color: #334155"><strong>{{ $male }}</strong> male · <strong>{{ $female }}</strong> female · <strong>{{ $officialRows->count() }}</strong> team officials</span>
                 @if ($canAdd)
-                    <button type="button" wire:click="mountAction('addAthlete')" style="{{ $outline }}">{!! $plus !!}Add athlete</button>
-                    <button type="button" wire:click="mountAction('addOfficial')" style="{{ $outline }}">{!! $plus !!}Add team official</button>
+                    <button type="button" wire:click="openPanel('athlete')" style="{{ $outline }}">{!! $plus !!}Add athlete</button>
+                    <button type="button" wire:click="openPanel('official')" style="{{ $outline }}">{!! $plus !!}Add team official</button>
                 @endif
                 <div class="sta-seg" role="group" aria-label="View">
                     <button type="button" x-on:click="view = 'list'" x-bind:aria-pressed="view === 'list'" style="padding: 0 12px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>List</button>
@@ -177,7 +100,10 @@
         </div>
 
         {{-- x-show on wrappers only: Alpine drops an inline display value when it shows an element again. --}}
-        <div x-show="tab !== 'officials'"><div style="display: flex; flex-direction: column; gap: 20px">
+        @if ($athFlagged + $offFlagged === 0)
+            <p x-show="tab === 'warnings'" style="margin: 0; color: #475569">No warnings.</p>
+        @endif
+        <div x-show="tab === 'athletes' || (tab === 'warnings' && {{ $athFlagged ? 'true' : 'false' }})"><div style="display: flex; flex-direction: column; gap: 20px">
             <section x-show="view === 'list'" aria-label="Athletes" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow-x: auto">
                 @if ($athleteRows->isEmpty())
                     <p style="margin: 0; padding: 16px 20px; color: #475569">No athletes on the list yet.</p>
@@ -209,7 +135,7 @@
                                     </td>
                                     <td style="padding: 10px 12px">{{ $p->gender?->label() }}</td>
                                     <td style="padding: 10px 12px; color: #334155">{{ $p->dob?->format('d M Y') }} · {{ $row['age'] }}</td>
-                                    <td style="padding: 10px 12px; font-weight: 600; color: #1F3A5F">{{ $eventsOf($row)->implode(', ') }}</td>
+                                    <td style="padding: 10px 12px; font-weight: 600; color: #1F3A5F">@foreach ($eventsOf($row) as $e)<a href="{{ $e['url'] }}" style="color: #1F3A5F; text-decoration: none">{{ $e['label'] }}</a>@if (! $loop->last), @endif @endforeach</td>
                                     @foreach ($athleteItems as $item)
                                         @php $size = $sizeOf($row, $item); @endphp
                                         <td style="padding: 10px 12px; font-weight: 700; color: {{ filled($size) ? '#0F172A' : '#9A3412' }}">{{ filled($size) ? $size : 'Missing' }}</td>
@@ -253,8 +179,8 @@
                             <div style="display: flex; flex-direction: column; gap: 6px">
                                 <span style="font-size: 12px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">Event</span>
                                 <div style="display: flex; flex-wrap: wrap; gap: 6px">
-                                    @foreach ($eventsOf($row) as $event)
-                                        <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; background: #E8EEF6; color: #1F3A5F; font-weight: 600; font-size: 13px">{{ $event }}</span>
+                                    @foreach ($eventsOf($row) as $e)
+                                        <a href="{{ $e['url'] }}" style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; background: #E8EEF6; color: #1F3A5F; font-weight: 600; font-size: 13px; text-decoration: none">{{ $e['label'] }}</a>
                                     @endforeach
                                 </div>
                             </div>
@@ -288,7 +214,7 @@
             </template>
         </div></div>
 
-        <section aria-labelledby="officials-title" style="display: flex; flex-direction: column; gap: 12px">
+        <div x-show="tab !== 'warnings' || {{ $offFlagged ? 'true' : 'false' }}"><section aria-labelledby="officials-title" style="display: flex; flex-direction: column; gap: 12px">
             <h2 id="officials-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">Team officials</h2>
             <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow-x: auto">
                 @if ($officialRows->isEmpty())
@@ -334,8 +260,9 @@
                     </table>
                 @endif
             </div>
-        </section>
+        </section></div>
     </div>
 
+    @include('filament.portal.partials.person-panel')
     @include('filament.partials.comments', ['comments' => $this->submission->commentsNewestFirst()])
 </x-filament-panels::page>

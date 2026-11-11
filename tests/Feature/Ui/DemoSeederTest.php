@@ -6,6 +6,9 @@ use App\Models\Person;
 use App\Models\Submission;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
+use Illuminate\Support\Facades\Storage;
+
+beforeEach(fn () => Storage::fake(config('filesystems.private')));
 
 it('builds the canvas sample world', function () {
     $this->seed(DemoSeeder::class);
@@ -23,6 +26,9 @@ it('builds the canvas sample world', function () {
         ->and($main->phase(2)->status->value)->toBe('closed')
         ->and($main->phase(3)->status->value)->toBe('open')
         ->and($main->phase(4)->status->value)->toBe('draft');
+
+    // Placeholder photos and scans, so grid avatars and View links work in the demo.
+    Storage::disk(config('filesystems.private'))->assertExists(['photos/x.jpg', 'scans/demo.pdf']);
 });
 
 it('is safe to run twice', function () {

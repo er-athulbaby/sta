@@ -15,6 +15,7 @@ use App\Filament\Resources\Games\Pages\SetupShortList;
 use App\Filament\Resources\Games\Pages\StaPhase1Edit;
 use App\Filament\Resources\Games\Pages\StaPhase2Edit;
 use App\Filament\Resources\Games\Pages\StaPhase3Edit;
+use App\Filament\Resources\Games\Pages\StaPhase3EventsEdit;
 use App\Filament\Resources\Games\Pages\StaPhase4Edit;
 use App\Filament\Resources\Games\Pages\SubmissionView;
 use App\Filament\Resources\Games\Schemas\GameForm;
@@ -104,6 +105,7 @@ class GameResource extends Resource
             'submission-edit-1' => StaPhase1Edit::route('/{record}/submissions/{submission}/edit-phase-1'),
             'submission-edit-2' => StaPhase2Edit::route('/{record}/submissions/{submission}/edit-phase-2'),
             'submission-edit-3' => StaPhase3Edit::route('/{record}/submissions/{submission}/edit-phase-3'),
+            'submission-edit-3-events' => StaPhase3EventsEdit::route('/{record}/submissions/{submission}/edit-phase-3/events'),
             'submission-edit-4' => StaPhase4Edit::route('/{record}/submissions/{submission}/edit-phase-4'),
         ];
     }

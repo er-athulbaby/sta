@@ -3,6 +3,8 @@
 namespace App\Filament\Shared\Phases;
 
 use App\Enums\PersonType;
+use App\Filament\Portal\Pages\Phase3Events;
+use App\Filament\Resources\Games\GameResource;
 use App\Filament\Shared\AttachmentActions;
 use App\Models\Association;
 use App\Models\GameSport;
@@ -58,6 +60,16 @@ trait EditsPhase3
     public function listRows(): Collection
     {
         return app(LongListChecks::class)->rows($this->submission, $this->athletes, $this->officials);
+    }
+
+    /** The "Assign athletes to events" screen for one sport (canvas LongListEvents.dc.html), portal or STA edit. */
+    public function eventsUrl(int $gameSportId): string
+    {
+        $url = filament()->getId() === 'portal'
+            ? Phase3Events::getUrl(['game' => $this->gameModel->getKey()])
+            : GameResource::getUrl('submission-edit-3-events', ['record' => $this->gameModel, 'submission' => $this->submission]);
+
+        return $url.'#sport-'.$gameSportId;
     }
 
     /** Chip labels: only people of this submission's association (never another association's). */

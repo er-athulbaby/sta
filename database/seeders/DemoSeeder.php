@@ -32,6 +32,7 @@ use App\Models\User;
 use App\Services\Reports\Builder\Registry;
 use App\Services\Reports\Builder\ReportDefinition;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Local visual QA only (M5 task 14, U11): the canvas sample world (6th Asian Indoor & Martial Arts Games, BWF, BJF, ...) so each page
@@ -186,6 +187,7 @@ class DemoSeeder extends Seeder
             ['source' => 'person.dob', 'heading' => 'DOB', 'format' => 'd/m/Y'], ['source' => 'association.code', 'heading' => 'Member']]]);
         SavedReport::firstOrCreate(['name' => 'All athletes', 'created_by' => $sta->id], ['subject' => 'people', 'visibility' => 'shared',
             'definition' => ReportDefinition::fresh(Registry::get('people')), 'updated_by' => $sta->id]);
+        $this->placeholderFiles();
 
         $this->command?->info('Demo logins (local only), password from DEMO_PASSWORD, default '.self::PASSWORD);
         $this->command?->table(['Name', 'Role', 'Email', 'Assoc.'], array_filter($this->logins, fn ($l) => in_array($l[2], self::SHOWN_LOGINS, true)));
@@ -203,6 +205,19 @@ class DemoSeeder extends Seeder
     {
         $s->update(['status' => SubmissionStatus::Submitted, 'reference_no' => $code.'-G'.str_pad((string) $game->id, 3, '0', STR_PAD_LEFT).'-P'.$s->phase.'-R1',
             'submitted_by' => $admin?->id, 'submitted_at' => now()->subDays(2), 'approved_by' => $admin?->id, 'approved_at' => now()->subDays(2)]);
+    }
+
+    /** Small placeholder files for the people's photo and scan paths, so photos and "View" links work in the demo. */
+    private function placeholderFiles(): void
+    {
+        $disk = Storage::disk(config('filesystems.private'));
+        // A 1×1 grey PNG and a one-page empty PDF.
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGPo6OgAAAMEAYFL09IQAAAAAElFTkSuQmCC');
+        $pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
+        Person::withoutGlobalScopes()->get(array_keys(Person::FILE_COLUMNS))
+            ->flatMap(fn (Person $p) => array_values($p->only(array_keys(Person::FILE_COLUMNS))))->filter()->unique()
+            ->reject(fn (string $path) => $disk->exists($path))
+            ->each(fn (string $path) => $disk->put($path, str_ends_with(strtolower($path), '.pdf') ? $pdf : $png));
     }
 
     /** BWF gets the canvas people; the others get two athletes and an official so lists and flags have content. */

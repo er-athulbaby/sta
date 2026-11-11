@@ -76,7 +76,7 @@
                                                         </label>
                                                     </td>
                                                     <td style="padding: 4px 12px">{{ $p->gender?->label() }}</td>
-                                                    <td style="padding: 4px 12px; font-weight: 600; color: #1F3A5F">{{ $ge->event->name }}</td>
+                                                    <td style="padding: 4px 12px; font-weight: 600; color: #1F3A5F">{{ \App\Support\Sta::eventLabel($ge->event) }}</td>
                                                     <td style="padding: 4px 20px">
                                                         @if ($p->passport_scan_path)
                                                             <a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="{{ $view }}">View</a>
@@ -160,22 +160,24 @@
                     </section>
                 @endforeach
 
-                {{-- The textarea always renders (ruling U5): the canvas violet "Justification needed" card when over; within, the
-                     canvas green status and a plain "Justification" card. One section, so Livewire's morph markers stay balanced. --}}
+                {{-- Over a maximum: the canvas violet "Justification needed" card. Within: the canvas green status only, plus a plain
+                     "Justification" card when one is saved (so it can be cleared) or has an error. One section keeps Livewire's markers balanced. --}}
                 @unless ($over)
                     <div role="status" style="padding: 12px 16px; border-radius: 12px; background: #DCFCE7; color: #166534; font-weight: 600">Within all maximums — no justification needed.</div>
                 @endunless
+                @if ($over || filled($this->submission->justification) || $errors->has('justification'))
                 <section aria-labelledby="just-title" style="border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; {{ $over ? 'background: #F5F3FF; border: 2px solid #6D28D9' : 'background: #FFFFFF; border: 1px solid #E2E8F0' }}">
                     <div style="display: flex; flex-direction: column; gap: 4px">
                         <h2 id="just-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">{{ $over ? 'Justification needed' : 'Justification' }}</h2>
                         @if ($over)<span style="font-size: 13px; font-weight: 600; color: #5B21B6">Over the maximum: {{ $overText }}</span>@endif
                     </div>
-                    <label for="justification" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Why do you need more than the maximum? (required to submit)
+                    <label for="justification" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">{{ $over ? 'Why do you need more than the maximum? (required to submit)' : 'Why do you need more than the maximum?' }}
                         <textarea id="justification" wire:model="justification" rows="6" maxlength="2000" @disabled($readOnlyReason) style="padding: 10px 12px; border: 1px solid {{ $over ? '#A78BFA' : '#CBD5E1' }}; border-radius: 10px; font: 14px/1.5 Inter, sans-serif; resize: vertical; background: #FFFFFF"></textarea>
                     </label>
                     @error('justification')<p role="alert" style="margin: 0; font-size: 13px; color: #B91C1C; font-weight: 600">{{ $message }}</p>@enderror
                     <span style="font-size: 12px; color: #475569">STA sees this on the Short List PDF and decides.</span>
                 </section>
+                @endif
             </aside>
         </div>
     @endif

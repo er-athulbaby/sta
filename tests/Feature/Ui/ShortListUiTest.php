@@ -56,10 +56,25 @@ it('shows meters, the violet justification card when over, and the all-clear whe
         ->assertSee('Within all maximums — no justification needed.')->assertSee('Within maximums');
 });
 
-it('always renders the justification textarea', function () {
+it('shows only the green status within the maximums, and a saved justification so it can be cleared', function () {
     livewire(Phase4Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])
-        ->assertSeeHtml('id="justification"');
+        ->assertSee('Within all maximums — no justification needed.')->assertDontSeeHtml('id="justification"');
+
+    Submission::where(['game_id' => $this->game->id, 'phase' => 4])->update(['justification' => 'Both can medal']);
+
+    livewire(Phase4Entry::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])
+        ->assertSeeHtml('id="justification"')->assertSee('Why do you need more than the maximum?')
+        ->assertDontSee('(required to submit)')->assertDontSee('Justification needed')
+        ->set('justification', '')->call('save')->assertHasNoErrors();
+
+    expect(Submission::where(['game_id' => $this->game->id, 'phase' => 4])->sole()->justification)->toBeNull();
+});
+
+it('streams a preview of the Short List PDF', function () {
+    livewire(Phase4Entry::class, ['game' => $this->game->id])
+        ->call('previewPdf')->assertFileDownloaded('short-list-preview.pdf');
 });
 
 it('draws the ShortList canvas sections in order', function () {

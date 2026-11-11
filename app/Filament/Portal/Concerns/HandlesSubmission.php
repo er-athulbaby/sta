@@ -66,12 +66,18 @@ trait HandlesSubmission
     public function getHeader(): ?View
     {
         return view($this->submission->phase <= 2 ? 'filament.portal.partials.phase-header' : 'filament.portal.partials.list-header',
-            ['title' => $this->phaseHeadingTitle()]);
+            ['title' => $this->phaseHeadingTitle(), 'eventsScreen' => str_ends_with($this->getView(), 'phase3-events')]);
     }
 
-    /** Canvas "Preview PDF" (phases 3 and 4): saves first while editable, then streams the PDF a submit would produce. */
+    /**
+     * Canvas "Preview PDF" (portal phases 3 and 4 only): saves the draft first while editable, then streams the PDF a submit
+     * would produce. Never on STA pages: their save() bumps the version and regenerates the stored PDFs.
+     */
     public function previewPdf(): ?StreamedResponse
     {
+        if (filament()->getId() !== 'portal') {
+            return null;
+        }
         $job = match ($this->submission->phase) {
             3 => new GenerateLongListPdf($this->submission),
             4 => new GenerateShortListPdf($this->submission),

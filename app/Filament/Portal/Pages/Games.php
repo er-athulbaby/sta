@@ -27,7 +27,7 @@ class Games extends Page
     public static function getNavigationItemActiveRoutePattern(): string|array
     {
         return [static::getRouteName(), Phase1Entry::getRouteName(), Phase2Entry::getRouteName(),
-            Phase3Entry::getRouteName(), Phase4Entry::getRouteName()];
+            Phase3Entry::getRouteName(), Phase3Events::getRouteName(), Phase4Entry::getRouteName()];
     }
 
     public function getPageClasses(): array

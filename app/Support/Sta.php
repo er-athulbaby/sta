@@ -4,9 +4,9 @@ namespace App\Support;
 
 use App\Enums\PhaseStatus;
 use App\Enums\SubmissionStatus;
+use App\Models\Event;
 use App\Models\GamePhase;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Facades\Blade;
 
 /** Canvas design tokens and small display helpers shared by Blade views and PDFs (spec 17). */
 final class Sta
@@ -75,5 +75,11 @@ final class Sta
             1 => '1 day left',
             default => $days.' days left',
         };
+    }
+
+    /** Event label with its gender ("Male 60kg") unless the event name already says it. */
+    public static function eventLabel(Event $event): string
+    {
+        return preg_match('/\b(male|female|mixed|men|women)\b/i', $event->name) ? $event->name : $event->gender->label().' '.$event->name;
     }
 }

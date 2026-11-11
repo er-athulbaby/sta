@@ -1,6 +1,7 @@
-{{-- Canvas LongList.dc.html / ShortList.dc.html header band (phases 3 and 4): breadcrumb, h1 + "Phase N" chip + status pill,
-     the deadline line, and Preview PDF / Save as draft / Submit. The buttons call the page's existing actions; STA edit pages
-     show their own header actions (Back to submission) and save only. --}}
+{{-- Canvas LongList.dc.html / LongListEvents.dc.html / ShortList.dc.html header band (phases 3 and 4): breadcrumb, h1 + "Phase N"
+     chip + status pill, the deadline line, and Preview PDF (portal Long List and Short List only) / Save as draft / Submit.
+     $eventsScreen: the LongListEvents variant (its subtitle, no Preview PDF, the note for editors). The buttons call the page's
+     existing actions; STA edit pages show their own header actions (Back to submission) and save only. --}}
 @php
     $p = $this->submission->phase;
     $status = $this->submission->status;
@@ -9,14 +10,17 @@
     $crumbs = $this->getBreadcrumbs();
     $deadline = $this->submission->gamePhase()->effectiveDeadline($this->submission);
     $line = [$deadline ? 'Deadline '.$deadline->format('j M Y') : 'No deadline set', \App\Support\Sta::daysLeft($deadline)];
-    if ($p === 3) {
+    if ($eventsScreen ?? false) {
+        $line[] = 'Only sports you entered in Phase 1 are shown';
+    } elseif ($p === 3) {
         $items = $this->gameModel->clothingItems->pluck('name');
         $line[] = $items->isNotEmpty() ? 'Clothing items for this game: '.$items->implode(', ') : null;
     } else {
         $line[] = 'Choose from your submitted Long List';
     }
     $can = fn (string $name) => $portal && ($this->getAction($name, isMounting: false)?->isVisible() ?? false);
-    $preview = $p === 3 || $this->longListSubmitted();
+    $preview = $portal && ! ($eventsScreen ?? false) && ($p === 3 || $this->longListSubmitted());
+    $editorNote = ($eventsScreen ?? false) && $portal && auth()->user()->role !== \App\Enums\Role::AssocAdmin;
     $secondary = 'min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif; cursor: pointer';
     $primary = 'min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif; cursor: pointer';
 @endphp
@@ -54,6 +58,9 @@
         @endif
         @if ($can('approve'))
             <button type="button" wire:click="mountAction('approve')" style="{{ $primary }}">Approve and submit to STA</button>
+        @endif
+        @if ($editorNote && $can('submit'))
+            <span style="flex-basis: 100%; text-align: right; font-size: 12px; color: #475569">The association admin sees <strong>Submit to STA</strong> here.</span>
         @endif
     </div>
 </header>
