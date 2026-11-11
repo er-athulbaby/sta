@@ -29,8 +29,8 @@ final class Sta
     }
 
     /** Game dashboard cell statuses (GameProgress::status()) and their canvas labels. */
-    public const CELL_LABELS = ['submitted' => 'Submitted', 'awaiting' => 'Awaiting admin', 'draft' => 'In progress',
-        'overdue' => 'Overdue', 'no_response' => 'No response'];
+    public const CELL_LABELS = ['submitted' => 'Submitted', 'awaiting' => 'Awaiting admin', 'draft' => 'Draft',
+        'overdue' => 'Overdue', 'no_response' => 'Not started'];
 
     public static function cellPill(string $status): string
     {

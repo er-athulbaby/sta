@@ -363,4 +363,4 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-repeater textarea.fi-input[rows="1"] { min-height: 44px; padding-block: 11px; resize: vertical; }
 
 /* Task 10: the game dashboard (canvas Main.dc.html) spaces its sections 24px apart. */
-.sta-dashboard-page .fi-page-main, .sta-dashboard-page .fi-page-content { row-gap: 24px; }
+.sta-dashboard-page .fi-page-header-main-ctn, .sta-dashboard-page .fi-page-main, .sta-dashboard-page .fi-page-content { row-gap: 24px; }

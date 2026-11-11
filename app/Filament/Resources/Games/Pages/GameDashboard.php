@@ -329,6 +329,7 @@ class GameDashboard extends Page
             ->modalHeading('Send a reminder')
             ->modalSubmitActionLabel('Send reminder')
             ->action(function (array $arguments) {
+                abort_unless($this->canRemind(), 403);
                 $phase = $this->progress()->openPhase();
                 $a = $this->record->associations()->find($arguments['association'] ?? 0);
                 abort_unless($phase && $a, 404);
@@ -398,7 +399,13 @@ class GameDashboard extends Page
                 ->url(fn () => GameResource::getUrl('reports', ['record' => $this->record]))
                 ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value)),
             Action::make('remindPending')
-                ->label(fn () => 'Remind pending ('.$this->tally()['pending'].')')
+                // N = who the modal's default phase (the first open one) would remind.
+                ->label(function () {
+                    $p = $this->progress()->openPhase();
+                    $c = $p ? $this->progress()->counts($p->phase) : ['total' => 0, 'submitted' => 0];
+
+                    return 'Remind pending ('.($c['total'] - $c['submitted']).')';
+                })
                 // No open phase = nothing to remind about (the phase select would be empty).
                 ->visible(fn () => $this->canRemind() && $this->progress()->openPhase() !== null)
                 ->schema([Select::make('phase')->required()

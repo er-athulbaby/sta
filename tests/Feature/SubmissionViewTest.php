@@ -81,7 +81,7 @@ it('links dashboard cells to the submission and counts entries as in progress, w
 
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
         ->assertSeeHtml(GameResource::getUrl('submission', ['record' => $this->game, 'submission' => $this->sub]))
-        ->assertSee('In progress');
+        ->assertSee('Draft');
     expect(Submission::withoutGlobalScopes()->count())->toBe(1);
 });
 

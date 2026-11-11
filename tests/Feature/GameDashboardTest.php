@@ -30,7 +30,7 @@ beforeEach(function () {
 
 it('shows the status matrix', function () {
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
-        ->assertSee('Done Fed')->assertSee('Submitted')->assertSee('Late Fed')->assertSee('No response');
+        ->assertSee('Done Fed')->assertSee('Submitted')->assertSee('Late Fed')->assertSee('Not started');
     expect(Submission::withoutGlobalScopes()->where('association_id', $this->late->id)->count())->toBe(0);
 });
 

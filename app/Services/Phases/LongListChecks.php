@@ -6,6 +6,7 @@ use App\Enums\EventGender;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
 use App\Enums\SubmissionStatus;
+use App\Models\Entry;
 use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
@@ -38,9 +39,23 @@ final class LongListChecks
     public function selection(Submission $s): array
     {
         [$sports, $events] = $this->visible($s);
+
+        return self::pick($sports, $events, $s->entries()->orderBy('id')->get());
+    }
+
+    /**
+     * selection() over already loaded entries (ordered by id); the game dashboard batches them (ruling U3).
+     *
+     * @param  Collection<int, GameSport>  $sports  keyed by id
+     * @param  Collection<int, GameEvent>  $events  keyed by id
+     * @param  iterable<Entry>  $entries
+     * @return array{0: array<int, list<string>>, 1: array<int, list<string>>}
+     */
+    public static function pick(Collection $sports, Collection $events, iterable $entries): array
+    {
         $athletes = [];
         $officials = [];
-        foreach ($s->entries()->orderBy('id')->get() as $e) {
+        foreach ($entries as $e) {
             if ($e->game_event_id) {
                 if ($events->has($e->game_event_id)) {
                     $athletes[$e->game_event_id][] = (string) $e->person_id;
@@ -135,6 +150,17 @@ final class LongListChecks
             ->where(['game_id' => $s->game_id, 'association_id' => $s->association_id, 'phase' => 2])->first();
 
         return $p2?->status === SubmissionStatus::Submitted ? $p2->numbers()->pluck('count', 'game_event_id')->all() : null;
+    }
+
+    /**
+     * How many Long List events hold more athletes than the submitted Phase 2 number (spec 17 dashboard flag).
+     *
+     * @param  array<int, list<string>>  $athletes  game_event_id => person ids
+     * @param  array<int, int>  $phase2  game_event_id => Phase 2 count
+     */
+    public static function phase2Differences(array $athletes, array $phase2): int
+    {
+        return collect($athletes)->filter(fn ($ids, $ge) => count($ids) > ($phase2[$ge] ?? 0))->count();
     }
 
     /**
