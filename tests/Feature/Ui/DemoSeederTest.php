@@ -16,6 +16,7 @@ it('builds the canvas sample world', function () {
     expect(Game::count())->toBe(2)
         ->and(Association::count())->toBe(10)
         ->and(Person::withoutGlobalScopes()->where('last_name', 'Buali')->exists())->toBeTrue()
+        ->and(Person::withoutGlobalScopes()->where(['first_name' => 'Fatema Hasan', 'last_name' => 'Ali'])->sole()->gender->value)->toBe('female')
         ->and(Submission::withoutGlobalScopes()->where('phase', 3)->count())->toBe(8)
         ->and(Submission::withoutGlobalScopes()->where('phase', 2)->where('status', 'submitted')->count())->toBe(11)
         ->and(User::where('email', 'ali.haroona@sta.example')->sole()->isSuperAdmin())->toBeTrue()

@@ -9,18 +9,24 @@ use App\Models\GameSport;
 use App\Models\Person;
 use App\Services\Phases\LongListChecks;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Schema;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 /**
  * Canvas LongList.dc.html side panel (portal Long List pages only; STA pages never use it): pick a registry person
- * for the Long List, or create one with the registry person form (spec 16.3) and optionally put them on the list.
- * Uses EditsPhase3's chip methods and save(), so the Long List rules stay in one place.
+ * for the Long List, or create one with the canvas short form (registry rules: PersonForm::shortFormRules) and optionally
+ * put them on the list. Uses EditsPhase3's chip methods and save(), so the Long List rules stay in one place.
  */
 trait HasPersonPanel
 {
+    /** Columns the short form writes; anything else in $newPerson is ignored. */
+    private const SHORT_FORM_FIELDS = ['function', 'first_name', 'last_name', 'gender', 'dob', 'nationality', 'phone', 'email',
+        'passport_no', 'passport_expiry', 'cpr_no', 'cpr_expiry'];
+
     /** 'athlete' | 'official' while the panel is open */
     public ?string $panel = null;
 
@@ -28,10 +34,19 @@ trait HasPersonPanel
 
     public string $panelSearch = '';
 
-    /** @var array<string, mixed>|null */
-    public ?array $newPerson = [];
+    /** @var array<string, mixed> the short form (SHORT_FORM_FIELDS and sizes) */
+    public array $newPerson = [];
 
     public ?string $newPersonEvent = null;
+
+    /** @var TemporaryUploadedFile|null */
+    public $newPersonPhoto = null;
+
+    /** @var TemporaryUploadedFile|null */
+    public $newPersonPassportScan = null;
+
+    /** @var TemporaryUploadedFile|null */
+    public $newPersonCprScan = null;
 
     public function openPanel(string $type, ?int $gameSportId = null): void
     {
@@ -42,26 +57,26 @@ trait HasPersonPanel
         $this->panel = $type;
         $this->panelSport = $sports->contains('id', $gameSportId) ? $gameSportId : ($sports->count() === 1 ? $sports->first()->id : null);
         $this->panelSearch = '';
-        $this->newPersonEvent = null;
-        $this->resetErrorBag();
-        $this->newPersonForm->fill(); // defaults (country codes, active …), then the panel's type
-        $this->newPerson['type'] = $type;
+        $this->resetShortForm();
     }
 
     public function closePanel(): void
     {
         $this->panel = null;
-        $this->newPerson = [];
+        $this->resetShortForm();
+    }
+
+    private function resetShortForm(): void
+    {
+        $this->newPerson = ['sizes' => []];
+        $this->newPersonEvent = null;
+        $this->newPersonPhoto = $this->newPersonPassportScan = $this->newPersonCprScan = null;
+        $this->resetErrorBag();
     }
 
     public function panelType(): PersonType
     {
         return $this->panel === 'official' ? PersonType::Official : PersonType::Athlete;
-    }
-
-    public function newPersonForm(Schema $schema): Schema
-    {
-        return PersonForm::configure($schema->statePath('newPerson')->model(Person::class), type: $this->panelType(), lockType: true);
     }
 
     /** @return Collection<int, GameSport> the panel's sport, or every visible sport when the page has several and none was given */
@@ -88,6 +103,20 @@ trait HasPersonPanel
             ->values();
     }
 
+    /** @return list<string> what the entered person would still miss (Person::missingFields plus empty sizes), for the canvas banner */
+    public function shortFormMissing(): array
+    {
+        $type = $this->panelType();
+        $p = new Person(Arr::only($this->newPerson, ['first_name', 'last_name', 'function', 'nationality', 'phone', 'email', 'cpr_no']));
+        $p->type = $type;
+        $p->photo_path = $this->newPersonPhoto ? 'new' : null;
+        $p->passport_scan_path = $this->newPersonPassportScan ? 'new' : null;
+        $p->setRelation('fieldValues', collect());
+        $sizes = PersonForm::sizeItems($type)->filter(fn ($item) => blank($this->newPerson['sizes'][$item->id] ?? null))->map(fn ($item) => $item->name.' size');
+
+        return [...$p->missingFields(), ...($this->newPersonCprScan ? [] : ['CPR scan']), ...$sizes];
+    }
+
     /** "Save as draft" saves the person to the registry; "Save and add to Long List" also puts them on the list and saves the list draft. */
     public function createPerson(bool $addToList = false): void
     {
@@ -95,24 +124,28 @@ trait HasPersonPanel
             return;
         }
         $type = $this->panelType();
+        Validator::make(
+            ['newPerson' => $this->newPerson, 'newPersonPhoto' => $this->newPersonPhoto, 'newPersonPassportScan' => $this->newPersonPassportScan, 'newPersonCprScan' => $this->newPersonCprScan],
+            PersonForm::shortFormRules($type, 'newPerson.', 'newPerson'),
+            attributes: collect(self::SHORT_FORM_FIELDS)->mapWithKeys(fn ($f) => ["newPerson.$f" => str_replace('_', ' ', $f)])->all(),
+        )->validate();
         if ($addToList) {
             $this->assertListTarget($type);
         }
-        $data = $this->newPersonForm->getState();
-        $data['type'] = $type->value;
-        $sizes = $data['sizes'] ?? [];
-        $extra = $data['extra'] ?? [];
-        unset($data['sizes'], $data['extra']);
+        $data = collect(Arr::only($this->newPerson, self::SHORT_FORM_FIELDS))->map(fn ($v) => filled($v) ? $v : null)->all();
+        $sizes = array_filter(Arr::wrap($this->newPerson['sizes'] ?? []), 'filled');
+        $store = fn ($file, string $dir) => $file?->store($dir, ['disk' => config('filesystems.private'), 'visibility' => 'private']) ?: null;
+        $files = ['photo_path' => $store($this->newPersonPhoto, 'photos'), 'passport_scan_path' => $store($this->newPersonPassportScan, 'scans'),
+            'cpr_front_path' => $store($this->newPersonCprScan, 'scans')];
 
-        // Same as the registry Create page: sizes and extra values commit with the row; association_id is never taken from the form.
-        $person = DB::transaction(function () use ($data, $sizes, $extra) {
-            $person = Person::create([...$data, 'association_id' => $this->association()->getKey()]);
+        // Like the registry Create page: sizes commit with the row; the association is never taken from the form;
+        // RenamesAttachments renames the stored files after the person is saved.
+        $person = DB::transaction(function () use ($data, $files, $sizes, $type) {
+            $person = Person::create([...$data, ...$files, 'type' => $type->value, 'is_active' => true, 'association_id' => $this->association()->getKey()]);
             $person->syncSizes($sizes);
-            $person->syncExtraValues($extra, auth()->user());
 
             return $person;
         });
-        $this->newPersonForm->model($person)->saveRelationships();
         Notification::make()->success()->title('Saved to the registry')->send();
 
         if ($addToList) {

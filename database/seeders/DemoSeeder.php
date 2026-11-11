@@ -252,7 +252,8 @@ class DemoSeeder extends Seeder
         foreach ($officials as [$first, $last, $function]) {
             $o = Person::where(['association_id' => $a->id, 'first_name' => $first, 'last_name' => $last])->first()
                 ?? Person::factory()->official()->complete()->create(['association_id' => $a->id, 'type' => PersonType::Official,
-                    'first_name' => $first, 'last_name' => $last, 'full_name' => strtoupper("$first $last"), 'function' => $function]);
+                    'first_name' => $first, 'last_name' => $last, 'full_name' => strtoupper("$first $last"), 'function' => $function,
+                    'gender' => $first === 'Fatema Hasan' ? PersonGender::Female : PersonGender::Male]);
             $o->syncSizes($ids->combine(['L', 'L', $last === 'Ali' ? null : '52'])->all());
             if ($gs = $events->first()?->gameSport) {
                 Entry::firstOrCreate(['submission_id' => $s->id, 'person_id' => $o->id, 'game_event_id' => null, 'game_sport_id' => $gs->id]);

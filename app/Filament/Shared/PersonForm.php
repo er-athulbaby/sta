@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use WeakMap;
 
@@ -46,7 +47,7 @@ final class PersonForm
         $isAthlete = fn (Get $get) => $get('type') !== PersonType::Official->value;
         $medical = fn () => Person::canViewMedical(auth()->user());
         $countries = array_combine(array_values(config('countries')), array_values(config('countries')));
-        $scanTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+        $scanTypes = self::SCAN_TYPES;
 
         return $schema->components([
             Section::make('Person')->extraAttributes(['class' => 'sta-band sta-band-blue'])->icon(Heroicon::OutlinedUser)->columns(2)->schema([
@@ -62,7 +63,7 @@ final class PersonForm
                 Select::make('nationality')->options($countries)->searchable()->required(),
                 TextInput::make('height_cm')->label('Height (cm)')->numeric()->minValue(50)->maxValue(250),
                 TextInput::make('weight_kg')->label('Weight (kg)')->numeric()->minValue(20)->maxValue(250),
-                self::upload('photo_path', 'Photo', 'photos', ['image/jpeg', 'image/png'], 2048),
+                self::upload('photo_path', 'Photo', 'photos', self::PHOTO_TYPES, 2048),
                 Toggle::make('is_active')->default(true),
             ]),
             Section::make('Passport')->extraAttributes(['class' => 'sta-band sta-band-indigo'])->icon(Heroicon::OutlinedIdentification)->columns(3)->schema([
@@ -152,6 +153,53 @@ final class PersonForm
         ]);
     }
 
+    public const PHOTO_TYPES = ['image/jpeg', 'image/png'];
+
+    public const SCAN_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+
+    /**
+     * The registry rules for the fields of the Long List side panel's short form (canvas LongList.dc.html), keyed
+     * "{$prefix}field": the same requirements, lengths, option lists, document uniqueness and upload limits as configure().
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    public static function shortFormRules(PersonType $type, string $prefix = '', string $uploadPrefix = ''): array
+    {
+        $official = $type === PersonType::Official;
+        $rules = [
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
+            'gender' => ['required', Rule::enum(PersonGender::class)],
+            'dob' => ['required', 'date', 'before_or_equal:today'],
+            'nationality' => ['required', Rule::in(array_values(config('countries')))],
+            'passport_no' => ['required', 'string', 'max:30', self::uniqueDocument('passport_no_hash', 'passport', null)],
+            'passport_expiry' => ['required', 'date'],
+            'cpr_no' => ['nullable', 'string', 'max:30', self::uniqueDocument('cpr_no_hash', 'CPR', null)],
+            'cpr_expiry' => ['nullable', 'date', 'required_with:'.$prefix.'cpr_no'],
+            ...($official ? [
+                'function' => ['required', Rule::in(self::FUNCTIONS)],
+                'phone' => ['nullable', 'regex:/^[0-9 ]{4,20}$/', 'max:20'],
+                'email' => ['nullable', 'email', 'max:255'],
+            ] : []),
+        ];
+        foreach (self::sizeItems($type) as $item) {
+            $rules["sizes.{$item->id}"] = ['nullable', Rule::in($item->sizes)];
+        }
+        $rules = collect($rules)->mapWithKeys(fn ($r, $field) => [$prefix.$field => $r])->all();
+
+        return [...$rules,
+            $uploadPrefix.'Photo' => ['nullable', 'file', 'mimetypes:'.implode(',', self::PHOTO_TYPES), 'max:2048'],
+            $uploadPrefix.'PassportScan' => ['nullable', 'file', 'mimetypes:'.implode(',', self::SCAN_TYPES), 'max:5120'],
+            $uploadPrefix.'CprScan' => ['nullable', 'file', 'mimetypes:'.implode(',', self::SCAN_TYPES), 'max:5120'],
+        ];
+    }
+
+    /** @return \Illuminate\Support\Collection<int, ClothingItem> the size fields of a person type, in form order */
+    public static function sizeItems(PersonType $type): \Illuminate\Support\Collection
+    {
+        return ClothingItem::active()->forType($type)->orderBy('name')->get();
+    }
+
     private static function upload(string $name, string $label, string $dir, array $types, int $maxKb): FileUpload
     {
         return AttachmentActions::view(FileUpload::make($name)->label($label)
@@ -192,7 +240,7 @@ final class PersonForm
 
     private static function sizeFields(PersonType $type): array
     {
-        return ClothingItem::active()->forType($type)->orderBy('name')->get()
+        return self::sizeItems($type)
             ->map(fn (ClothingItem $item) => Select::make("sizes.{$item->id}")->label($item->name)
                 ->options(array_combine($item->sizes, $item->sizes)))
             ->all();

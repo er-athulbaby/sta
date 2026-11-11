@@ -71,16 +71,134 @@
                 <h3 id="new-title" style="margin: 0; font-size: 15px; font-weight: 700">{{ $isOfficial ? 'Or add a new team official' : 'Or add a new athlete' }}</h3>
                 <span style="font-size: 12px; color: #475569">Same fields and rules as the registry. After saving, the person is in your registry and can be picked straight away.</span>
             </div>
-            {{ $this->newPersonForm }}
-            @unless ($isOfficial)
-                <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Event
-                    <select wire:model="newPersonEvent" style="{{ $input }}">
-                        <option value="">Choose…</option>
-                        @foreach ($events as $e)<option value="{{ $e['ge']->id }}">{{ $e['label'] }}</option>@endforeach
-                    </select>
+            @php
+                $field = 'min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; width: 100%';
+                $lbl = 'display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600';
+                $err = fn (string $key) => $errors->first($key);
+                $errStyle = 'font-size: 12px; font-weight: 600; color: #B91C1C';
+                $gender = $newPerson['gender'] ?? null;
+                $fileRow = 'display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border-radius: 10px; background: #F0FDF4; box-shadow: inset 0 0 0 1px #BBF7D0; font-size: 13px';
+                $uploadBtn = 'display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border-radius: 10px; border: 1px dashed #94A3B8; background: #FFFFFF; color: #334155; font: 600 13px Inter, sans-serif; cursor: pointer';
+                $files = [['newPersonPhoto', 'photo', 'Upload photo', 'image/jpeg,image/png'],
+                    ['newPersonPassportScan', 'passport scan', 'Upload passport scan', 'application/pdf,image/jpeg,image/png'],
+                    ['newPersonCprScan', 'CPR scan', 'Upload CPR scan (front and back)', 'application/pdf,image/jpeg,image/png']];
+                $missing = $this->shortFormMissing();
+                $text = fn (string $key, string $label, string $type = 'text') => [$key, $label, $type];
+            @endphp
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px">
+                @if ($isOfficial)
+                    <label style="grid-column: 1 / -1; {{ $lbl }}">Function
+                        <select wire:model.live="newPerson.function" style="{{ $field }}; padding: 0 10px; background: #FFFFFF">
+                            <option value="">Choose…</option>
+                            @foreach (\App\Filament\Shared\PersonForm::FUNCTIONS as $fn)<option value="{{ $fn }}">{{ $fn }}</option>@endforeach
+                        </select>
+                        @if ($m = $err('newPerson.function'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                    </label>
+                @endif
+                @foreach ([['first_name', 'First name'], ['last_name', 'Family name']] as [$key, $label])
+                    <label style="{{ $lbl }}">{{ $label }}
+                        <input wire:model.blur="newPerson.{{ $key }}" autocomplete="off" style="{{ $field }}">
+                        @if ($m = $err('newPerson.'.$key))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                    </label>
+                @endforeach
+                <fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 6px">
+                    <legend style="padding: 0; font-size: 13px; font-weight: 600; margin-bottom: 6px">Gender</legend>
+                    <div style="display: flex; gap: 8px">
+                        @foreach (\App\Enums\PersonGender::cases() as $g)
+                            <label style="flex: 1; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 10px; border: 1px solid {{ $gender === $g->value ? '#1F3A5F' : '#CBD5E1' }}; border-radius: 10px; font-size: 14px"><input type="radio" name="newPersonGender" value="{{ $g->value }}" wire:model.live="newPerson.gender"> {{ $g->label() }}</label>
+                        @endforeach
+                    </div>
+                    @if ($m = $err('newPerson.gender'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                </fieldset>
+                <label style="{{ $lbl }}">Date of birth
+                    <input type="date" wire:model.blur="newPerson.dob" max="{{ now()->toDateString() }}" style="{{ $field }}">
+                    @if ($m = $err('newPerson.dob'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 </label>
-            @endunless
-            @error('newPersonEvent')<p role="alert" style="margin: 0; font-size: 13px; color: #B91C1C; font-weight: 600">{{ $message }}</p>@enderror
+                {{-- Not on the canvas, required by the registry to save: drawn as the same grid fields after Date of birth. --}}
+                <label style="{{ $isOfficial ? '' : 'grid-column: 1 / -1; ' }}{{ $lbl }}">Nationality
+                    <select wire:model.live="newPerson.nationality" style="{{ $field }}; padding: 0 10px; background: #FFFFFF">
+                        <option value="">Choose…</option>
+                        @foreach (config('countries') as $country)<option value="{{ $country }}">{{ $country }}</option>@endforeach
+                    </select>
+                    @if ($m = $err('newPerson.nationality'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                </label>
+                @unless ($isOfficial)
+                    <label style="grid-column: 1 / -1; {{ $lbl }}">Event
+                        <select wire:model="newPersonEvent" style="{{ $field }}; padding: 0 10px; background: #FFFFFF">
+                            <option value="">Choose…</option>
+                            @foreach ($events as $e)<option value="{{ $e['ge']->id }}">{{ $e['label'] }}</option>@endforeach
+                        </select>
+                        @if ($m = $err('newPersonEvent'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                    </label>
+                @endunless
+                @if ($isOfficial)
+                    <label style="{{ $lbl }}">Mobile
+                        <input type="tel" wire:model.blur="newPerson.phone" autocomplete="off" style="{{ $field }}">
+                        @if ($m = $err('newPerson.phone'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                    </label>
+                    <label style="{{ $lbl }}">Email
+                        <input type="email" wire:model.blur="newPerson.email" autocomplete="off" style="{{ $field }}">
+                        @if ($m = $err('newPerson.email'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                    </label>
+                @endif
+                <label style="{{ $lbl }}">Passport number
+                    <input wire:model.blur="newPerson.passport_no" autocomplete="off" style="{{ $field }}">
+                    @if ($m = $err('newPerson.passport_no'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                </label>
+                <label style="{{ $lbl }}">Passport expiry
+                    <input type="date" wire:model.blur="newPerson.passport_expiry" style="{{ $field }}">
+                    @if ($m = $err('newPerson.passport_expiry'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                </label>
+                <label style="{{ $lbl }}">CPR number
+                    <input wire:model.live.debounce.400ms="newPerson.cpr_no" autocomplete="off" style="{{ $field }}">
+                    @if ($m = $err('newPerson.cpr_no'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                </label>
+                @if (filled($newPerson['cpr_no'] ?? null) || $err('newPerson.cpr_expiry'))
+                    <label style="{{ $lbl }}">CPR expiry
+                        <input type="date" wire:model.blur="newPerson.cpr_expiry" style="{{ $field }}">
+                        @if ($m = $err('newPerson.cpr_expiry'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                    </label>
+                @endif
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: 13px; font-weight: 600">Photo and scans</span>
+                @foreach ($files as [$prop, $what, $label, $accept])
+                    @if ($this->{$prop})
+                        <div style="{{ $fileRow }}" wire:key="file-{{ $prop }}">
+                            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg>
+                            <span style="color: #166534; font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere">{{ $this->{$prop}->getClientOriginalName() }} · {{ \Illuminate\Support\Number::fileSize($this->{$prop}->getSize()) }}</span>
+                            <button type="button" wire:click="$set('{{ $prop }}', null)" aria-label="Remove the {{ $what }}" style="min-height: 44px; padding: 0; border: 0; background: transparent; color: #1F3A5F; font: 600 13px Inter, sans-serif; cursor: pointer">Remove</button>
+                        </div>
+                    @else
+                        <label style="{{ $uploadBtn }}" wire:key="file-{{ $prop }}">
+                            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
+                            {{ $label }}
+                            <input type="file" wire:model="{{ $prop }}" accept="{{ $accept }}" class="sta-sr-only">
+                        </label>
+                    @endif
+                    @if ($m = $err($prop))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                @endforeach
+            </div>
+            @php $sizeItems = \App\Filament\Shared\PersonForm::sizeItems($isOfficial ? \App\Enums\PersonType::Official : \App\Enums\PersonType::Athlete); @endphp
+            @if ($sizeItems->isNotEmpty())
+                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+                    @foreach ($sizeItems as $item)
+                        <label style="{{ $lbl }}">{{ $item->name }}
+                            <select wire:model.live="newPerson.sizes.{{ $item->id }}" style="{{ $field }}; padding: 0 8px; background: #FFFFFF">
+                                <option value="">Choose</option>
+                                @foreach ($item->sizes as $size)<option value="{{ $size }}">{{ $size }}</option>@endforeach
+                            </select>
+                            @if ($m = $err('newPerson.sizes.'.$item->id))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                        </label>
+                    @endforeach
+                </div>
+            @endif
+            @if ($missing)
+                <div role="status" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: #FFF7ED; color: #9A3412; font-size: 13px">
+                    <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; background: #FFEDD5; font-weight: 700; font-size: 12px; flex-shrink: 0">Incomplete</span>
+                    <span>{{ \Illuminate\Support\Arr::join($missing, ', ', ' and ') }} missing — you can still save as draft.</span>
+                </div>
+            @endif
             <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px">
                 <button type="button" wire:click="closePanel" style="{{ $btn }}border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A">Cancel</button>
                 <button type="button" wire:click="createPerson(false)" style="{{ $btn }}border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A">Save as draft</button>

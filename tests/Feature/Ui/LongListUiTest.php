@@ -188,10 +188,10 @@ it('picks a registry athlete into the event from the side panel and adds a new o
         ->set('panelSearch', '')
         ->call('addAthleteChip', $this->m60->id, $this->ali->id)
         ->assertSet("athletes.{$this->m60->id}", [(string) $this->ali->id])
-        ->fillForm(['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
-            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()], 'newPersonForm')
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonEvent', (string) $this->m60->id)
-        ->call('createPerson', true)->assertHasNoFormErrors(form: 'newPersonForm')->assertSet('panel', null);
+        ->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
 
     $hamad = Person::where('first_name', 'Hamad')->sole();
     expect($hamad->association_id)->toBe($this->assoc->id)
@@ -201,8 +201,8 @@ it('picks a registry athlete into the event from the side panel and adds a new o
 it('needs a matching event to add a new athlete to the Long List', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->call('openPanel', 'athlete')
-        ->fillForm(['first_name' => 'Huda', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'female',
-            'nationality' => 'Bahrain', 'passport_no' => 'BH1112299', 'passport_expiry' => now()->addYears(2)->toDateString()], 'newPersonForm')
+        ->set('newPerson', ['first_name' => 'Huda', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'female',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112299', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonEvent', (string) $this->m60->id)
         ->call('createPerson', true)->assertHasErrors(['newPersonEvent']);
 

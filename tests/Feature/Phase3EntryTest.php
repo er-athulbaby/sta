@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AppliesTo;
 use App\Enums\EventGender;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
@@ -10,9 +11,9 @@ use App\Filament\Portal\Pages\Phase3Entry;
 use App\Filament\Portal\Pages\Phase3Events;
 use App\Filament\Portal\Resources\People\PersonResource;
 use App\Models\Association;
+use App\Models\ClothingItem;
 use App\Models\Entry;
 use App\Models\Event;
-use App\Models\ExtraField;
 use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GameSport;
@@ -184,9 +185,9 @@ it('refuses a stale travel save', function () {
 it('adds an athlete from the Long List and offers them in the picker straight away', function () {
     livewire(Phase3Events::class, ['game' => $this->game->id])
         ->call('openPanel', 'athlete', $this->judo->id)
-        ->fillForm(['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
-            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()], 'newPersonForm')
-        ->call('createPerson', false)->assertHasNoFormErrors(form: 'newPersonForm')
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->call('createPerson', false)->assertHasNoErrors()
         ->assertSet('panel', null)->assertSee('Hamad Isa');
 
     $p = Person::where('first_name', 'Hamad')->sole();
@@ -196,9 +197,9 @@ it('adds an athlete from the Long List and offers them in the picker straight aw
 it('adds a team official with the official form', function () {
     livewire(Phase3Events::class, ['game' => $this->game->id])
         ->call('openPanel', 'official', $this->judo->id)
-        ->fillForm(['first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male', 'function' => 'Team Manager',
-            'nationality' => 'Bahrain', 'passport_no' => 'BH9998887', 'passport_expiry' => now()->addYears(2)->toDateString()], 'newPersonForm')
-        ->call('createPerson', false)->assertHasNoFormErrors(form: 'newPersonForm')->assertSee('Nasser Ali')->assertSee('Team Manager');
+        ->set('newPerson', ['first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male', 'function' => 'Team Manager',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH9998887', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->call('createPerson', false)->assertHasNoErrors()->assertSee('Nasser Ali')->assertSee('Team Manager');
 
     expect(Person::where('first_name', 'Nasser')->sole()->type)->toBe(PersonType::Official);
 });
@@ -207,9 +208,9 @@ it('keeps an added person in the tenant association whatever the form sends', fu
     $other = Association::factory()->create();
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->call('openPanel', 'athlete')
-        ->fillForm(['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
-            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()], 'newPersonForm')->set('newPerson.association_id', $other->id)
-        ->call('createPerson', false)->assertHasNoFormErrors(form: 'newPersonForm');
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])->set('newPerson.association_id', $other->id)
+        ->call('createPerson', false)->assertHasNoErrors();
 
     expect(Person::withoutGlobalScopes()->where('first_name', 'Hamad')->sole()->association_id)->toBe($this->assoc->id);
 });
@@ -240,9 +241,9 @@ it('labels the travel modal button Save as draft', function () {
 it('creates an athlete from Add athlete even if the form sends another type', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->call('openPanel', 'athlete')
-        ->fillForm(['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
-            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()], 'newPersonForm')->set('newPerson.type', 'official')->set('newPerson.function', 'Team Manager')
-        ->call('createPerson', false)->assertHasNoFormErrors(form: 'newPersonForm');
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])->set('newPerson.type', 'official')->set('newPerson.function', 'Team Manager')
+        ->call('createPerson', false)->assertHasNoErrors();
 
     expect(Person::where('first_name', 'Hamad')->sole()->type)->toBe(PersonType::Athlete);
 });
@@ -251,13 +252,71 @@ it('lazy-loads grid photos', function () {
     expect(file_get_contents(resource_path('views/filament/portal/pages/phase3-entry.blade.php')))->toContain('<img loading="lazy"');
 });
 
-it('saves extra field values from the Add athlete slide-over', function () {
-    $field = ExtraField::factory()->create(['label' => 'Shirt name']);
+it('draws the canvas short form and saves an athlete with sizes and uploads', function () {
+    Storage::fake(config('filesystems.private'));
+    $item = ClothingItem::create(['name' => 'T-Shirt', 'sizes' => ['S', 'M'], 'applies_to' => AppliesTo::Both, 'is_active' => true]);
+
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->call('openPanel', 'athlete')
-        ->fillForm(['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male', 'extra' => [$field->id => 'HAMAD'],
-            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()], 'newPersonForm')
-        ->call('createPerson', false)->assertHasNoFormErrors(form: 'newPersonForm');
+        ->assertSeeHtmlInOrder(['First name', 'Family name', 'Gender', 'Date of birth', 'Nationality', 'Event', 'Passport number', 'Passport expiry',
+            'CPR number', 'Photo and scans', 'Upload photo', 'Upload passport scan', 'Upload CPR scan (front and back)', 'T-Shirt'])
+        ->assertDontSee('Function')->assertSee('missing — you can still save as draft.')
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male', 'nationality' => 'Bahrain',
+            'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString(), 'sizes' => [$item->id => 'M']])
+        ->set('newPersonPhoto', UploadedFile::fake()->image('me.jpg'))
+        ->assertSee('me.jpg')
+        ->call('createPerson', false)->assertHasNoErrors()->assertSet('panel', null);
 
-    expect(Person::where('first_name', 'Hamad')->sole()->extraValues())->toBe([$field->id => 'HAMAD']);
+    $p = Person::where('first_name', 'Hamad')->sole();
+    expect($p->type)->toBe(PersonType::Athlete)->and($p->association_id)->toBe($this->assoc->id)->and($p->is_active)->toBeTrue()
+        ->and($p->photo_path)->toBe('photos/'.$p->code.'_photo.jpg')->and($p->sizes->sole()->size)->toBe('M');
+    Storage::disk(config('filesystems.private'))->assertExists($p->photo_path);
+});
+
+it('saves a team official from the short form', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('openPanel', 'official')
+        ->assertSeeHtmlInOrder(['Function', 'First name', 'Family name', 'Gender', 'Date of birth', 'Nationality', 'Mobile', 'Email', 'Passport number'])
+        ->set('newPerson', ['function' => 'Team Manager', 'first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'phone' => '3644 7712', 'email' => 'n.ali@example.com', 'passport_no' => 'BH9998887',
+            'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->call('createPerson', true)->assertHasNoErrors();
+
+    $p = Person::where('first_name', 'Nasser')->sole();
+    expect($p->type)->toBe(PersonType::Official)->and($p->function)->toBe('Team Manager')->and($p->phone)->toBe('3644 7712')
+        ->and(Entry::where(['person_id' => $p->id, 'game_event_id' => null])->exists())->toBeTrue();
+});
+
+it('validates the short form with the registry rules', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('openPanel', 'official')
+        ->set('newPerson', ['function' => 'Wizard', 'first_name' => '', 'gender' => 'x', 'dob' => now()->addDay()->toDateString(), 'nationality' => 'Atlantis',
+            'phone' => 'abc', 'email' => 'not-an-email', 'cpr_no' => '123456789'])
+        ->call('createPerson', false)
+        ->assertHasErrors(['newPerson.function', 'newPerson.first_name', 'newPerson.last_name', 'newPerson.gender', 'newPerson.dob',
+            'newPerson.nationality', 'newPerson.phone', 'newPerson.email', 'newPerson.passport_no', 'newPerson.passport_expiry', 'newPerson.cpr_expiry'])
+        ->assertSee('CPR expiry');
+
+    expect(Person::where('type', PersonType::Official)->count())->toBe(1); // only Coach Karim
+});
+
+it('refuses a passport or CPR number already in the registry', function () {
+    $this->ali->update(['cpr_no' => '040917332']);
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('openPanel', 'athlete')
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male', 'nationality' => 'Bahrain',
+            'passport_no' => $this->ali->passport_no, 'passport_expiry' => now()->addYears(2)->toDateString(), 'cpr_no' => '040917332', 'cpr_expiry' => '2030-01-01'])
+        ->call('createPerson', false)
+        ->assertHasErrors(['newPerson.passport_no', 'newPerson.cpr_no'])->assertSee('This passport number is already registered in the system.');
+
+    expect(Person::where('first_name', 'Hamad')->exists())->toBeFalse();
+});
+
+it('lists what the entered person still misses in the Incomplete banner', function () {
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])->call('openPanel', 'athlete')
+        ->set('newPerson.cpr_no', '040917333');
+
+    expect($page->instance()->shortFormMissing())->toContain('Photo', 'Passport scan', 'CPR scan')->not->toContain('CPR number');
+    $page->assertSee('Incomplete')->assertSeeText('Passport scan')->assertSee('missing — you can still save as draft.');
 });
