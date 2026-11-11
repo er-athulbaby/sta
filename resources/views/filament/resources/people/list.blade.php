@@ -127,3 +127,6 @@
         </aside>
     @endif
 </div>
+
+{{-- The Filament table (which normally renders the action modals) is not drawn on this page. --}}
+<x-filament-actions::modals />

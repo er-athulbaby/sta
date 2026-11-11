@@ -38,7 +38,10 @@ class EventsRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('name'),
-                TextColumn::make('gender')->formatStateUsing(fn (EventGender $state) => $state->label())->badge(),
+                TextColumn::make('gender')->formatStateUsing(fn (EventGender $state) => $state->label())->badge()
+                    ->color(fn (EventGender $state) => match ($state) {
+                        EventGender::Men => 'info', EventGender::Women => 'pink', EventGender::Mixed => 'gray'
+                    }),
                 IconColumn::make('is_active')->boolean(),
             ])
             ->headerActions([CreateAction::make()])

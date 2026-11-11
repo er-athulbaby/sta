@@ -44,6 +44,11 @@ class SubmissionView extends Page
             ->findOrFail($submission instanceof Submission ? $submission->getKey() : $submission);
     }
 
+    public function getPageClasses(): array
+    {
+        return [...parent::getPageClasses(), 'sta-canvas-page'];
+    }
+
     public function getTitle(): string
     {
         return $this->submission->association->name.' – Phase '.$this->submission->phase.' · '.GamePhase::NAMES[$this->submission->phase];
