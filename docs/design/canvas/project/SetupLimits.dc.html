@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin setup – Phase 2 limits</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Admin navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+      <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+        <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+        <span style="font-size: 12px; color: #A9B8CC">Admin panel</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="9">
+        <a href="{{item.href}}" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">AH</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Ali Haroona</span>
+        <span style="color: #A9B8CC; font-size: 12px">Super Admin</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-direction: column; gap: 14px">
+      <span style="font-size: 13px; color: #475569"><a href="Main.dc.html">Games</a> / 6th Asian Indoor &amp; Martial Arts Games 2026 / Setup</span>
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700">Game setup</h1>
+          <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #E0E7FF; color: #1E3A8A; font-size: 12px; font-weight: 600">Draft · not visible to associations</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+          <span style="font-size: 12px; color: #475569">Publish needs 1+ invited association and 1+ sport</span>
+          <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+          <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Publish</button>
+        </div>
+      </div>
+      <div role="tablist" aria-label="Setup steps" style="display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #E2E8F0">
+        <a href="SetupInvite.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-bottom: 2px solid transparent; color: #475569; font-weight: 600; text-decoration: none">1 · Details &amp; associations</a>
+        <a href="SetupLimits.dc.html" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-bottom: 2px solid #1F3A5F; color: #0F172A; font-weight: 600; text-decoration: none">2 · Sports &amp; limits</a>
+        <a href="SetupShortList.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-bottom: 2px solid transparent; color: #475569; font-weight: 600; text-decoration: none">3 · Clothing &amp; short list</a>
+        <a href="SetupPhases.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-bottom: 2px solid transparent; color: #475569; font-weight: 600; text-decoration: none">4 · Phases</a>
+      </div>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <section aria-labelledby="sports-title" style="flex: 1 1 260px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
+        <h2 id="sports-title" style="margin: 0; padding: 16px 18px; border-bottom: 1px solid #E2E8F0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Sports in this game</h2>
+        <ul style="list-style: none; margin: 0; padding: 8px">
+          <sc-for list="{{sports}}" as="s" hint-placeholder-count="6">
+            <li>
+              <a href="#" aria-current="{{s.current}}" style="{{s.style}}">
+                <span style="display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-weight: 600">{{s.name}}</span>
+                  <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #475569"><sc-if value="{{s.hasImg}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; width: 38px; height: 24px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span></sc-if><sc-if value="{{s.noImg}}" hint-placeholder-val="{{true}}"><span aria-hidden="true" style="{{s.logo}}">{{s.code}}</span></sc-if>{{s.assoc}}</span>
+                </span>
+                <span style="{{s.pill}}">{{s.state}}</span>
+              </a>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+        <section aria-labelledby="wl-title" style="background: #F0FDFA; border: 1px solid #99F6E4; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; align-self: flex-start; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #CCFBF1; color: #115E59; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0F766E; flex-shrink: 0"></span>Phase 2 · Entry by Number</span>
+              <h2 id="wl-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">Weightlifting · Phase 2 limits</h2>
+              <span style="font-size: 13px; color: #475569">Bahrain Weightlifting Federation · per association</span>
+            </div>
+            <span style="font-size: 13px; color: #475569">Team officials are not counted in Phase 2</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px">
+            <sc-for list="{{limits}}" as="l" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 12px; background: #F8FAFC; border: 1px solid #E2E8F0">
+                <span style="font-size: 13px; font-weight: 600">{{l.label}}</span>
+                <div style="display: flex; align-items: center; gap: 6px">
+                  <button type="button" aria-label="{{l.decLabel}}" onClick="{{l.dec}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; font: 600 18px Inter, sans-serif; cursor: pointer">−</button>
+                  <output style="flex: 1; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700">{{l.value}}</output>
+                  <button type="button" aria-label="{{l.incLabel}}" onClick="{{l.inc}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; font: 600 18px Inter, sans-serif; cursor: pointer">+</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{hasWarn}}" hint-placeholder-val="{{false}}">
+            <div role="status" style="padding: 10px 12px; border-radius: 10px; background: #FFF7ED; color: #9A3412; font-size: 13px">{{warn}}</div>
+          </sc-if>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Born on or after (optional)
+              <input type="date" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Born on or before
+              <input type="date" value="2011-12-31" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+            </label>
+          </div>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Entry policy (shown to associations and printed on the Entry by Event PDF)
+            <textarea rows="3" style="padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px/1.5 Inter, sans-serif; resize: vertical">Each NOC may enter a maximum of one (1) athlete in each event. Each NOC may enter a maximum of eight (8) athletes, including four (4) male and four (4) female athletes.</textarea>
+          </label>
+        </section>
+
+        <section aria-labelledby="ev-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <h2 id="ev-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Events offered</h2>
+              <span style="font-size: 13px; color: #475569">{{evSummary}}</span>
+            </div>
+            <span style="font-size: 13px; color: #475569">Events come from Sports &amp; events master data</span>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; min-width: 520px; border-collapse: collapse">
+              <thead>
+                <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                  <th scope="col" style="padding: 12px 20px; font-weight: 600">Offered</th>
+                  <th scope="col" style="padding: 12px; font-weight: 600">Event</th>
+                  <th scope="col" style="padding: 12px; font-weight: 600">Gender</th>
+                  <th scope="col" style="padding: 12px 20px; font-weight: 600">Max athletes per association</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{events}}" as="e" hint-placeholder-count="8">
+                  <tr style="{{e.row}}">
+                    <td style="padding: 8px 20px"><input type="checkbox" checked="{{e.on}}" onChange="{{e.toggle}}" aria-label="{{e.offerLabel}}" style="width: 20px; height: 20px; accent-color: #1F3A5F"></td>
+                    <td style="padding: 8px 12px; font-weight: 600">{{e.name}}</td>
+                    <td style="padding: 8px 12px; color: #334155">{{e.gender}}</td>
+                    <td style="padding: 8px 20px">
+                      <div style="display: inline-flex; align-items: center; gap: 6px">
+                        <button type="button" aria-label="{{e.decLabel}}" onClick="{{e.dec}}" disabled="{{e.off}}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; font: 600 16px Inter, sans-serif; cursor: pointer">−</button>
+                        <output style="width: 28px; text-align: center; font-weight: 700; font-size: 16px">{{e.max}}</output>
+                        <button type="button" aria-label="{{e.incLabel}}" onClick="{{e.inc}}" disabled="{{e.off}}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; font: 600 16px Inter, sans-serif; cursor: pointer">+</button>
+                      </div>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px; border-top: 1px solid #E2E8F0">
+            <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Copy limits from another game</button>
+            <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Save Weightlifting</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      lim: { men: 4, women: 4, total: 8 },
+      ev: { m60: [true, 1], m75: [true, 1], m95: [true, 1], m110: [true, 1], w49: [true, 1], w57: [true, 1], w69: [true, 1], w86: [true, 1], m55: [false, 1], w45: [false, 1] }
+    };
+  }
+  renderVals() {
+    var LC = { BWF: '#9A3412', BJF: '#3730A3', BSF: '#15803D', BKF: '#86198F', BCF: '#0F766E', BBF: '#BE185D', BEF: '#374151', BTF: '#854D0E', BAA: '#4D7C0F', BSW: '#0369A1' };
+    var lg = function (code, px) { return 'width: ' + px + 'px; height: ' + px + 'px; border-radius: 50%; background: ' + (LC[code] || '#374151') + '; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: ' + (px >= 30 ? 11 : 9) + 'px; flex-shrink: 0'; };
+    var cd = function (name) { var k = [['Weightlifting', 'BWF'], ['Judo', 'BJF'], ['Squash', 'BSF'], ['Karate', 'BKF'], ['Chess', 'BCF'], ['Billiards', 'BBF'], ['eSports', 'BEF'], ['Taekwondo', 'BTF'], ['Athletics', 'BAA'], ['Swimming', 'BSW']]; for (var i = 0; i < k.length; i++) { if (name.indexOf(k[i][0]) >= 0) { return k[i][1]; } } return ''; };
+    var self = this;
+    var st = this.state;
+    var setLim = function (k, v) { var l = Object.assign({}, self.state.lim); l[k] = Math.max(0, v); self.setState({ lim: l }); };
+    var limits = [['men', 'Max male'], ['women', 'Max female'], ['total', 'Max total athletes']].map(function (d) {
+      return { label: d[1], value: st.lim[d[0]], decLabel: 'Lower ' + d[1], incLabel: 'Raise ' + d[1], dec: function () { setLim(d[0], st.lim[d[0]] - 1); }, inc: function () { setLim(d[0], st.lim[d[0]] + 1); } };
+    });
+    var defs = [['m55', "Male 55kg", 'Male'], ['m60', "Male 60kg", 'Male'], ['m75', "Male 75kg", 'Male'], ['m95', "Male 95kg", 'Male'], ['m110', "Male 110kg", 'Male'],
+      ['w45', "Female 45kg", 'Female'], ['w49', "Female 49kg", 'Female'], ['w57', "Female 57kg", 'Female'], ['w69', "Female 69kg", 'Female'], ['w86', "Female 86kg", 'Female']];
+    var setEv = function (id, on, max) { var e = Object.assign({}, self.state.ev); e[id] = [on, Math.max(1, max)]; self.setState({ ev: e }); };
+    var offered = 0, menCap = 0, womenCap = 0;
+    var events = defs.map(function (d) {
+      var v = st.ev[d[0]], on = v[0], max = v[1];
+      if (on) { offered += 1; if (d[2] === 'Male') { menCap += max; } else { womenCap += max; } }
+      return {
+        name: d[1], gender: d[2], on: on, off: !on, max: on ? max : '–', offerLabel: 'Offer ' + d[1],
+        decLabel: 'Lower max for ' + d[1], incLabel: 'Raise max for ' + d[1],
+        toggle: function () { setEv(d[0], !on, max); }, dec: function () { setEv(d[0], on, max - 1); }, inc: function () { setEv(d[0], on, max + 1); },
+        row: 'border-top: 1px solid #EEF2F6' + (on ? '' : '; background: #FAFBFC; color: #475569')
+      };
+    });
+    var warn = '';
+    if (st.lim.men + st.lim.women < st.lim.total) { warn = 'Max total (' + st.lim.total + ') is more than male + female (' + (st.lim.men + st.lim.women) + '), so the total can never be reached.'; }
+    else if (menCap < st.lim.men) { warn = "Offered male events allow only " + menCap + ' athletes, below the male limit of ' + st.lim.men + '.'; }
+    else if (womenCap < st.lim.women) { warn = "Offered female events allow only " + womenCap + ' athletes, below the female limit of ' + st.lim.women + '.'; }
+    var pill = function (bg, fg) { return 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + bg + '; color: ' + fg; };
+    var sports = [['Weightlifting', 'Weightlifting Federation', 'Editing'], ['Judo', 'Judo Federation', 'Set'], ['Squash', 'Squash & Badminton Fed.', 'Set'], ['Karate', 'Karate Federation', 'Set'], ['Chess', 'Chess Federation', 'Needs limits'], ['Billiards & Snooker', 'Billiards Federation', 'Needs limits']].map(function (s, i) {
+      var active = i === 0;
+      return {
+        logo: lg(cd(s[1]), 24), hasImg: cd(s[1]) === 'BWF', noImg: cd(s[1]) !== 'BWF', code: cd(s[1]), name: s[0], assoc: s[1], state: s[2], current: active ? 'page' : 'false',
+        pill: s[2] === 'Set' ? pill('#DCFCE7', '#166534') : s[2] === 'Editing' ? pill('#DBEAFE', '#1E40AF') : pill('#FFEDD5', '#9A3412'),
+        style: 'display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 52px; padding: 6px 12px; border-radius: 10px; text-decoration: none; color: #0F172A; ' + (active ? 'background: #E8EEF6' : '')
+      };
+    });
+    var navItems = [['Dashboard', 'Main.dc.html'], ['Games', 'SetupPhases.dc.html'], ['Associations', 'AdminAssociations.dc.html'], ['Sports & events', 'AdminSports.dc.html'], ['Clothing items', 'SetupShortList.dc.html'], ['People', 'AdminPeople.dc.html'], ['Reports', '#'], ['Audit log', '#'], ['STA users', '#']];
+    var nav = navItems.map(function (it, i) {
+      var active = i === 1;
+      return { label: it[0], href: it[1], style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (active ? '600' : '500') + '; color: ' + (active ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (active ? '#23406A' : 'transparent') };
+    });
+    return { nav: nav, limits: limits, events: events, sports: sports, hasWarn: warn !== '', warn: warn, evSummary: offered + ' of ' + defs.length + ' events offered in this game' };
+  }
+}
+</script>
+</body>
+</html>

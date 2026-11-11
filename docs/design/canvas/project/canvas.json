@@ -1,0 +1,606 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AdminAssociations.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin · Associations, users & invitations",
+      "w": 1440,
+      "x": 0,
+      "y": 6100
+    },
+    "AdminDashboard.dc.html": {
+      "expand": "fill",
+      "h": 1860,
+      "page": "screens",
+      "title": "Admin · Dashboard (home)",
+      "w": 1440,
+      "x": 0,
+      "y": 7880
+    },
+    "AdminPeople.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin · People across all associations",
+      "w": 1440,
+      "x": 3040,
+      "y": 6100
+    },
+    "AdminSports.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin · Sports & events",
+      "w": 1440,
+      "x": 1520,
+      "y": 6100
+    },
+    "LongList.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "page": "screens",
+      "title": "Portal · Phase 3 Long List (List view)",
+      "w": 1440,
+      "x": 0,
+      "y": 1420,
+      "is_interactive": true
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 1020,
+      "page": "screens",
+      "title": "STA Admin · Game dashboard",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "OfficialForm.dc.html": {
+      "expand": "fill",
+      "h": 3500,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Portal · Team official profile (create / edit)",
+      "w": 1440,
+      "x": 3040,
+      "y": 7880
+    },
+    "Phase2.dc.html": {
+      "expand": "fill",
+      "h": 1300,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Portal · Phase 2 Entry by Number",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "PlayerForm.dc.html": {
+      "expand": "fill",
+      "h": 3400,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Portal · Athlete profile (create / edit)",
+      "w": 1440,
+      "x": 1520,
+      "y": 7880
+    },
+    "Print02Main.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 2 of 29",
+      "w": 1587,
+      "x": 1667,
+      "y": 0
+    },
+    "Print03Phase2.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 3 of 29",
+      "w": 1587,
+      "x": 3334,
+      "y": 0
+    },
+    "Print04LongList.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 4 of 29",
+      "w": 1587,
+      "x": 5001,
+      "y": 0
+    },
+    "Print05Registry.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 5 of 29",
+      "w": 1587,
+      "x": 6668,
+      "y": 0
+    },
+    "Print06SetupPhases.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 6 of 29",
+      "w": 1587,
+      "x": 0,
+      "y": 1243
+    },
+    "Print07SetupInvite.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 7 of 29",
+      "w": 1587,
+      "x": 1667,
+      "y": 1243
+    },
+    "Print08SetupLimits.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 8 of 29",
+      "w": 1587,
+      "x": 3334,
+      "y": 1243
+    },
+    "Print09SetupShortList.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 9 of 29",
+      "w": 1587,
+      "x": 5001,
+      "y": 1243
+    },
+    "Print10AdminAssociations.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 10 of 29",
+      "w": 1587,
+      "x": 6668,
+      "y": 1243
+    },
+    "Print11AdminSports.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 11 of 29",
+      "w": 1587,
+      "x": 0,
+      "y": 2486
+    },
+    "Print12AdminPeople.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 12 of 29",
+      "w": 1587,
+      "x": 1667,
+      "y": 2486
+    },
+    "Print13AdminDashboard1.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 13 of 29",
+      "w": 1587,
+      "x": 3334,
+      "y": 2486
+    },
+    "Print14AdminDashboard2.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 14 of 29",
+      "w": 1587,
+      "x": 5001,
+      "y": 2486
+    },
+    "Print15PlayerForm1.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 15 of 29",
+      "w": 1587,
+      "x": 6668,
+      "y": 2486
+    },
+    "Print16PlayerForm2.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 16 of 29",
+      "w": 1587,
+      "x": 0,
+      "y": 3729
+    },
+    "Print17PlayerForm3.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 17 of 29",
+      "w": 1587,
+      "x": 1667,
+      "y": 3729
+    },
+    "Print18OfficialForm1.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 18 of 29",
+      "w": 1587,
+      "x": 3334,
+      "y": 3729
+    },
+    "Print19OfficialForm2.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 19 of 29",
+      "w": 1587,
+      "x": 5001,
+      "y": 3729
+    },
+    "Print20OfficialForm3.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 20 of 29",
+      "w": 1587,
+      "x": 6668,
+      "y": 3729
+    },
+    "PrintCover.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 1 of 29",
+      "w": 1587,
+      "x": 0,
+      "y": 0
+    },
+    "Registry.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "page": "screens",
+      "title": "Portal · Athletes & officials registry",
+      "w": 1440,
+      "x": 1520,
+      "y": 1420
+    },
+    "SetupInvite.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin setup · Details, associations & sports (Phase 1)",
+      "w": 1440,
+      "x": 1520,
+      "y": 3080
+    },
+    "SetupLimits.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin setup · Phase 2 limits & entry policy",
+      "w": 1440,
+      "x": 0,
+      "y": 4440
+    },
+    "SetupPhases.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin setup · Phases (open, close, deadlines)",
+      "w": 1440,
+      "x": 0,
+      "y": 3080
+    },
+    "SetupShortList.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin setup · Phase 3 clothing & Phase 4 maximums",
+      "w": 1440,
+      "x": 1520,
+      "y": 4440
+    },
+    "AdminReports.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "page": "screens",
+      "title": "Admin · Reports (ready-made & saved)",
+      "w": 1440,
+      "x": 0,
+      "y": 11920
+    },
+    "AdminReportBuilder.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Admin · Report builder",
+      "w": 1440,
+      "x": 1520,
+      "y": 11920
+    },
+    "PdfPhase1.dc.html": {
+      "h": 1123,
+      "page": "pdfs",
+      "title": "PDF · Phase 1 Entry by Sport (A4 portrait)",
+      "w": 794,
+      "x": 0,
+      "y": 0
+    },
+    "PdfPhase2.dc.html": {
+      "h": 1123,
+      "page": "pdfs",
+      "title": "PDF · Phase 2 Entry by Event (A4 portrait)",
+      "w": 794,
+      "x": 874,
+      "y": 0
+    },
+    "PdfPhase3.dc.html": {
+      "h": 794,
+      "page": "pdfs",
+      "title": "PDF · Phase 3 Long List (A4 landscape)",
+      "w": 1123,
+      "x": 1748,
+      "y": 0
+    },
+    "PdfPhase4.dc.html": {
+      "h": 794,
+      "page": "pdfs",
+      "title": "PDF · Phase 4 Short List (A4 landscape)",
+      "w": 1123,
+      "x": 2951,
+      "y": 0
+    },
+    "Print21AdminReports.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 21 of 29",
+      "w": 1587,
+      "x": 0,
+      "y": 4972
+    },
+    "Print22AdminReportBuilder.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 22 of 29",
+      "w": 1587,
+      "x": 1667,
+      "y": 4972
+    },
+    "Print23PdfPhase1.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 23 of 29",
+      "w": 1587,
+      "x": 3334,
+      "y": 4972
+    },
+    "Print24PdfPhase2.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 24 of 29",
+      "w": 1587,
+      "x": 5001,
+      "y": 4972
+    },
+    "Print25PdfPhase3.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 25 of 29",
+      "w": 1587,
+      "x": 6668,
+      "y": 4972
+    },
+    "Print26PdfPhase4.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 26 of 29",
+      "w": 1587,
+      "x": 0,
+      "y": 6215
+    },
+    "LongListGrid.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Portal · Phase 3 Long List (Grid view, adding an athlete)",
+      "w": 1440,
+      "x": 3040,
+      "y": 1420
+    },
+    "ShortList.dc.html": {
+      "expand": "fill",
+      "h": 1240,
+      "is_interactive": true,
+      "page": "screens",
+      "title": "Portal · Phase 4 Short List (choosing from the Long List)",
+      "w": 1440,
+      "x": 4560,
+      "y": 1420
+    },
+    "Print27LongListGrid.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 27 of 29",
+      "w": 1587,
+      "x": 1667,
+      "y": 6215
+    },
+    "Print28ShortList.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 28 of 29",
+      "w": 1587,
+      "x": 3334,
+      "y": 6215
+    },
+    "LongListEvents.dc.html": {
+      "expand": "fill",
+      "h": 1700,
+      "page": "screens",
+      "title": "Portal · Long List — assign athletes to events",
+      "w": 1440,
+      "x": 6080,
+      "y": 1420
+    },
+    "Print29LongListEvents.dc.html": {
+      "h": 1123,
+      "page": "print",
+      "title": "A3 · page 29 of 29",
+      "w": 1587,
+      "x": 5001,
+      "y": 6215
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-08T10:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "title",
+    "setup",
+    "master",
+    "profiles",
+    "printTitle",
+    "reports",
+    "pdfTitle"
+  ],
+  "notes": {
+    "master": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "screens",
+      "text": "Admin — associations, sports & events, people",
+      "w": 240,
+      "x": 0,
+      "y": 5800
+    },
+    "printTitle": {
+      "kind": "title1",
+      "maxW": 8000,
+      "page": "print",
+      "text": "Print set — A3 landscape, for management approval",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "profiles": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "screens",
+      "text": "Admin dashboard, athlete & team official profiles",
+      "w": 240,
+      "x": 0,
+      "y": 7580
+    },
+    "setup": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "screens",
+      "text": "Admin — setting up a game and each phase",
+      "w": 240,
+      "x": 0,
+      "y": 2780
+    },
+    "title": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "screens",
+      "text": "Sports Entry System — UI samples",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "reports": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "screens",
+      "text": "Reports — ready-made and custom",
+      "w": 240,
+      "x": 0,
+      "y": 11620
+    },
+    "pdfTitle": {
+      "kind": "title1",
+      "maxW": 4074,
+      "page": "pdfs",
+      "text": "PDF samples — one per phase (BWF)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Phase2.dc.html",
+    "LongList.dc.html",
+    "Registry.dc.html",
+    "LongListGrid.dc.html",
+    "ShortList.dc.html",
+    "LongListEvents.dc.html",
+    "SetupPhases.dc.html",
+    "SetupInvite.dc.html",
+    "SetupLimits.dc.html",
+    "SetupShortList.dc.html",
+    "AdminAssociations.dc.html",
+    "AdminSports.dc.html",
+    "AdminPeople.dc.html",
+    "AdminDashboard.dc.html",
+    "PlayerForm.dc.html",
+    "OfficialForm.dc.html",
+    "PrintCover.dc.html",
+    "Print02Main.dc.html",
+    "Print03Phase2.dc.html",
+    "Print04LongList.dc.html",
+    "Print05Registry.dc.html",
+    "Print06SetupPhases.dc.html",
+    "Print07SetupInvite.dc.html",
+    "Print08SetupLimits.dc.html",
+    "Print09SetupShortList.dc.html",
+    "Print10AdminAssociations.dc.html",
+    "Print11AdminSports.dc.html",
+    "Print12AdminPeople.dc.html",
+    "Print13AdminDashboard1.dc.html",
+    "Print14AdminDashboard2.dc.html",
+    "Print15PlayerForm1.dc.html",
+    "Print16PlayerForm2.dc.html",
+    "Print17PlayerForm3.dc.html",
+    "Print18OfficialForm1.dc.html",
+    "Print19OfficialForm2.dc.html",
+    "Print20OfficialForm3.dc.html",
+    "AdminReports.dc.html",
+    "AdminReportBuilder.dc.html",
+    "PdfPhase1.dc.html",
+    "PdfPhase2.dc.html",
+    "PdfPhase3.dc.html",
+    "PdfPhase4.dc.html",
+    "Print21AdminReports.dc.html",
+    "Print22AdminReportBuilder.dc.html",
+    "Print23PdfPhase1.dc.html",
+    "Print24PdfPhase2.dc.html",
+    "Print25PdfPhase3.dc.html",
+    "Print26PdfPhase4.dc.html",
+    "Print27LongListGrid.dc.html",
+    "Print28ShortList.dc.html",
+    "Print29LongListEvents.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "screens",
+      "name": "Screens"
+    },
+    {
+      "id": "pdfs",
+      "name": "PDF samples"
+    },
+    {
+      "id": "print",
+      "name": "Print – A3 for approval"
+    }
+  ],
+  "title": "Sports Entry Portal UI"
+}

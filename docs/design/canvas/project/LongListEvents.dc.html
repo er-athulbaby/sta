@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portal – Long List, assign athletes to events</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="position: relative; min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Portal navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+        <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+          <span style="font-size: 12px; color: #A9B8CC">Association portal</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #1A3358">
+        <span style="display: inline-flex; width: 64px; height: 40px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-weight: 600; font-size: 13px; color: #FFFFFF">Bahrain Weightlifting Federation</span>
+          <span style="font-size: 12px; color: #A9B8CC">BWF</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="6">
+        <a href="#" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">MK</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Mariam Khalil</span>
+        <span style="color: #A9B8CC; font-size: 12px">Association Editor</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 16px 20px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: #475569"><a href="#">Games</a> / 6th Asian Indoor &amp; Martial Arts Games 2026 / Phase 3</span>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700">Long List</h1>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #FEF3C7; color: #92400E; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #B45309; flex-shrink: 0"></span>Phase 3</span>
+          <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #E0E7FF; color: #1E3A8A; font-size: 12px; font-weight: 600">Draft · saved 10:42</span>
+        </div>
+        <span style="color: #475569">Deadline 15 Oct 2026 · 6 days left · Only sports you entered in Phase 1 are shown</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+        <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Send for approval</button>
+        <span style="flex-basis: 100%; text-align: right; font-size: 12px; color: #475569">The association admin sees <strong>Submit to STA</strong> here.</span>
+      </div>
+    </header>
+
+    <section aria-labelledby="sport-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F3A5F" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+          <h2 id="sport-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">Weightlifting</h2>
+          <span style="font-size: 13px; color: #475569">4 events · 6 athletes · 2 team officials</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #1F3A5F; background: #FFFFFF; color: #1F3A5F; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Add athlete</button>
+          <button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #1F3A5F; background: #FFFFFF; color: #1F3A5F; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Add team official</button>
+        </div>
+      </div>
+      <p style="margin: 0; padding: 12px 20px 0; font-size: 13px; color: #475569">Pick athletes from your registry for each event. Each picker offers only <strong>active</strong> athletes whose gender matches the event (Mixed events accept Male and Female). One athlete can be in several events. <strong>Add athlete</strong> opens the person form in a side panel; the new person appears in these pickers straight away.</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 16px; padding: 16px 20px 20px">
+        <sc-for list="{{events}}" as="e" hint-placeholder-count="4">
+          <div style="{{e.box}}">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
+              <label for="{{e.id}}" style="font-weight: 700; font-size: 15px">{{e.name}}</label>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+                <span style="font-size: 13px; color: #334155">Long List <strong>{{e.ll}}</strong> / Phase 2: <strong>{{e.p2}}</strong></span>
+                <sc-if value="{{e.over}}" hint-placeholder-val="{{false}}">
+                  <span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; background: #FFEDD5; color: #9A3412; font-size: 12px; font-weight: 700"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21V4"/><path d="M4 4h12l-2 4 2 4H4"/></svg>Over the Phase 2 number</span>
+                </sc-if>
+              </div>
+            </div>
+            <div style="{{e.field}}">
+              <sc-for list="{{e.chips}}" as="c" hint-placeholder-count="2">
+                <span style="{{c.style}}">
+                  <span role="img" aria-label="{{c.photo}}" style="width: 24px; height: 24px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0">{{c.initials}}</span>
+                  <span style="font-weight: 600">{{c.name}}</span>
+                  <span style="font-size: 12px; color: #475569">{{c.code}}</span>
+                  <button type="button" aria-label="{{c.remove}}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #475569; display: inline-flex; align-items: center; justify-content: center; padding: 0"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
+                </span>
+              </sc-for>
+              <input id="{{e.id}}" placeholder="{{e.placeholder}}" style="flex: 1 1 140px; min-width: 120px; min-height: 36px; border: 0; outline: none; background: transparent; font: 14px Inter, sans-serif">
+            </div>
+            <sc-if value="{{e.open}}" hint-placeholder-val="{{false}}">
+              <div role="listbox" aria-label="{{e.listLabel}}" aria-multiselectable="true" style="border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; box-shadow: 0 12px 28px rgba(15,36,64,0.16); overflow: hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; font-size: 12px; color: #475569">
+                  <span>Search: <strong style="color: #0F172A">a</strong></span>
+                  <span>Active <strong>Female</strong> athletes only</span>
+                </div>
+                <sc-for list="{{e.options}}" as="o" hint-placeholder-count="4">
+                  <div role="option" aria-selected="{{o.sel}}" style="{{o.style}}">
+                    <span aria-hidden="true" style="{{o.box}}"><sc-if value="{{o.sel}}" hint-placeholder-val="{{false}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></sc-if></span>
+                    <span role="img" aria-label="{{o.photo}}" style="width: 32px; height: 32px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0">{{o.initials}}</span>
+                    <span style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+                      <span style="font-weight: 600">{{o.name}}</span>
+                      <span style="font-size: 12px; color: #475569">{{o.code}} · Female · {{o.born}}</span>
+                    </span>
+                  </div>
+                </sc-for>
+                <div style="padding: 8px 12px; border-top: 1px solid #E2E8F0; font-size: 12px; color: #475569">Male and inactive athletes are not listed for this event.</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{e.hasError}}" hint-placeholder-val="{{false}}">
+              <div role="alert" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #B91C1C; font-weight: 600">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+                {{e.error}}
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin: 0 20px 20px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2E8F0; background: #F8FAFC; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
+          <label for="officials-pick" style="font-weight: 700; font-size: 15px">Team officials</label>
+          <span style="font-size: 13px; color: #475569">For the whole sport, not one event · active officials only</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 48px; padding: 6px 8px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF">
+          <sc-for list="{{officialChips}}" as="c" hint-placeholder-count="2">
+            <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 4px 0 6px; border-radius: 8px; background: #E8EEF6; color: #0F172A; font-size: 13px">
+              <span role="img" aria-label="{{c.photo}}" style="width: 24px; height: 24px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0">{{c.initials}}</span>
+              <span style="font-weight: 600">{{c.name}}</span>
+              <span style="font-size: 12px; color: #475569">{{c.fn}}</span>
+              <button type="button" aria-label="{{c.remove}}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #475569; display: inline-flex; align-items: center; justify-content: center; padding: 0"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
+            </span>
+          </sc-for>
+          <input id="officials-pick" placeholder="Search officials by name or function" style="flex: 1 1 200px; min-width: 160px; min-height: 36px; border: 0; outline: none; background: transparent; font: 14px Inter, sans-serif">
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="people-title" style="display: flex; flex-direction: column; gap: 12px">
+      <h2 id="people-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">People on your Long List</h2>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow-x: auto">
+        <table style="width: 100%; min-width: 820px; border-collapse: collapse">
+          <thead>
+            <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+              <th scope="col" style="padding: 12px 20px; font-weight: 600">Person</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Gender</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Role</th>
+              <th scope="col" style="padding: 12px 20px; font-weight: 600">Sport · events</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{people}}" as="p" hint-placeholder-count="8">
+              <tr style="border-top: 1px solid #EEF2F6">
+                <td style="padding: 10px 20px">
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <div role="img" aria-label="{{p.photo}}" style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0">{{p.initials}}</div>
+                    <div style="display: flex; flex-direction: column">
+                      <span style="font-weight: 600">{{p.name}}</span>
+                      <span style="font-size: 12px; color: #475569">{{p.code}}</span>
+                    </div>
+                    <sc-if value="{{p.isNew}}" hint-placeholder-val="{{false}}">
+                      <span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; background: #DCFCE7; color: #166534; font-size: 11px; font-weight: 700">Just added</span>
+                    </sc-if>
+                  </div>
+                </td>
+                <td style="padding: 10px 12px">{{p.gender}}</td>
+                <td style="padding: 10px 12px; color: #334155">{{p.role}}</td>
+                <td style="padding: 10px 20px; font-weight: 600; color: {{p.color}}">{{p.events}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var navItems = ['Home', 'Games', 'Athletes & officials', 'Excel import', 'Team', 'Association profile'];
+    var nav = navItems.map(function (label, i) {
+      var active = i === 1;
+      return { label: label, style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (active ? '600' : '500') + '; color: ' + (active ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (active ? '#23406A' : 'transparent') };
+    });
+    var initials = function (n) { return n.split(' ').slice(0, 2).map(function (w) { return w[0]; }).join(''); };
+    var chip = function (name, code, bad) {
+      return { name: name, code: code, initials: initials(name), photo: 'Photo of ' + name, remove: 'Remove ' + name,
+        style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 4px 0 6px; border-radius: 8px; font-size: 13px; ' + (bad ? 'background: #FEF2F2; box-shadow: inset 0 0 0 1px #FCA5A5; color: #0F172A' : 'background: #E8EEF6; color: #0F172A') };
+    };
+    var field = function (state) {
+      var border = state === 'error' ? '#DC2626' : state === 'open' ? '#1F3A5F' : '#CBD5E1';
+      return 'display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 48px; padding: 6px 8px; border-radius: 10px; background: #FFFFFF; border: ' + (state === 'open' ? '2px' : '1px') + ' solid ' + border;
+    };
+    var ev = function (id, name, p2, chips, opts) {
+      opts = opts || {};
+      var state = opts.error ? 'error' : opts.open ? 'open' : 'idle';
+      return {
+        id: id, name: name, p2: p2, ll: chips.length, over: chips.length > p2, chips: chips,
+        field: field(state), open: !!opts.open, options: opts.options || [], listLabel: name + ' athletes',
+        placeholder: opts.open ? '' : 'Search athletes…', hasError: !!opts.error, error: opts.error || '',
+        box: 'display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2E8F0; background: #FFFFFF'
+      };
+    };
+    var opt = function (name, code, born, sel) {
+      return { name: name, code: code, born: born, sel: sel, initials: initials(name), photo: 'Photo of ' + name,
+        style: 'display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; ' + (sel ? 'background: #F1F5F9' : 'background: #FFFFFF'),
+        box: 'width: 18px; height: 18px; box-sizing: border-box; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; ' + (sel ? 'background: #1F3A5F; border: 2px solid #1F3A5F' : 'background: #FFFFFF; border: 2px solid #64748B') };
+    };
+    var events = [
+      ev('ev-m60', 'Male 60kg', 2, [chip('Yousif Abdulla Al Mannai', 'BWF-AT-0012'), chip('Hamad Jassim Buali', 'BWF-AT-0015'), chip('Ahmed Isa Al Khalifa', 'BWF-AT-0031')]),
+      ev('ev-m67', 'Male 67kg', 2, [chip('Yousif Abdulla Al Mannai', 'BWF-AT-0012'), chip('Ali Redha Isa', 'BWF-AT-0007')]),
+      ev('ev-f49', 'Female 49kg', 1, [chip('Noor Khalid Al Sayed', 'BWF-AT-0021')], { open: true, options: [
+        opt('Noor Khalid Al Sayed', 'BWF-AT-0021', '2006', true),
+        opt('Layla Adel Fakhro', 'BWF-AT-0024', '2012', false),
+        opt('Sara Jaffar Ahmed', 'BWF-AT-0027', '2004', false),
+        opt('Maryam Isa Buhiji', 'BWF-AT-0029', '2007', false)
+      ] }),
+      ev('ev-f57', 'Female 57kg', 1, [chip('Ali Hasan', 'BWF-AT-0033', true)], { error: 'Ali Hasan is male and cannot enter a Female event.' })
+    ];
+    var officialChips = [
+      { name: 'Ebrahim Ahmed Sanad', fn: 'Head Coach' },
+      { name: 'Fatema Hasan Ali', fn: 'Physio' }
+    ].map(function (o) { o.initials = initials(o.name); o.photo = 'Photo of ' + o.name; o.remove = 'Remove ' + o.name; return o; });
+    var person = function (name, code, g, role, evts, extra) {
+      extra = extra || {};
+      return { name: name, code: code, gender: g, role: role, events: evts, initials: initials(name), photo: 'Photo of ' + name, isNew: !!extra.isNew, color: extra.bad ? '#B91C1C' : '#1F3A5F' };
+    };
+    var people = [
+      person('Yousif Abdulla Al Mannai', 'BWF-AT-0012', 'Male', 'Athlete', 'Weightlifting · Male 60kg, Male 67kg'),
+      person('Hamad Jassim Buali', 'BWF-AT-0015', 'Male', 'Athlete', 'Weightlifting · Male 60kg'),
+      person('Ahmed Isa Al Khalifa', 'BWF-AT-0031', 'Male', 'Athlete', 'Weightlifting · Male 60kg', { isNew: true }),
+      person('Ali Redha Isa', 'BWF-AT-0007', 'Male', 'Athlete', 'Weightlifting · Male 67kg'),
+      person('Noor Khalid Al Sayed', 'BWF-AT-0021', 'Female', 'Athlete', 'Weightlifting · Female 49kg'),
+      person('Ali Hasan', 'BWF-AT-0033', 'Male', 'Athlete', 'Weightlifting · Female 57kg — not saved', { bad: true }),
+      person('Ebrahim Ahmed Sanad', 'BWF-TO-0002', 'Male', 'Team official · Head Coach', 'Weightlifting'),
+      person('Fatema Hasan Ali', 'BWF-TO-0004', 'Female', 'Team official · Physio', 'Weightlifting')
+    ];
+    return { nav: nav, events: events, officialChips: officialChips, people: people };
+  }
+}
+</script>
+</body>
+</html>

@@ -441,3 +441,77 @@ Every attachment shown anywhere has a **View** action, which opens a 5-minute li
   - Associations don't see a draft game, and its phases can't be opened.
   - Publishing needs at least one invited association and one game sport.
 - **STA edits:** STA edit pages call their button **Save as draft**, because STA edits never change the submission status.
+
+## 17. Match the approved UI design (decided 2026-11-11)
+
+The app used Filament's standard look. Management approved the design canvas, so every screen in the app now matches its canvas screen. This is Milestone 5.
+
+### Source of truth
+- **Screens:** the canvas screens exported to `docs/design/canvas/project/*.dc.html` on 2026-11-11. The PDF samples are `PdfPhase1–4.dc.html`.
+- **Logo:** the BOC logo is `docs/design/canvas/assets/2f304cb4….webp`.
+- **What is illustrative:** names, numbers and dates in the designs are sample data. The app shows real data in the same layout.
+- **When design and spec differ:** if a design shows something the app does not do, the spec's behaviour wins. The design decides look and layout only. The exceptions are listed below.
+
+### Look (both panels)
+- **Theme:** a custom Filament theme (Tailwind 4) for `/admin` and `/portal`.
+- **Fonts:** Inter for text and Space Grotesk for headings.
+- **Colours:**
+  - page background `#F5F7FA`
+  - text `#0F172A`, secondary text `#475569`
+  - borders `#E2E8F0`
+  - primary (buttons and links) `#1F3A5F`
+- **Shapes:** rounded cards (12–14 px radius) and 44 px minimum touch targets.
+- **Left menu:** always navy `#0F2440` with light text. The active item is `#23406A`.
+  - The menu header shows the BOC logo, "Bahrain Olympic Committee", "Sports Entry" and "Admin panel" or "Association portal".
+  - In the portal, the association's logo and name also appear.
+  - The signed-in user's initials, name and role sit at the bottom of the menu.
+- **Phase colours, used for chips, cards and column headers:**
+  - Phase 1: sky (`#E0F2FE` / `#075985` / `#0369A1`)
+  - Phase 2: teal (`#CCFBF1` / `#115E59` / `#0F766E`)
+  - Phase 3: amber (`#FEF3C7` / `#92400E` / `#B45309`)
+  - Phase 4: violet (`#EDE9FE` / `#5B21B6` / `#6D28D9`)
+- **Status pills:**
+  - Submitted: green
+  - Awaiting admin: amber
+  - Draft / In progress: indigo
+  - Not started / No response: white with a slate outline
+  - Open: blue
+  - Closed and Skipped: slate
+- **Section colours:** each menu section and page header uses the section colours from the canvas.
+- **Responsive:** every page works at phone width, as the canvas does.
+
+### Screens
+Each canvas screen maps to the app page that does the same job:
+- game dashboard
+- Phase 2 Entry by Number
+- Long List: list view, grid view and assigning athletes to events
+- Short List
+- registry
+- game setup: phases, details and invites, limits, Short List maximums and clothing
+- admin associations, sports and events, and people
+- admin dashboard (home)
+- athlete form and official form
+- reports and report builder
+
+Pages and dialogs with no canvas screen use the same look:
+- Phase 1
+- travel modal
+- submission view
+- comments
+- extra fields
+- export layouts
+- STA users
+- audit log
+- settings
+- login
+
+### Design elements the app gains (small additions, built with the screen)
+- **Game dashboard and admin home:** the phase cards, the counts (submitted, awaiting, in draft, not started, flags to review), the "Last activity" column and the All / Pending / Submitted switch, all computed from existing data.
+- **Phase 1:** an optional note per sport answer, as on the PDF sample (up to 255 characters).
+- **PDFs:**
+  - match the samples: phase chip, association logo, the "Prepared by / Approved by / deadline" block and "Page N of M";
+  - Phase 1 marks Yes, No or Maybe with an X.
+
+### Not changed
+- **Behaviour:** permissions, validation, workflow and data rules.
+- **Tests:** existing tests keep passing. Text a test asserts may change only where the design's wording differs, and each such change is listed.

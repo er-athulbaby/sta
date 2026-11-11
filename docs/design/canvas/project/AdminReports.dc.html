@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin – Reports</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Admin navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+      <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+        <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+        <span style="font-size: 12px; color: #A9B8CC">Admin panel</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="9">
+        <a href="{{item.href}}" aria-current="{{item.current}}" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">AH</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Ali Haroona</span>
+        <span style="color: #A9B8CC; font-size: 12px">Super Admin</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 24px">
+
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.01em">Reports</h1>
+        <span style="color: #475569">Ready-made reports for every game, plus reports you build and save yourself</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: #475569">Game
+          <select style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font: 14px Inter, sans-serif; color: #0F172A">
+            <option>6th Asian Indoor &amp; Martial Arts Games 2026</option>
+            <option>All games</option>
+          </select>
+        </label>
+        <a href="AdminReportBuilder.dc.html" style="min-height: 44px; padding: 0 18px; border-radius: 10px; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 8px; text-decoration: none">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          New report
+        </a>
+      </div>
+    </header>
+
+    <section aria-labelledby="ready-title" style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; background: #EFF6FF"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #2563EB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span><h2 id="ready-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #1E40AF">Ready-made reports</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <ul aria-label="Ready-made reports" style="flex: 1 1 280px; list-style: none; margin: 0; padding: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column; gap: 2px">
+          <sc-for list="{{ready}}" as="r" hint-placeholder-count="8">
+            <li>
+              <a href="#" aria-current="{{r.current}}" style="{{r.style}}">
+                <span style="display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-weight: 600">{{r.name}}</span>
+                  <span style="font-size: 12px; color: #475569">{{r.hint}}</span>
+                </span>
+                <span style="{{r.chip}}">{{r.phase}}</span>
+              </a>
+            </li>
+          </sc-for>
+        </ul>
+        <div style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; align-self: flex-start; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #CCFBF1; color: #115E59; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0F766E; flex-shrink: 0"></span>Phase 2</span>
+              <h3 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600">Phase 2 totals</h3>
+              <span style="font-size: 13px; color: #475569">Athletes entered per association and sport · preview of the first 6 of 64 rows</span>
+            </div>
+            <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 8px">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              Export to Excel
+            </button>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; min-width: 560px; border-collapse: collapse">
+              <thead>
+                <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                  <th scope="col" style="padding: 12px 20px; font-weight: 600">Association</th>
+                  <th scope="col" style="padding: 12px; font-weight: 600">Sport</th>
+                  <th scope="col" style="padding: 12px; font-weight: 600; text-align: right">Male</th>
+                  <th scope="col" style="padding: 12px; font-weight: 600; text-align: right">Female</th>
+                  <th scope="col" style="padding: 12px 20px; font-weight: 600; text-align: right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{totals}}" as="t" hint-placeholder-count="6">
+                  <tr style="border-top: 1px solid #EEF2F6">
+                    <td style="padding: 12px 20px; font-weight: 600">{{t.assoc}}</td>
+                    <td style="padding: 12px">{{t.sport}}</td>
+                    <td style="padding: 12px; text-align: right">{{t.m}}</td>
+                    <td style="padding: 12px; text-align: right">{{t.w}}</td>
+                    <td style="padding: 12px 20px; text-align: right; font-weight: 700">{{t.t}}</td>
+                  </tr>
+                </sc-for>
+                <tr style="border-top: 2px solid #E2E8F0; background: #F8FAFC">
+                  <th scope="row" colspan="2" style="padding: 12px 20px; text-align: left; font-weight: 700">All 50 associations</th>
+                  <td style="padding: 12px; text-align: right; font-weight: 700">412</td>
+                  <td style="padding: 12px; text-align: right; font-weight: 700">286</td>
+                  <td style="padding: 12px 20px; text-align: right; font-weight: 700">698</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding: 12px 20px; border-top: 1px solid #E2E8F0; font-size: 13px; color: #475569">Export to Excel gives every row, one sheet per sport.</div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="saved-title" style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; background: #EEF2FF"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #4F46E5; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg></span><h2 id="saved-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #3730A3">Saved reports</h2></div>
+      <div role="tablist" aria-label="Saved reports" style="display: flex; gap: 4px; border-bottom: 1px solid #E2E8F0">
+        <button type="button" role="tab" aria-selected="true" style="min-height: 44px; padding: 0 16px; border: 0; border-bottom: 2px solid #1F3A5F; background: transparent; color: #0F172A; font: 600 14px Inter, sans-serif">My reports (3)</button>
+        <button type="button" role="tab" aria-selected="false" style="min-height: 44px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #475569; font: 600 14px Inter, sans-serif">Shared (5)</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px">
+        <sc-for list="{{saved}}" as="s" hint-placeholder-count="3">
+          <article style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+              <h3 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">{{s.name}}</h3>
+              <span style="{{s.shareStyle}}">{{s.share}}</span>
+            </div>
+            <dl style="margin: 0; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 4px 10px; font-size: 13px">
+              <dt style="color: #475569">Subject</dt><dd style="margin: 0">{{s.subject}}</dd>
+              <dt style="color: #475569">Filters</dt><dd style="margin: 0">{{s.filters}}</dd>
+              <dt style="color: #475569">Grouped</dt><dd style="margin: 0">{{s.group}}</dd>
+            </dl>
+            <span style="font-size: 12px; color: #475569">{{s.meta}}</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto">
+              <a href="AdminReportBuilder.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; background: #1F3A5F; color: #FFFFFF; font-weight: 600; text-decoration: none">Open</a>
+              <button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif">Export to Excel</button>
+            </div>
+          </article>
+        </sc-for>
+        <a href="AdminReportBuilder.dc.html" style="min-height: 200px; border: 1px dashed #94A3B8; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #1F3A5F; font-weight: 600; text-decoration: none">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          New report
+        </a>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var navItems = [['Dashboard', 'AdminDashboard.dc.html'], ['Games', 'SetupPhases.dc.html'], ['Associations', 'AdminAssociations.dc.html'], ['Sports & events', 'AdminSports.dc.html'], ['Clothing items', 'SetupShortList.dc.html'], ['People', 'AdminPeople.dc.html'], ['Reports', 'AdminReports.dc.html'], ['Audit log', '#'], ['STA users', '#']];
+    var nav = navItems.map(function (it, i) {
+      var a = i === 6;
+      return { label: it[0], href: it[1], current: a ? 'page' : 'false', style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (a ? '600' : '500') + '; color: ' + (a ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (a ? '#23406A' : 'transparent') };
+    });
+    var PH = { '1': ['#E0F2FE', '#075985'], '2': ['#CCFBF1', '#115E59'], '3': ['#FEF3C7', '#92400E'], '4': ['#EDE9FE', '#5B21B6'], '': ['#F1F5F9', '#334155'] };
+    var ready = [
+      ['Phase 1 answers', 'Yes / No / Maybe per association and sport', '1', 'Phase 1'],
+      ['Phase 2 totals', 'Athletes per association, sport and gender', '2', 'Phase 2'],
+      ['Long List', 'Everyone entered in Phase 3', '3', 'Phase 3'],
+      ['Short List', 'Final entries with justifications', '4', 'Phase 4'],
+      ['Over limit', 'Short Lists above a maximum, with justification', '4', 'Phase 4'],
+      ['Expiring documents', 'Passports expiring before the game ends', '', 'Any'],
+      ['Clothing size counts', 'How many of each size, per item', '3', 'Phase 3'],
+      ['Clothing sizes by person', 'One row per person, one column per item', '3', 'Phase 3']
+    ].map(function (d, i) {
+      var a = i === 1, c = PH[d[2]];
+      return {
+        name: d[0], hint: d[1], phase: d[3], current: a ? 'page' : 'false',
+        chip: 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1],
+        style: 'display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; border-radius: 10px; text-decoration: none; color: #0F172A; ' + (a ? 'background: #E8EEF6' : '')
+      };
+    });
+    var totals = [
+      ['Bahrain Judo Federation', 'Judo', 5, 3], ['Bahrain Karate Federation', 'Karate', 3, 2], ['Bahrain Weightlifting Federation', 'Weightlifting', 3, 1],
+      ['Bahrain Squash & Badminton Fed.', 'Squash', 2, 2], ['Bahrain Chess Federation', 'Chess', 2, 1], ['Bahrain Taekwondo Federation', 'Taekwondo', 4, 2]
+    ].map(function (d) { return { assoc: d[0], sport: d[1], m: d[2], w: d[3], t: d[2] + d[3] }; });
+    var pill = function (bg, fg) { return 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + bg + '; color: ' + fg; };
+    var saved = [
+      { name: 'Male entries by association', subject: 'Long / Short List entries', filters: 'Game, 38 associations, gender Male', group: 'Association › Sport, with counts', share: 'Everyone with report access', shareStyle: pill('#DCFCE7', '#166534'), meta: 'Edited today, 11:05 · 1,240 rows' },
+      { name: 'Missing suit sizes', subject: 'Clothing sizes', filters: 'Item is Suit, size is empty', group: 'Association', share: 'Only me', shareStyle: pill('#F1F5F9', '#334155'), meta: 'Edited 6 Oct · 37 rows' },
+      { name: 'Officials contact list', subject: 'People', filters: 'Type is Team official, game entry Yes', group: 'Sport', share: 'Only me', shareStyle: pill('#F1F5F9', '#334155'), meta: 'Edited 2 Oct · 186 rows' }
+    ];
+    return { nav: nav, ready: ready, totals: totals, saved: saved };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin – Associations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Admin navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+      <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+        <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+        <span style="font-size: 12px; color: #A9B8CC">Admin panel</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="9">
+        <a href="{{item.href}}" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">AH</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Ali Haroona</span>
+        <span style="color: #A9B8CC; font-size: 12px">Super Admin</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700">Associations</h1>
+        <span style="color: #475569">50 associations · 47 have an active admin · 3 invitations pending</span>
+      </div>
+      <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">New association</button>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <section aria-label="Association list" style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+          <label style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search associations</span>
+            <input type="search" placeholder="Search by name or email" style="border: 0; outline: none; font: 14px Inter, sans-serif; width: 100%; background: transparent">
+          </label>
+        </div>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 640px; border-collapse: collapse">
+            <thead>
+              <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                <th scope="col" style="padding: 12px 20px; font-weight: 600">Association</th>
+                <th scope="col" style="padding: 12px; font-weight: 600">Admin</th>
+                <th scope="col" style="padding: 12px; font-weight: 600">Editors</th>
+                <th scope="col" style="padding: 12px 20px; font-weight: 600">Sports</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+                <tr style="{{r.row}}">
+                  <td style="padding: 10px 20px">
+                    <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; border: 0; background: transparent; padding: 0; text-align: left; cursor: pointer; font: inherit; color: inherit">
+                      <sc-if value="{{r.hasImg}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; width: 58px; height: 36px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span></sc-if><sc-if value="{{r.noImg}}" hint-placeholder-val="{{true}}"><span style="{{r.logo}}">{{r.initials}}</span></sc-if>
+                      <span style="display: flex; flex-direction: column">
+                        <span style="font-weight: 600">{{r.name}}</span>
+                        <span style="font-size: 12px; color: #475569">{{r.email}}</span>
+                      </span>
+                    </button>
+                  </td>
+                  <td style="padding: 10px 12px"><span style="{{r.adminStyle}}">{{r.admin}}</span></td>
+                  <td style="padding: 10px 12px; font-weight: 600; color: {{r.edColor}}">{{r.editors}}</td>
+                  <td style="padding: 10px 20px; color: #334155">{{r.sports}}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside aria-labelledby="detail-title" style="flex: 1 1 400px; display: flex; flex-direction: column; gap: 16px">
+        <section style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <sc-if value="{{sel.hasImg}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; width: 90px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span></sc-if><sc-if value="{{sel.noImg}}" hint-placeholder-val="{{true}}"><div role="img" aria-label="Association logo" style="width: 56px; height: 56px; border-radius: 12px; background: #1F3A5F; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700">{{sel.initials}}</div></sc-if>
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <h2 id="detail-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">{{sel.name}}</h2>
+              <span style="font-size: 13px; color: #475569">{{sel.email}} · {{sel.phone}}</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <button type="button" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif">Edit details</button>
+            <button type="button" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 13px Inter, sans-serif">Invite admin</button>
+          </div>
+        </section>
+
+        <section aria-labelledby="users-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+          <h3 id="users-title" style="margin: 0; padding: 14px 20px; border-bottom: 1px solid #E2E8F0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Users</h3>
+          <ul style="list-style: none; margin: 0; padding: 0">
+            <sc-for list="{{sel.users}}" as="u" hint-placeholder-count="3">
+              <li style="display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-top: 1px solid #EEF2F6">
+                <span style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+                  <span style="font-weight: 600">{{u.name}}</span>
+                  <span style="font-size: 12px; color: #475569">{{u.role}} · {{u.email}}</span>
+                </span>
+                <span style="{{u.pill}}">{{u.state}}</span>
+                <button type="button" style="min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #334155; font: 600 12px Inter, sans-serif">{{u.action}}</button>
+              </li>
+            </sc-for>
+          </ul>
+        </section>
+
+        <section aria-labelledby="inv-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+          <h3 id="inv-title" style="margin: 0; padding: 14px 20px; border-bottom: 1px solid #E2E8F0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Invitations</h3>
+          <sc-if value="{{sel.hasInvite}}" hint-placeholder-val="{{true}}">
+            <div style="padding: 14px 20px; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+                <span style="display: flex; flex-direction: column">
+                  <span style="font-weight: 600">{{sel.inviteEmail}}</span>
+                  <span style="font-size: 12px; color: #475569">{{sel.inviteRole}} · expires {{sel.inviteExpiry}}</span>
+                </span>
+                <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; background: #FEF3C7; color: #92400E; font-size: 12px; font-weight: 600">Pending</span>
+              </div>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #475569">Invitation link (single use, 7 days)
+                <span style="display: flex; gap: 8px">
+                  <input readonly value="https://entries.example/invitations/••••••" style="flex: 1; min-width: 0; min-height: 40px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 13px Inter, sans-serif; color: #334155; background: #F8FAFC">
+                  <button type="button" style="min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 12px Inter, sans-serif">Copy</button>
+                </span>
+              </label>
+              <div style="display: flex; gap: 8px">
+                <button type="button" style="min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 12px Inter, sans-serif">Resend email</button>
+                <button type="button" style="min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #FCA5A5; background: #FFFFFF; color: #991B1B; font: 600 12px Inter, sans-serif">Revoke</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{sel.noInvite}}" hint-placeholder-val="{{false}}">
+            <p style="margin: 0; padding: 14px 20px; color: #475569">No pending invitations.</p>
+          </sc-if>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { picked: 'bsf' };
+  }
+  renderVals() {
+    var LC = { BWF: '#9A3412', BJF: '#3730A3', BSF: '#15803D', BKF: '#86198F', BCF: '#0F766E', BBF: '#BE185D', BEF: '#374151', BTF: '#854D0E', BAA: '#4D7C0F', BSW: '#0369A1' };
+    var lg = function (code, px) { return 'width: ' + px + 'px; height: ' + px + 'px; border-radius: 50%; background: ' + (LC[code] || '#374151') + '; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: ' + (px >= 30 ? 11 : 9) + 'px; flex-shrink: 0'; };
+    var cd = function (name) { var k = [['Weightlifting', 'BWF'], ['Judo', 'BJF'], ['Squash', 'BSF'], ['Karate', 'BKF'], ['Chess', 'BCF'], ['Billiards', 'BBF'], ['eSports', 'BEF'], ['Taekwondo', 'BTF'], ['Athletics', 'BAA'], ['Swimming', 'BSW']]; for (var i = 0; i < k.length; i++) { if (name.indexOf(k[i][0]) >= 0) { return k[i][1]; } } return ''; };
+    var self = this;
+    var pill = function (bg, fg, ring) { return 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + bg + '; color: ' + fg + (ring ? '; box-shadow: inset 0 0 0 1px ' + ring : ''); };
+    var active = pill('#DCFCE7', '#166534'), pending = pill('#FEF3C7', '#92400E'), off = pill('#F1F5F9', '#475569'), none = pill('#FFFFFF', '#9A3412', '#FDBA74');
+    var data = [
+      { id: 'bwf', initials: 'BWF', name: 'Bahrain Weightlifting Federation', email: 'info@bwf.example', phone: '+973 1700 1001', admin: 'Ahmed Saleh', adminStyle: active, editors: 2, sports: 'Weightlifting',
+        users: [['Ahmed Saleh', 'Association Admin', 'a.saleh@bwf.example', 'Active'], ['Mariam Khalil', 'Editor', 'm.khalil@bwf.example', 'Active'], ['Omar Faisal', 'Editor', 'o.faisal@bwf.example', 'Active']], invite: null },
+      { id: 'bsf', initials: 'BSF', name: 'Bahrain Squash & Badminton Federation', email: 'contact@bsf.example', phone: '+973 1700 2040', admin: 'Huda Nasser', adminStyle: active, editors: 1, sports: 'Squash · Badminton',
+        users: [['Huda Nasser', 'Association Admin', 'h.nasser@bsf.example', 'Active'], ['Jassim Ali', 'Editor', 'j.ali@bsf.example', 'Active'], ['Sara Mohamed', 'Editor', 's.mohamed@bsf.example', 'Deactivated']],
+        invite: ['r.yusuf@bsf.example', 'Editor', '14 Oct 2026'] },
+      { id: 'bjf', initials: 'BJF', name: 'Bahrain Judo Federation', email: 'office@bjf.example', phone: '+973 1700 3300', admin: 'Yusuf Kamal', adminStyle: active, editors: 2, sports: 'Judo',
+        users: [['Yusuf Kamal', 'Association Admin', 'y.kamal@bjf.example', 'Active'], ['Reem Hassan', 'Editor', 'r.hassan@bjf.example', 'Active'], ['Ali Jaffar', 'Editor', 'a.jaffar@bjf.example', 'Active']], invite: null },
+      { id: 'bkf', initials: 'BKF', name: 'Bahrain Karate Federation', email: 'info@bkf.example', phone: '+973 1700 4100', admin: 'Invite pending', adminStyle: pending, editors: 0, sports: 'Karate',
+        users: [], invite: ['info@bkf.example', 'Association Admin', '12 Oct 2026'] },
+      { id: 'bcf', initials: 'BCF', name: 'Bahrain Chess Federation', email: 'chess@bcf.example', phone: '+973 1700 5150', admin: 'Nawaf Isa', adminStyle: active, editors: 1, sports: 'Chess',
+        users: [['Nawaf Isa', 'Association Admin', 'n.isa@bcf.example', 'Active'], ['Zainab Ali', 'Editor', 'z.ali@bcf.example', 'Active']], invite: null },
+      { id: 'bef', initials: 'BEF', name: 'Bahrain eSports Federation', email: 'hello@bef.example', phone: '+973 1700 6060', admin: 'No admin', adminStyle: none, editors: 0, sports: 'eSports', users: [], invite: null },
+      { id: 'bbf', initials: 'BBF', name: 'Bahrain Billiards Federation', email: 'office@bbf.example', phone: '+973 1700 7070', admin: 'Majed Saeed', adminStyle: active, editors: 2, sports: 'Billiards & Snooker',
+        users: [['Majed Saeed', 'Association Admin', 'm.saeed@bbf.example', 'Active'], ['Hasan Taher', 'Editor', 'h.taher@bbf.example', 'Active'], ['Fatima Radhi', 'Editor', 'f.radhi@bbf.example', 'Active']], invite: null }
+    ];
+    var picked = this.state.picked;
+    var rows = data.map(function (d) {
+      var on = d.id === picked;
+      return {
+        logo: lg(d.initials, 36), hasImg: d.initials === 'BWF', noImg: d.initials !== 'BWF', initials: d.initials, name: d.name, email: d.email, admin: d.admin, adminStyle: d.adminStyle, sports: d.sports,
+        editors: d.editors + ' / 2', edColor: d.editors === 2 ? '#0F172A' : '#475569', pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ picked: d.id }); },
+        row: 'border-top: 1px solid #EEF2F6' + (on ? '; background: #F1F5FB' : '')
+      };
+    });
+    var s = data.filter(function (d) { return d.id === picked; })[0];
+    var users = s.users.map(function (u) {
+      var isActive = u[3] === 'Active';
+      return { name: u[0], role: u[1], email: u[2], state: u[3], pill: isActive ? active : off, action: isActive ? 'Deactivate' : 'Activate' };
+    });
+    var sel = {
+      hasImg: s.initials === 'BWF', noImg: s.initials !== 'BWF', initials: s.initials, name: s.name, email: s.email, phone: s.phone, users: users,
+      hasInvite: !!s.invite, noInvite: !s.invite,
+      inviteEmail: s.invite ? s.invite[0] : '', inviteRole: s.invite ? s.invite[1] : '', inviteExpiry: s.invite ? s.invite[2] : ''
+    };
+    var navItems = [['Dashboard', 'Main.dc.html'], ['Games', 'SetupPhases.dc.html'], ['Associations', 'AdminAssociations.dc.html'], ['Sports & events', 'AdminSports.dc.html'], ['Clothing items', 'SetupShortList.dc.html'], ['People', 'AdminPeople.dc.html'], ['Reports', '#'], ['Audit log', '#'], ['STA users', '#']];
+    var nav = navItems.map(function (it, i) {
+      var a = i === 2;
+      return { label: it[0], href: it[1], style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (a ? '600' : '500') + '; color: ' + (a ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (a ? '#23406A' : 'transparent') };
+    });
+    return { nav: nav, rows: rows, sel: sel };
+  }
+}
+</script>
+</body>
+</html>

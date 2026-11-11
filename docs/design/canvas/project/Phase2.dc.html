@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portal – Phase 2 Entry by Number</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Portal navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+        <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+          <span style="font-size: 12px; color: #A9B8CC">Association portal</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #1A3358">
+        <span style="display: inline-flex; width: 64px; height: 40px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-weight: 600; font-size: 13px; color: #FFFFFF">Bahrain Weightlifting Federation</span>
+          <span style="font-size: 12px; color: #A9B8CC">BWF</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="6">
+        <a href="#" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">MK</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Mariam Khalil</span>
+        <span style="color: #A9B8CC; font-size: 12px">Association Editor</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-direction: column; gap: 14px; background: #F0FDFA; border: 1px solid #99F6E4; border-radius: 14px; padding: 16px 20px">
+      <span style="font-size: 13px; color: #475569"><a href="#">Games</a> / 6th Asian Indoor &amp; Martial Arts Games 2026</span>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700">Entry by Number</h1>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #CCFBF1; color: #115E59; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0F766E; flex-shrink: 0"></span>Phase 2 of 4 · Open</span>
+      </div>
+      <ol aria-label="Phases" style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px">
+        <li style="display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: #E0F2FE; color: #075985; font-size: 13px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #0369A1; flex-shrink: 0"></span>1 · Entry by Sport — skipped</li>
+        <li aria-current="step" style="display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: #0F766E; color: #FFFFFF; font-size: 13px; font-weight: 600">2 · Entry by Number</li>
+        <li style="display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: #FEF3C7; color: #92400E; font-size: 13px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #B45309; flex-shrink: 0"></span>3 · Long List</li>
+        <li style="display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; background: #EDE9FE; color: #5B21B6; font-size: 13px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #6D28D9; flex-shrink: 0"></span>4 · Short List</li>
+      </ol>
+    </header>
+
+    <div role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; background: #FFF7ED; color: #9A3412; border: 1px solid #FED7AA">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span style="font-weight: 600">Deadline 28 Sep 2026 · 3 days left</span>
+      <span style="color: #7C2D12">Reminder emails go out automatically until you submit.</span>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <section aria-labelledby="wl-title" style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+          <h2 id="wl-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">Weightlifting</h2>
+          <span style="font-size: 13px; color: #475569">Enter how many athletes you plan to send to each event</span>
+        </div>
+
+        <fieldset style="margin: 0; border: 0; border-bottom: 1px solid #E2E8F0; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; background: #F0FDFA">
+          <legend style="float: left; padding: 0; display: flex; flex-direction: column; gap: 2px; margin-right: 8px">
+            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Total number of participants</span>
+            <span style="font-size: 12px; color: #475569; font-weight: 400">Different athletes — one athlete can enter several events</span>
+          </legend>
+          <label style="display: flex; align-items: center; gap: 10px; font-weight: 600">Male
+            <input type="number" min="0" max="999" value="{{male}}" onChange="{{setMale}}" style="width: 88px; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 600 16px Inter, sans-serif; background: #FFFFFF">
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; font-weight: 600">Female
+            <input type="number" min="0" max="999" value="{{female}}" onChange="{{setFemale}}" style="width: 88px; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 600 16px Inter, sans-serif; background: #FFFFFF">
+          </label>
+          <span style="font-size: 13px; color: #334155">Total <strong>{{participants}}</strong></span>
+        </fieldset>
+
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 520px; border-collapse: collapse">
+            <thead>
+              <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                <th scope="col" style="padding: 10px 20px; font-weight: 600">Event</th>
+                <th scope="col" style="padding: 10px 12px; font-weight: 600; text-align: center; width: 170px">Male</th>
+                <th scope="col" style="padding: 10px 20px; font-weight: 600; text-align: center; width: 170px">Female</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{events}}" as="e" hint-placeholder-count="8">
+                <tr style="border-top: 1px solid #EEF2F6">
+                  <th scope="row" style="padding: 8px 20px; text-align: left; font-weight: 500">
+                    <span style="display: flex; flex-direction: column; gap: 2px"><span>{{e.name}}</span><span style="font-size: 12px; font-weight: 600; color: #115E59">Up to {{e.max}} athletes</span></span>
+                  </th>
+                  <td style="padding: 8px 12px; text-align: center; background: {{e.maleBg}}">
+                    <sc-if value="{{e.isMale}}" hint-placeholder-val="{{true}}">
+                      <div style="display: inline-flex; align-items: center; gap: 6px">
+                        <button type="button" aria-label="{{e.decLabel}}" onClick="{{e.dec}}" disabled="{{e.decDisabled}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 18px Inter, sans-serif; cursor: pointer">−</button>
+                        <output style="width: 32px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">{{e.count}}</output>
+                        <button type="button" aria-label="{{e.incLabel}}" onClick="{{e.inc}}" disabled="{{e.incDisabled}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 18px Inter, sans-serif; cursor: pointer">+</button>
+                      </div>
+                    </sc-if>
+                  </td>
+                  <td style="padding: 8px 20px; text-align: center; background: {{e.femaleBg}}">
+                    <sc-if value="{{e.isFemale}}" hint-placeholder-val="{{false}}">
+                      <div style="display: inline-flex; align-items: center; gap: 6px">
+                        <button type="button" aria-label="{{e.decLabel}}" onClick="{{e.dec}}" disabled="{{e.decDisabled}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 18px Inter, sans-serif; cursor: pointer">−</button>
+                        <output style="width: 32px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">{{e.count}}</output>
+                        <button type="button" aria-label="{{e.incLabel}}" onClick="{{e.inc}}" disabled="{{e.incDisabled}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 18px Inter, sans-serif; cursor: pointer">+</button>
+                      </div>
+                    </sc-if>
+                  </td>
+                </tr>
+              </sc-for>
+              <tr style="border-top: 2px solid #E2E8F0; background: #F8FAFC">
+                <th scope="row" style="padding: 12px 20px; text-align: left; font-weight: 700">Event entries</th>
+                <td style="padding: 12px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{men}}</td>
+                <td style="padding: 12px 20px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{women}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <fieldset style="margin: 0; border: 0; border-top: 1px solid #E2E8F0; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px">
+          <legend style="float: left; padding: 0; display: flex; flex-direction: column; gap: 2px; margin-right: 8px">
+            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Expected medals</span>
+            <span style="font-size: 12px; color: #475569; font-weight: 400">Optional · not linked to an athlete or event</span>
+          </legend>
+          <sc-for list="{{medals}}" as="m" hint-placeholder-count="3">
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 600">
+              <span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 50%; background: {{m.color}}; flex-shrink: 0"></span>{{m.label}}
+              <input type="number" min="0" max="99" value="{{m.value}}" style="width: 72px; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 600 16px Inter, sans-serif; background: #FFFFFF">
+            </label>
+          </sc-for>
+        </fieldset>
+      </section>
+
+      <aside style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 16px">
+        <section aria-labelledby="limits-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="limits-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Weightlifting limits</h2>
+            <span style="font-size: 12px; color: #475569">Checked against the total number of participants</span>
+          </div>
+          <sc-for list="{{meters}}" as="m" hint-placeholder-count="3">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; justify-content: space-between; font-size: 13px">
+                <span style="font-weight: 600">{{m.label}}</span>
+                <span style="color: {{m.textColor}}; font-weight: 600">{{m.value}} of {{m.max}}</span>
+              </div>
+              <div style="height: 8px; border-radius: 999px; background: #E2E8F0; overflow: hidden">
+                <div style="height: 8px; border-radius: 999px; background: {{m.barColor}}; width: {{m.pct}}%"></div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{over}}" hint-placeholder-val="{{false}}">
+            <div role="alert" style="padding: 10px 12px; border-radius: 10px; background: #FFF7ED; color: #9A3412; font-size: 13px; line-height: 1.45">{{overText}}</div>
+          </sc-if>
+        </section>
+
+        <section aria-labelledby="policy-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+          <h2 id="policy-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Entry policy</h2>
+          <p style="margin: 0; line-height: 1.55; color: #334155">Each event shows how many athletes it allows.</p>
+          <p style="margin: 0; line-height: 1.55; color: #334155">Each NOC may enter a maximum of eight (8) athletes, including four (4) male and four (4) female athletes.</p>
+          <div style="margin-top: 4px; padding: 10px 12px; border-radius: 10px; background: #F1F5F9; font-size: 13px; color: #334155"><strong>Age eligibility:</strong> born on or before 31 Dec 2011</div>
+        </section>
+
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-wrap: wrap; gap: 10px">
+            <button type="button" style="flex: 1 1 120px; min-height: 48px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+            <button type="button" style="flex: 2 1 180px; min-height: 48px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 15px Inter, sans-serif">Submit to association admin</button>
+          </div>
+          <span style="font-size: 12px; color: #475569; line-height: 1.5">A saved draft is never submitted. After you submit, Ahmed Saleh (association admin) approves it before it goes to STA. A signed Entry by Event PDF is generated.</span>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { counts: { m60: 2, m75: 0, m95: 1, m110: 1, w49: 0, w57: 1, w69: 0, w86: 0 }, male: 3, female: 1 };
+  }
+  renderVals() {
+    var self = this;
+    var counts = this.state.counts;
+    var LIMITS = { male: 4, female: 4, total: 8 };
+    var defs = [
+      ['m60', 'Male 60kg', 'm', 2], ['m75', 'Male 75kg', 'm', 2], ['m95', 'Male 95kg', 'm', 2], ['m110', 'Male 110kg', 'm', 1],
+      ['w49', 'Female 49kg', 'w', 2], ['w57', 'Female 57kg', 'w', 2], ['w69', 'Female 69kg', 'w', 1], ['w86', 'Female 86kg', 'w', 1]
+    ];
+    var men = 0, women = 0;
+    defs.forEach(function (d) { if (d[2] === 'm') { men += counts[d[0]]; } else { women += counts[d[0]]; } });
+    var set = function (id, v) {
+      var next = Object.assign({}, self.state.counts);
+      next[id] = v;
+      self.setState({ counts: next });
+    };
+    var events = defs.map(function (d) {
+      var id = d[0], c = counts[id], isMale = d[2] === 'm', max = d[3];
+      return {
+        name: d[1], max: max, count: c, isMale: isMale, isFemale: !isMale,
+        maleBg: isMale ? '#FFFFFF' : '#E2E8F0', femaleBg: isMale ? '#E2E8F0' : '#FFFFFF',
+        decDisabled: c <= 0, incDisabled: c >= max,
+        decLabel: 'Fewer athletes in ' + d[1], incLabel: 'More athletes in ' + d[1],
+        dec: function () { if (c > 0) { set(id, c - 1); } },
+        inc: function () { if (c < max) { set(id, c + 1); } }
+      };
+    });
+    var clamp = function (v) { var n = parseInt(v, 10); if (isNaN(n) || n < 0) { return 0; } return n > 999 ? 999 : n; };
+    var male = this.state.male, female = this.state.female, participants = male + female;
+    var meter = function (label, v, max) {
+      var bad = v > max;
+      return { label: label, value: v, max: max, pct: Math.min(100, Math.round((v / max) * 100)), barColor: bad ? '#C2410C' : '#1F3A5F', textColor: bad ? '#9A3412' : '#475569' };
+    };
+    var overs = [];
+    if (male > LIMITS.male) { overs.push('Male ' + male + ' of max ' + LIMITS.male); }
+    if (female > LIMITS.female) { overs.push('Female ' + female + ' of max ' + LIMITS.female); }
+    if (participants > LIMITS.total) { overs.push('Total ' + participants + ' of max ' + LIMITS.total); }
+    var navItems = ['Home', 'Games', 'Athletes & officials', 'Excel import', 'Team', 'Association profile'];
+    var nav = navItems.map(function (label, i) {
+      var active = i === 1;
+      return { label: label, style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (active ? '600' : '500') + '; color: ' + (active ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (active ? '#23406A' : 'transparent') };
+    });
+    return {
+      nav: nav, events: events, men: men, women: women,
+      male: male, female: female, participants: participants,
+      setMale: function (ev) { self.setState({ male: clamp(ev.target.value) }); },
+      setFemale: function (ev) { self.setState({ female: clamp(ev.target.value) }); },
+      medals: [
+        { label: 'Gold', value: 1, color: '#CA8A04' },
+        { label: 'Silver', value: 1, color: '#94A3B8' },
+        { label: 'Bronze', value: 2, color: '#B45309' }
+      ],
+      over: overs.length > 0, overText: 'Over the limit: ' + overs.join(' · '),
+      meters: [
+        meter('Male participants', male, LIMITS.male),
+        meter('Female participants', female, LIMITS.female),
+        meter('Total participants', participants, LIMITS.total)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

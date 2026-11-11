@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portal · Team official profile (create / edit)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: #E9EEF5; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Portal navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+        <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+          <span style="font-size: 12px; color: #A9B8CC">Association portal</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #1A3358">
+        <span style="display: inline-flex; width: 64px; height: 40px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-weight: 600; font-size: 13px; color: #FFFFFF">Bahrain Weightlifting Federation</span>
+          <span style="font-size: 12px; color: #A9B8CC">BWF</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="6">
+        <a href="{{item.href}}" aria-current="{{item.current}}" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">MK</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Mariam Khalil</span>
+        <span style="color: #A9B8CC; font-size: 12px">Association Editor</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px 24px">
+      <div style="flex: 1 1 420px; min-width: 0; display: flex; align-items: center; gap: 16px">
+        <div role="img" aria-label="Photo of Ebrahim Ahmed Sanad" style="width: 64px; height: 64px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; flex-shrink: 0">EA</div>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+          <span style="font-size: 13px; color: #475569"><a href="Registry.dc.html">Athletes &amp; officials</a> / Edit team official</span>
+          <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.01em">Ebrahim Ahmed Sanad</h1>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #FEF3C7; color: #92400E; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #B45309; flex-shrink: 0"></span>Phase 3 · Long List</span>
+            <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: #E8EEF6; color: #1F3A5F; font: 600 13px 'Space Grotesk', sans-serif; letter-spacing: 0.02em">BWF-TO-0003</span>
+            <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: #F1F5F9; color: #334155; font-size: 12px; font-weight: 600">Head Coach</span>
+            <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: #FFEDD5; color: #9A3412; font-size: 12px; font-weight: 600">Incomplete</span>
+            <span style="font-size: 13px; color: #9A3412">Missing: emergency phone</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <a href="Registry.dc.html" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box">Cancel</a>
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+        <button type="button" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Save</button>
+      </div>
+    </header>
+
+    <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5"><span aria-hidden="true" style="color: #9A3412; font-weight: 700">*</span> Required to save. Fields marked “needed for Long List” can stay empty for now, but the official stays Incomplete and can’t be entered in a Long List until they’re filled. Uploaded files open through a secure link valid for 5 minutes.</p>
+
+    <nav aria-label="Form sections" style="display: flex; flex-wrap: wrap; gap: 8px">
+      <a href="#person" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #3B82F6; flex-shrink: 0"></span>1 Person</a>
+      <a href="#role" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #0E7490; flex-shrink: 0"></span>2 Official details</a>
+      <a href="#passport" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #4338CA; flex-shrink: 0"></span>3 Passport</a>
+      <a href="#cpr" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #8B5CF6; flex-shrink: 0"></span>4 CPR</a>
+      <a href="#contact" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #115E59; flex-shrink: 0"></span>5 Contact <span style="display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; background: #FFEDD5; color: #9A3412; font-size: 11px">1 missing</span></a>
+      <a href="#visas" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #16A34A; flex-shrink: 0"></span>6 Visas</a>
+      <a href="#clothing" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #475569; flex-shrink: 0"></span>7 Clothing</a>
+      <a href="#health" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #E11D48; flex-shrink: 0"></span>8 Health</a>
+      <a href="#declarations" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; text-decoration: none; font-weight: 600; font-size: 13px; box-sizing: border-box"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #86198F; flex-shrink: 0"></span>9 Declarations</a>
+    </nav>
+
+    <section id="person" aria-labelledby="h-person" style="background: #F8FBFF; border: 1px solid #BFDBFE; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #BFDBFE; background: #EFF6FF; border-radius: 13px 13px 0 0">
+        <h2 id="h-person" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #1E40AF; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #3B82F6; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>1 · Person</h2>
+      </div>
+      <div style="padding: 20px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+        <div style="flex: 0 1 200px; display: flex; flex-direction: column; gap: 10px">
+          <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; font-weight: 600">Photo <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+          <div role="img" aria-label="Photo preview: Ebrahim Ahmed Sanad" style="width: 160px; height: 200px; border-radius: 12px; background: #E8EEF6; color: #1F3A5F; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 40px">EA</div>
+          <span style="font-size: 12px; color: #334155; overflow-wrap: anywhere">BWF-TO-0003_photo.jpg · 512 KB</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+            <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px">View</a>
+            <button type="button" style="min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif">Replace</button>
+          </div>
+          <span style="font-size: 12px; color: #475569">JPG or PNG, up to 2 MB</span>
+        </div>
+        <div style="flex: 999 1 420px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 16px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Type <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <select aria-required="true" value="Team official" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option>Athlete</option>
+              <option>Team official</option>
+            </select>
+          </label>
+          <label style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Full name (as in passport) <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+            <input value="EBRAHIM AHMED ALI SANAD" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">First name <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <input aria-required="true" value="Ebrahim" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Second name
+            <input value="Ahmed" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Third name
+            <input value="Ali" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Last name <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <input aria-required="true" value="Sanad" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Date of birth <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <input type="date" aria-required="true" value="1978-09-03" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span id="age-label">Age</span>
+            <output aria-labelledby="age-label" style="display: flex; align-items: center; min-height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; background: #F1F5F9; color: #334155; font: 500 14px Inter, sans-serif">48 years · from date of birth</output>
+          </div>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Gender <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <select aria-required="true" value="Male" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Nationality <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <select aria-required="true" value="Bahrain" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option>Bahrain</option>
+              <option>Egypt</option>
+              <option>India</option>
+              <option>Jordan</option>
+              <option>Kuwait</option>
+              <option>Oman</option>
+              <option>Pakistan</option>
+              <option>Qatar</option>
+              <option>Saudi Arabia</option>
+              <option>United Arab Emirates</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Height (cm)
+            <input type="number" value="174" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Weight (kg)
+            <input type="number" value="88" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section id="role" aria-labelledby="h-role" style="background: #F6FEFF; border: 1px solid #A5F3FC; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #A5F3FC; background: #ECFEFF; border-radius: 13px 13px 0 0">
+        <h2 id="h-role" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #155E75; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #0E7490; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M9 12h6"/><path d="M9 16h4"/></svg></span>2 · Team official details</h2>
+      </div>
+      <div style="padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px">
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+          <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Function <span aria-hidden="true" style="color: #9A3412">*</span></span>
+          <select aria-required="true" value="Head Coach" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+            <option>Head of Delegation</option>
+            <option>Team Manager</option>
+            <option>Administrator</option>
+            <option>Head Coach</option>
+            <option>Assistant Coach</option>
+            <option>Goalkeeper Coach</option>
+            <option>Fitness Coach</option>
+            <option>Performance Analyst</option>
+            <option>Team Doctor</option>
+            <option>Physiotherapist</option>
+            <option>Massage Therapist</option>
+            <option>Kit Manager</option>
+            <option>Media Officer</option>
+            <option>Security Officer</option>
+            <option>Interpreter</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Languages spoken
+          <input value="Arabic, English" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+        </label>
+      </div>
+    </section>
+
+    <section id="passport" aria-labelledby="h-passport" style="background: #F7F8FF; border: 1px solid #C7D2FE; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #C7D2FE; background: #EEF2FF; border-radius: 13px 13px 0 0">
+        <h2 id="h-passport" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #3730A3; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #4338CA; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 17h6"/></svg></span>3 · Passport</h2>
+      </div>
+      <div style="padding: 20px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+        <div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+          <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; font-weight: 600">Passport scan <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 52px; padding: 6px 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #E2E8F0; background: #F8FAFC">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F3A5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg>
+            <div style="flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-weight: 600; font-size: 13px; overflow-wrap: anywhere">BWF-TO-0003_passport.pdf</span>
+              <span style="font-size: 12px; color: #475569">PDF · 1.1 MB · 1 Oct 2026</span>
+            </div>
+            <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px">View</a>
+            <button type="button" style="min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif">Replace</button>
+          </div>
+          <span style="font-size: 12px; color: #475569">PDF, JPG or PNG, up to 5 MB</span>
+          <button type="button" onClick="{{readPassport}}" style="align-self: flex-start; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #1F3A5F; background: #FFFFFF; color: #1F3A5F; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 8px">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 10h10"/><path d="M7 14h10"/></svg>
+            Read details from passport
+          </button>
+          <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.5">Reads names, passport number, nationality, date of birth, gender and expiry date from the machine-readable lines at the bottom of the photo page. Check every value before saving. Enter the issue date by hand.</p>
+          <sc-if value="{{read}}" hint-placeholder-val="{{false}}">
+            <div role="status" style="display: flex; gap: 10px; padding: 12px; border-radius: 10px; background: #F0FDF4; box-shadow: inset 0 0 0 1px #BBF7D0; font-size: 13px; color: #166534; line-height: 1.5">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="m5 12 4 4 10-10"/></svg>
+              <span>Filled 7 fields from the passport: first and last name, passport number, nationality, date of birth, gender, expiry date. Please check them, then save.</span>
+            </div>
+          </sc-if>
+        </div>
+        <div style="flex: 999 1 420px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 16px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Passport number <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <input aria-required="true" value="BH3902517" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Issuing country <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+            <select value="Bahrain" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option value="">Select country</option>
+              <option>Bahrain</option>
+              <option>Egypt</option>
+              <option>India</option>
+              <option>Jordan</option>
+              <option>Kuwait</option>
+              <option>Oman</option>
+              <option>Pakistan</option>
+              <option>Qatar</option>
+              <option>Saudi Arabia</option>
+              <option>United Arab Emirates</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Issue date <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+            <input type="date" value="2021-08-22" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Expiry date <span aria-hidden="true" style="color: #9A3412">*</span></span>
+            <input type="date" aria-required="true" value="2031-08-21" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section id="cpr" aria-labelledby="h-cpr" style="background: #FAF9FF; border: 1px solid #DDD6FE; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #DDD6FE; background: #F5F3FF; border-radius: 13px 13px 0 0">
+        <h2 id="h-cpr" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #5B21B6; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #8B5CF6; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><path d="M14 10h4"/><path d="M14 14h4"/></svg></span>4 · CPR</h2>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+            <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">CPR number <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+            <input value="780903459" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">CPR expiry
+            <input type="date" value="2029-09-03" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </label>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 13px; font-weight: 600">CPR front</span>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 52px; padding: 6px 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #E2E8F0; background: #F8FAFC">
+              <div style="flex: 1 1 120px; min-width: 0; display: flex; flex-direction: column">
+                <span style="font-weight: 600; font-size: 13px; overflow-wrap: anywhere">BWF-TO-0003_cpr_front.jpg</span>
+                <span style="font-size: 12px; color: #475569">JPG · 760 KB</span>
+              </div>
+              <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px">View</a>
+              <button type="button" style="min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif">Replace</button>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 13px; font-weight: 600">CPR back</span>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 52px; padding: 6px 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #E2E8F0; background: #F8FAFC">
+              <div style="flex: 1 1 120px; min-width: 0; display: flex; flex-direction: column">
+                <span style="font-weight: 600; font-size: 13px; overflow-wrap: anywhere">BWF-TO-0003_cpr_back.jpg</span>
+                <span style="font-size: 12px; color: #475569">JPG · 700 KB</span>
+              </div>
+              <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px">View</a>
+              <button type="button" style="min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif">Replace</button>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 13px; font-weight: 600">CPR reader copy</span>
+            <button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 10px; border: 1px dashed #94A3B8; background: #FFFFFF; color: #334155; font: 600 13px Inter, sans-serif">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
+              Upload reader printout
+            </button>
+            <span style="font-size: 12px; color: #475569">Smart-card reader printout · PDF, JPG or PNG, up to 5 MB</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" aria-labelledby="h-contact" style="background: #F7FEFC; border: 1px solid #99F6E4; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #99F6E4; background: #F0FDFA; border-radius: 13px 13px 0 0">
+        <h2 id="h-contact" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #115E59; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #115E59; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></span>5 · Contact</h2>
+      </div>
+      <div style="padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="o-mobile" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; font-weight: 600">Mobile <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></label>
+          <div style="display: flex; gap: 8px">
+            <select aria-label="Mobile country code" value="+973" style="flex: 0 0 92px; min-height: 44px; padding: 0 8px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option>+973</option><option>+966</option><option>+971</option><option>+965</option><option>+974</option><option>+968</option>
+            </select>
+            <input id="o-mobile" type="tel" value="3977 4120" style="flex: 1 1 auto; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </div>
+        </div>
+        <div style="display: flex; align-items: flex-end">
+          <button type="button" role="switch" aria-checked="{{waChecked}}" onClick="{{toggleWa}}" style="display: inline-flex; align-items: center; gap: 12px; min-height: 44px; padding: 0; border: 0; background: transparent; color: #0F172A; font: 600 14px Inter, sans-serif; cursor: pointer; text-align: left">
+            <span style="{{waTrack}}"><span style="{{waKnob}}"></span></span>
+            WhatsApp is the same as mobile
+          </button>
+        </div>
+        <sc-if value="{{showWa}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <label for="o-wa" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; font-weight: 600">WhatsApp <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></label>
+            <div style="display: flex; gap: 8px">
+              <select aria-label="WhatsApp country code" style="flex: 0 0 92px; min-height: 44px; padding: 0 8px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                <option>+973</option><option>+966</option><option>+971</option><option>+965</option><option>+974</option><option>+968</option>
+              </select>
+              <input id="o-wa" type="tel" placeholder="Number" style="flex: 1 1 auto; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+            </div>
+          </div>
+        </sc-if>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+          <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Email <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+          <input type="email" value="e.sanad@bwf.example" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+          <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Emergency contact name <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+          <input value="Maryam Sanad" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">
+          <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px">Relationship <span style="font-size: 12px; font-weight: 500; color: #475569">needed for Long List</span></span>
+          <input value="Wife" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+        </label>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="o-emerg" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; font-weight: 600">Emergency phone <span style="font-size: 12px; font-weight: 600; color: #9A3412">Missing · needed for Long List</span></label>
+          <div style="display: flex; gap: 8px">
+            <select aria-label="Emergency phone country code" value="+973" style="flex: 0 0 92px; min-height: 44px; padding: 0 8px; border: 1px solid #EA580C; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option>+973</option><option>+966</option><option>+971</option><option>+965</option><option>+974</option><option>+968</option>
+            </select>
+            <input id="o-emerg" type="tel" placeholder="Number" style="flex: 1 1 auto; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #EA580C; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="visas" aria-labelledby="h-visas" style="background: #F7FEF9; border: 1px solid #BBF7D0; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #BBF7D0; background: #F0FDF4; border-radius: 13px 13px 0 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <h2 id="h-visas" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #166534; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #16A34A; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg></span>6 · Visas</h2>
+          <span style="font-size: 13px; color: #475569">Add one row per country</span>
+        </div>
+        <button type="button" onClick="{{addVisa}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; gap: 6px">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add visa
+        </button>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <sc-for list="{{visas}}" as="v" hint-placeholder-count="2">
+          <div role="group" aria-label="{{v.groupLabel}}" style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid #E2E8F0; border-radius: 12px">
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px">
+              <sc-if value="{{v.saved}}" hint-placeholder-val="{{true}}">
+                <label style="flex: 1 1 180px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Country
+                  <select value="{{v.country}}" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                    <option>China</option><option>Japan</option><option>Kazakhstan</option><option>Korea</option><option>Thailand</option><option>Türkiye</option><option>Uzbekistan</option>
+                  </select>
+                </label>
+                <label style="flex: 1 1 170px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Status
+                  <select value="{{v.status}}" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                    <option>Not started</option><option>Applied</option><option>Approved</option><option>Rejected</option><option>Visa on arrival</option><option>e-Visa</option>
+                  </select>
+                </label>
+                <label style="flex: 1 1 170px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Visa number
+                  <input value="{{v.number}}" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                </label>
+                <label style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Valid until
+                  <input type="date" value="{{v.until}}" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                </label>
+              </sc-if>
+              <sc-if value="{{v.fresh}}" hint-placeholder-val="{{false}}">
+                <label style="flex: 1 1 180px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Country
+                  <select style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                    <option value="">Select country</option><option>China</option><option>Japan</option><option>Kazakhstan</option><option>Korea</option><option>Thailand</option><option>Türkiye</option><option>Uzbekistan</option>
+                  </select>
+                </label>
+                <label style="flex: 1 1 170px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Status
+                  <select style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                    <option>Not started</option><option>Applied</option><option>Approved</option><option>Rejected</option><option>Visa on arrival</option><option>e-Visa</option>
+                  </select>
+                </label>
+                <label style="flex: 1 1 170px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Visa number
+                  <input style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                </label>
+                <label style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Valid until
+                  <input type="date" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+                </label>
+              </sc-if>
+              <button type="button" onClick="{{v.remove}}" aria-label="{{v.removeLabel}}" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #991B1B; display: flex; align-items: center; justify-content: center; cursor: pointer">
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>
+              </button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; font-weight: 600">Visa copy</span>
+              <sc-if value="{{v.hasCopy}}" hint-placeholder-val="{{true}}">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 52px; padding: 6px 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #E2E8F0; background: #F8FAFC">
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F3A5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg>
+                  <div style="flex: 1 1 160px; min-width: 0; display: flex; flex-direction: column">
+                    <span style="font-weight: 600; font-size: 13px; overflow-wrap: anywhere">{{v.file}}</span>
+                    <span style="font-size: 12px; color: #475569">{{v.fileMeta}}</span>
+                  </div>
+                  <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px">View</a>
+                  <button type="button" style="min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 13px Inter, sans-serif">Replace</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{v.noCopy}}" hint-placeholder-val="{{false}}">
+                <button type="button" style="align-self: flex-start; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 10px; border: 1px dashed #94A3B8; background: #FFFFFF; color: #334155; font: 600 13px Inter, sans-serif">
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
+                  Upload visa copy
+                </button>
+                <span style="font-size: 12px; color: #475569">PDF, JPG or PNG, up to 5 MB</span>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{noVisas}}" hint-placeholder-val="{{false}}">
+          <p style="margin: 0; font-size: 13px; color: #475569">No visas recorded.</p>
+        </sc-if>
+      </div>
+    </section>
+
+    <section id="clothing" aria-labelledby="h-clothing" style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #CBD5E1; background: #F1F5F9; border-radius: 13px 13px 0 0">
+        <h2 id="h-clothing" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #475569; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 3 6l2 5 3-1v11h8V10l3 1 2-5-5-3a4 4 0 0 1-8 0z"/></svg></span>7 · Clothing</h2>
+      </div>
+      <div style="padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap: 16px">
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Fit
+          <select value="Male" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+            <option>Male</option><option>Female</option><option>Youth</option>
+          </select>
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Chest (cm)
+          <input type="number" value="110" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Waist (cm)
+          <input type="number" value="96" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">T-Shirt size
+          <select value="L" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+            <option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option>
+          </select>
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Suit size
+          <select value="52" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+            <option>44</option><option>46</option><option>48</option><option>50</option><option>52</option><option>54</option><option>56</option>
+          </select>
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Shoes size
+          <select value="42" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+            <option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option><option>46</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section id="health" aria-labelledby="h-health" style="background: #FFF8F9; border: 1px solid #FECDD3; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #FECDD3; background: #FFF1F2; border-radius: 13px 13px 0 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px">
+        <h2 id="h-health" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: #9F1239"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #E11D48; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg></span>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+          8 · Health
+        </h2>
+        <span style="font-size: 13px; color: #475569">Visible to your association and STA staff with medical permission</span>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Blood group
+            <select value="A+" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option><option>Unknown</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Meal requirement
+            <select value="Halal" style="min-height: 44px; box-sizing: border-box; width: 100%; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF">
+              <option>Halal</option><option>Vegetarian</option><option>Vegan</option><option>Gluten-free</option><option>No restriction</option>
+            </select>
+          </label>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Allergies
+            <textarea rows="3" style="min-height: 80px; box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF; resize: vertical">None known</textarea>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Medical conditions
+            <textarea rows="3" style="min-height: 80px; box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF; resize: vertical">None</textarea>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Medication
+            <textarea rows="3" style="min-height: 80px; box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; color: #0F172A; background: #FFFFFF; resize: vertical">None</textarea>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section id="declarations" aria-labelledby="h-declarations" style="background: #FEF9FF; border: 1px solid #F5D0FE; border-radius: 14px; display: flex; flex-direction: column">
+      <div style="padding: 18px 20px; border-bottom: 1px solid #F5D0FE; background: #FDF4FF; border-radius: 13px 13px 0 0">
+        <h2 id="h-declarations" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600; color: #86198F; display: flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 9px; background: #86198F; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/></svg></span>9 · Declarations</h2>
+      </div>
+      <div style="padding: 4px 20px 8px; display: flex; flex-direction: column">
+        <sc-for list="{{declarations}}" as="c" hint-placeholder-count="3">
+          <div style="{{c.row}}">
+            <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span id="{{c.id}}" style="font-weight: 600">{{c.title}}</span>
+              <span style="font-size: 13px; color: #475569">{{c.desc}}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="{{c.dateStyle}}">{{c.dateText}}</span>
+              <button type="button" role="switch" aria-checked="{{c.on}}" aria-labelledby="{{c.id}}" onClick="{{c.toggle}}" style="width: 52px; height: 44px; padding: 0; border: 0; background: transparent; display: flex; align-items: center; cursor: pointer">
+                <span style="{{c.track}}"><span style="{{c.knob}}"></span></span>
+              </button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px">
+      <a href="Registry.dc.html" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box">Cancel</a>
+      <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+        <button type="button" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Save</button>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3500}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      waSame: true,
+      read: false,
+      decl: { conduct: '1 Oct 2026', doping: '1 Oct 2026', share: '' },
+      visas: [
+        { id: 1, country: 'Uzbekistan', status: 'e-Visa', number: 'E2611-0048213', until: '2026-12-20', file: 'BWF-TO-0003_visa_1.pdf', meta: 'PDF · 240 KB · 28 Sep 2026', fresh: false },
+        { id: 2, country: 'Japan', status: 'Applied', number: '', until: '', file: '', meta: '', fresh: false }
+      ],
+      nextId: 3
+    };
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var today = '9 Oct 2026';
+    var sw = function (on) {
+      return {
+        track: 'position: relative; display: inline-block; width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0; background: ' + (on ? '#1F3A5F' : '#94A3B8'),
+        knob: 'position: absolute; top: 3px; left: ' + (on ? '21px' : '3px') + '; width: 20px; height: 20px; border-radius: 50%; background: #FFFFFF'
+      };
+    };
+
+    var navItems = [['Home', '#'], ['Games', '#'], ['Athletes & officials', 'Registry.dc.html'], ['Excel import', '#'], ['Team', '#'], ['Association profile', '#']];
+    var nav = navItems.map(function (it, i) {
+      var a = i === 2;
+      return { label: it[0], href: it[1], current: a ? 'page' : 'false', style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (a ? '600' : '500') + '; color: ' + (a ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (a ? '#23406A' : 'transparent') };
+    });
+
+    var wa = sw(st.waSame);
+
+    var defs = [
+      ['conduct', 'Accepts the delegation code of conduct', 'Applies for the whole delegation period, travel included.'],
+      ['doping', 'Will follow anti-doping and integrity rules', 'WADA code and the games’ integrity and betting rules.'],
+      ['share', 'Consents to data being shared with organisers, airline and hotel', 'Only what each needs for accreditation, flights and rooms.']
+    ];
+    var declarations = defs.map(function (d, i) {
+      var date = st.decl[d[0]];
+      var on = !!date;
+      var s = sw(on);
+      return {
+        id: 'decl-' + d[0], title: d[1], desc: d[2], on: on ? 'true' : 'false',
+        dateText: on ? 'Agreed on ' + date : 'Not agreed',
+        dateStyle: 'font-size: 13px; font-weight: 600; color: ' + (on ? '#166534' : '#475569'),
+        track: s.track, knob: s.knob,
+        row: 'display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 14px 0' + (i ? '; border-top: 1px solid #EEF2F6' : ''),
+        toggle: function () {
+          var c = Object.assign({}, self.state.decl);
+          c[d[0]] = c[d[0]] ? '' : today;
+          self.setState({ decl: c });
+        }
+      };
+    });
+
+    var visas = st.visas.map(function (v, n) {
+      return {
+        country: v.country, status: v.status, number: v.number, until: v.until,
+        saved: !v.fresh, fresh: v.fresh, hasCopy: !!v.file, noCopy: !v.file,
+        file: v.file, fileMeta: v.meta,
+        groupLabel: 'Visa ' + (n + 1) + (v.country ? ': ' + v.country : ''),
+        removeLabel: 'Remove visa ' + (n + 1),
+        remove: function () { self.setState({ visas: self.state.visas.filter(function (x) { return x.id !== v.id; }) }); }
+      };
+    });
+
+    return {
+      nav: nav,
+      waChecked: st.waSame ? 'true' : 'false', waTrack: wa.track, waKnob: wa.knob, showWa: !st.waSame,
+      toggleWa: function () { self.setState({ waSame: !self.state.waSame }); },
+      read: st.read,
+      readPassport: function () { self.setState({ read: true }); },
+      declarations: declarations,
+      visas: visas, noVisas: visas.length === 0,
+      addVisa: function () {
+        var id = self.state.nextId;
+        self.setState({ visas: self.state.visas.concat([{ id: id, country: '', status: 'Not started', number: '', until: '', file: '', meta: '', fresh: true }]), nextId: id + 1 });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

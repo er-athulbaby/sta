@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portal – Phase 3 Long List</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="position: relative; min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Portal navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+        <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+          <span style="font-size: 12px; color: #A9B8CC">Association portal</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #1A3358">
+        <span style="display: inline-flex; width: 64px; height: 40px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-weight: 600; font-size: 13px; color: #FFFFFF">Bahrain Weightlifting Federation</span>
+          <span style="font-size: 12px; color: #A9B8CC">BWF</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="6">
+        <a href="#" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">MK</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Mariam Khalil</span>
+        <span style="color: #A9B8CC; font-size: 12px">Association Editor</span>
+      </div>
+    </div>
+  </nav>
+
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 16px 20px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: #475569"><a href="#">Games</a> / 6th Asian Indoor &amp; Martial Arts Games 2026 / Phase 3</span>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700">Long List</h1>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #FEF3C7; color: #92400E; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #B45309; flex-shrink: 0"></span>Phase 3</span>
+          <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #E0E7FF; color: #1E3A8A; font-size: 12px; font-weight: 600">Draft · saved 10:42</span>
+        </div>
+        <span style="color: #475569">Deadline 15 Oct 2026 · 6 days left · Clothing items for this game: T-Shirt, Tracksuit, Suit</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Preview PDF</button>
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+        <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Submit for approval</button>
+      </div>
+    </header>
+
+    <section aria-labelledby="compare-title" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
+        <h2 id="compare-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Compared with your Phase 2 numbers</h2>
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #9A3412; font-weight: 600">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3 2 21h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
+          1 event differs · allowed, STA will see it
+        </span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{compare}}" as="c" hint-placeholder-count="8">
+          <span style="{{c.style}}">{{c.label}}</span>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #E2E8F0">
+      <div role="tablist" aria-label="List sections" style="display: flex; flex-wrap: wrap; gap: 4px">
+        <button type="button" role="tab" aria-selected="true" style="min-height: 44px; padding: 0 16px; border: 0; border-bottom: 2px solid #1F3A5F; background: transparent; color: #0F172A; font: 600 14px Inter, sans-serif">Athletes (6)</button>
+        <button type="button" role="tab" aria-selected="false" style="min-height: 44px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #475569; font: 600 14px Inter, sans-serif">Team officials (3)</button>
+        <button type="button" role="tab" aria-selected="false" style="min-height: 44px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #475569; font: 600 14px Inter, sans-serif">Warnings (4)</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-bottom: 6px">
+        <span style="font-size: 13px; color: #334155"><strong>4</strong> male · <strong>2</strong> female · <strong>3</strong> team officials</span>
+        <button type="button" onClick="{{openAthlete}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #1F3A5F; background: #FFFFFF; color: #1F3A5F; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Add athlete</button>
+        <button type="button" onClick="{{openOfficial}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #1F3A5F; background: #FFFFFF; color: #1F3A5F; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Add team official</button>
+        <div role="group" aria-label="View" style="display: flex; background: #F1F5F9; border-radius: 10px; padding: 4px; gap: 4px">
+          <button type="button" aria-pressed="{{isList}}" onClick="{{showList}}" style="{{listBtn}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>List</button>
+          <button type="button" aria-pressed="{{isGrid}}" onClick="{{showGrid}}" style="{{gridBtn}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Grid</button>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{isList}}" hint-placeholder-val="{{true}}">
+      <section aria-label="Athletes" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow-x: auto">
+        <table style="width: 100%; min-width: 980px; border-collapse: collapse">
+          <thead>
+            <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+              <th scope="col" style="padding: 12px 20px; font-weight: 600">Athlete</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Gender</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Born · age</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Event</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">T-Shirt</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Tracksuit</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Suit</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Scans</th>
+              <th scope="col" style="padding: 12px 20px; font-weight: 600">Warning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{athletes}}" as="a" hint-placeholder-count="6">
+              <tr style="border-top: 1px solid #EEF2F6; vertical-align: middle">
+                <td style="padding: 10px 20px">
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <div role="img" aria-label="{{a.photoLabel}}" style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0">{{a.initials}}</div>
+                    <div style="display: flex; flex-direction: column">
+                      <span style="font-weight: 600">{{a.name}}</span>
+                      <span style="font-size: 12px; color: #475569">{{a.code}}</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 10px 12px">{{a.gender}}</td>
+                <td style="padding: 10px 12px; color: #334155">{{a.dob}} · {{a.age}}</td>
+                <td style="padding: 10px 12px; font-weight: 600; color: #1F3A5F">{{a.event}}</td>
+                <sc-for list="{{a.sizes}}" as="s" hint-placeholder-count="3">
+                  <td style="padding: 10px 12px; font-weight: 700; color: {{s.color}}">{{s.size}}</td>
+                </sc-for>
+                <td style="padding: 10px 12px">
+                  <div style="display: flex; flex-direction: column; font-size: 13px">
+                    <sc-if value="{{a.hasPass}}" hint-placeholder-val="{{true}}"><span>Passport · <a href="#" aria-label="{{a.passView}}" style="font-weight: 600">View</a></span></sc-if>
+                    <sc-if value="{{a.noPass}}" hint-placeholder-val="{{false}}"><span style="color: #9A3412; font-weight: 600">Passport missing</span></sc-if>
+                    <sc-if value="{{a.hasCpr}}" hint-placeholder-val="{{true}}"><span>CPR · <a href="#" aria-label="{{a.cprView}}" style="font-weight: 600">View</a></span></sc-if>
+                    <sc-if value="{{a.noCpr}}" hint-placeholder-val="{{false}}"><span style="color: #9A3412; font-weight: 600">CPR missing</span></sc-if>
+                  </div>
+                </td>
+                <td style="padding: 10px 20px; font-size: 13px; color: #9A3412; max-width: 240px; line-height: 1.4">{{a.warning}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isGrid}}" hint-placeholder-val="{{false}}">
+      <section aria-label="Athletes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px">
+        <sc-for list="{{athletes}}" as="a" hint-placeholder-count="6">
+          <article style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; gap: 14px; align-items: center">
+              <div role="img" aria-label="{{a.photoLabel}}" style="width: 56px; height: 56px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; flex-shrink: 0">{{a.initials}}</div>
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+                <span style="font-weight: 600; font-size: 15px">{{a.name}}</span>
+                <span style="font-size: 13px; color: #475569">{{a.code}} · {{a.dob}} · {{a.age}} on 20 Nov</span>
+              </div>
+              <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 8px; border-radius: 8px; background: #F1F5F9; color: #334155; font-size: 12px; font-weight: 700">{{a.gender}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 12px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">Event</span>
+              <span style="display: inline-flex; align-self: flex-start; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; background: #E8EEF6; color: #1F3A5F; font-weight: 600; font-size: 13px">{{a.event}}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{a.sizes}}" as="s" hint-placeholder-count="3">
+                <div style="{{s.box}}">
+                  <span style="font-size: 11px; color: #475569">{{s.item}}</span>
+                  <span style="font-weight: 700; font-size: 14px; color: {{s.color}}">{{s.size}}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px">
+              <sc-if value="{{a.hasPass}}" hint-placeholder-val="{{true}}"><span>Passport scan · <a href="#" aria-label="{{a.passView}}" style="font-weight: 600">View</a></span></sc-if>
+              <sc-if value="{{a.noPass}}" hint-placeholder-val="{{false}}"><span style="color: #9A3412; font-weight: 600">Passport scan missing</span></sc-if>
+              <sc-if value="{{a.hasCpr}}" hint-placeholder-val="{{true}}"><span>CPR scan · <a href="#" aria-label="{{a.cprView}}" style="font-weight: 600">View</a></span></sc-if>
+              <sc-if value="{{a.noCpr}}" hint-placeholder-val="{{false}}"><span style="color: #9A3412; font-weight: 600">CPR scan missing</span></sc-if>
+            </div>
+            <sc-if value="{{a.hasWarning}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: #FFF7ED; color: #9A3412; font-size: 13px; line-height: 1.45">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 2px"><path d="M12 3 2 21h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
+                <span>{{a.warning}}</span>
+              </div>
+            </sc-if>
+          </article>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <section aria-labelledby="officials-title" style="display: flex; flex-direction: column; gap: 12px">
+      <h2 id="officials-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">Team officials</h2>
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow-x: auto">
+        <table style="width: 100%; min-width: 720px; border-collapse: collapse">
+          <thead>
+            <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+              <th scope="col" style="padding: 12px 20px; font-weight: 600">Name</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Function</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Mobile</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Email</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">T-Shirt</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Tracksuit</th>
+              <th scope="col" style="padding: 12px; font-weight: 600">Suit</th>
+              <th scope="col" style="padding: 12px 20px; font-weight: 600">Passport</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{officials}}" as="o" hint-placeholder-count="3">
+              <tr style="border-top: 1px solid #EEF2F6">
+                <td style="padding: 14px 20px; font-weight: 600">{{o.name}}</td>
+                <td style="padding: 14px 12px">{{o.fn}}</td>
+                <td style="padding: 14px 12px; color: #334155">{{o.phone}}</td>
+                <td style="padding: 14px 12px; color: #334155">{{o.email}}</td>
+                <td style="padding: 14px 12px; font-weight: 600">{{o.tshirt}}</td>
+                <td style="padding: 14px 12px; font-weight: 600">{{o.track}}</td>
+                <td style="padding: 14px 12px; font-weight: 600; color: {{o.suitColor}}">{{o.suit}}</td>
+                <td style="padding: 14px 20px"><a href="#" aria-label="{{o.passView}}" style="font-weight: 600">View</a></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <sc-if value="{{panelOpen}}" hint-placeholder-val="{{false}}">
+    <aside role="dialog" aria-modal="false" aria-labelledby="panel-title" style="position: absolute; top: 0; right: 0; bottom: 0; width: 480px; max-width: 100%; box-sizing: border-box; background: #FFFFFF; border-left: 1px solid #CBD5E1; box-shadow: -12px 0 32px rgba(15,36,64,0.18); display: flex; flex-direction: column; overflow-y: auto">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid #E2E8F0">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <h2 id="panel-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{panelTitle}}</h2>
+          <span style="font-size: 13px; color: #475569">Weightlifting · stays on the Long List page</span>
+        </div>
+        <button type="button" aria-label="Close" onClick="{{closePanel}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
+      </div>
+
+      <section aria-labelledby="pick-title" style="padding: 18px 24px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #E2E8F0; background: #F8FAFC">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+          <h3 id="pick-title" style="margin: 0; font-size: 15px; font-weight: 700">Pick from your registry</h3>
+          <a href="Registry.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600">Open registry</a>
+        </div>
+        <label style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search registry</span>
+          <input type="search" placeholder="Search by name, code or CPR" style="flex: 1; border: 0; outline: none; font: 14px Inter, sans-serif; background: transparent">
+        </label>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{picks}}" as="p" hint-placeholder-count="3">
+            <li style="display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; background: #FFFFFF; border: 1px solid #E2E8F0">
+              <div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+                <span style="font-weight: 600">{{p.name}}</span>
+                <span style="font-size: 12px; color: #475569">{{p.meta}}</span>
+              </div>
+              <span style="{{p.badge}}">{{p.status}}</span>
+              <button type="button" style="min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #1F3A5F; background: #FFFFFF; color: #1F3A5F; font: 600 13px Inter, sans-serif">Add</button>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <form aria-labelledby="new-title" style="padding: 18px 24px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <h3 id="new-title" style="margin: 0; font-size: 15px; font-weight: 700">{{newTitle}}</h3>
+          <span style="font-size: 12px; color: #475569">Same fields and rules as the registry. After saving, the person is in your registry and can be picked straight away.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px">
+          <sc-if value="{{isOfficial}}" hint-placeholder-val="{{false}}">
+            <label style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Function
+              <select style="min-height: 44px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF"><option>Coach</option><option>Head Coach</option><option>Team Manager</option><option>Physio</option><option>Doctor</option></select>
+            </label>
+          </sc-if>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">First name
+            <input value="{{f.first}}" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Family name
+            <input value="{{f.last}}" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+          </label>
+          <fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 6px">
+            <legend style="padding: 0; font-size: 13px; font-weight: 600; margin-bottom: 6px">Gender</legend>
+            <div style="display: flex; gap: 8px">
+              <label style="flex: 1; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 10px; border: 1px solid #1F3A5F; border-radius: 10px; font-size: 14px"><input type="radio" name="g" checked="{{f.isMale}}"> Male</label>
+              <label style="flex: 1; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font-size: 14px"><input type="radio" name="g" checked="{{f.isFemale}}"> Female</label>
+            </div>
+          </fieldset>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Date of birth
+            <input type="date" value="{{f.dob}}" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+          </label>
+          <sc-if value="{{isAthlete}}" hint-placeholder-val="{{true}}">
+            <label style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Event
+              <select style="min-height: 44px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF"><option>Male 75kg</option><option>Male 60kg</option><option>Male 95kg</option><option>Male 110kg</option></select>
+            </label>
+          </sc-if>
+          <sc-if value="{{isOfficial}}" hint-placeholder-val="{{false}}">
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Mobile
+              <input value="+973 3644 7712" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Email
+              <input type="email" value="m.hasan@bwf.example" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+            </label>
+          </sc-if>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Passport number
+            <input value="{{f.passport}}" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">CPR number
+            <input value="{{f.cpr}}" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+          </label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Photo and scans</span>
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border-radius: 10px; background: #F0FDF4; box-shadow: inset 0 0 0 1px #BBF7D0; font-size: 13px">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg>
+            <span style="color: #166534; font-weight: 600; flex: 1">{{f.photoFile}}</span>
+            <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">View</a>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border-radius: 10px; background: #F0FDF4; box-shadow: inset 0 0 0 1px #BBF7D0; font-size: 13px">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg>
+            <span style="color: #166534; font-weight: 600; flex: 1">{{f.passFile}}</span>
+            <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">View</a>
+          </div>
+          <button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border-radius: 10px; border: 1px dashed #94A3B8; background: #FFFFFF; color: #334155; font: 600 13px Inter, sans-serif">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
+            Upload CPR scan (front and back)
+          </button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">T-Shirt
+            <select style="min-height: 44px; padding: 0 8px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF"><option>M</option><option>L</option></select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Tracksuit
+            <select style="min-height: 44px; padding: 0 8px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF"><option>M</option><option>L</option></select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Suit
+            <select style="min-height: 44px; padding: 0 8px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF"><option>Choose</option><option>50</option></select>
+          </label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: #FFF7ED; color: #9A3412; font-size: 13px">
+          <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; background: #FFEDD5; font-weight: 700; font-size: 12px">Incomplete</span>
+          CPR scan and suit size missing — you can still save as draft.
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px">
+          <button type="button" onClick="{{closePanel}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Cancel</button>
+          <button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+          <button type="button" style="flex: 1 1 auto; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Save and add to Long List</button>
+        </div>
+      </form>
+    </aside>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"view":{"editor":"enum","options":["list","grid"],"default":"list"},"panel":{"editor":"enum","options":["none","athlete","official"],"default":"none"},"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+  renderVals() {
+    var self = this;
+    var view = this.state.view || this.props.view || 'list';
+    var panel = this.state.panel || this.props.panel || 'none';
+    var navItems = ['Home', 'Games', 'Athletes & officials', 'Excel import', 'Team', 'Association profile'];
+    var nav = navItems.map(function (label, i) {
+      var active = i === 1;
+      return { label: label, style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (active ? '600' : '500') + '; color: ' + (active ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (active ? '#23406A' : 'transparent') };
+    });
+    var seg = function (on) { return 'min-height: 36px; padding: 0 12px; border: 0; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font: 600 13px Inter, sans-serif; ' + (on ? 'background: #FFFFFF; color: #0F172A; box-shadow: 0 1px 2px rgba(15,23,42,0.08)' : 'background: transparent; color: #334155'); };
+    var chip = function (label, differs) {
+      return { label: label, style: 'display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 500; ' + (differs ? 'background: #FFEDD5; color: #9A3412; font-weight: 600' : 'background: #F1F5F9; color: #334155') };
+    };
+    var compare = [
+      chip('Male 60kg · 2 of 1', true), chip('Male 75kg · 0 of 0', false), chip('Male 95kg · 1 of 1', false), chip('Male 110kg · 1 of 1', false),
+      chip('Female 49kg · 0 of 0', false), chip('Female 57kg · 1 of 1', false), chip('Female 69kg · 0 of 0', false), chip('Female 86kg · 0 of 0', false)
+    ];
+    var size = function (item, s) {
+      var missing = !s;
+      return { item: item, size: missing ? 'Missing' : s, color: missing ? '#9A3412' : '#0F172A', box: 'display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; ' + (missing ? 'background: #FFF7ED; box-shadow: inset 0 0 0 1px #FED7AA' : 'background: #F8FAFC; box-shadow: inset 0 0 0 1px #E2E8F0') };
+    };
+    var athlete = function (initials, code, name, g, dob, age, event, sizes, pass, cpr, warning) {
+      return {
+        initials: initials, code: code, name: name, gender: g === 'M' ? 'Male' : 'Female', dob: dob, age: age, event: event, photoLabel: 'Photo of ' + name,
+        sizes: [size('T-Shirt', sizes[0]), size('Tracksuit', sizes[1]), size('Suit', sizes[2])],
+        hasPass: pass, noPass: !pass, hasCpr: cpr, noCpr: !cpr,
+        passView: 'View passport scan of ' + name, cprView: 'View CPR scan of ' + name,
+        hasWarning: !!warning, warning: warning || ''
+      };
+    };
+    var athletes = [
+      athlete('YA', 'BWF-AT-0012', 'Yousif Abdulla Al Mannai', 'M', '14 Mar 2003', 23, 'Male 60kg', ['M', 'M', '48'], true, true, ''),
+      athlete('HJ', 'BWF-AT-0015', 'Hamad Jassim Buali', 'M', '02 Jul 2005', 21, 'Male 60kg', ['S', 'M', ''], true, false, 'Second athlete in Male 60kg (Phase 2 said 1). Suit size missing.'),
+      athlete('AR', 'BWF-AT-0007', 'Ali Redha Isa', 'M', '19 Jan 2001', 25, 'Male 95kg', ['XL', 'XL', '54'], true, true, 'Passport expires 25 Nov 2026 — before the game ends (30 Nov).'),
+      athlete('SM', 'BWF-AT-0003', 'Sayed Mahmood Hashim', 'M', '08 Oct 1999', 27, 'Male 110kg', ['XXL', 'XXL', '56'], true, true, ''),
+      athlete('NK', 'BWF-AT-0021', 'Noor Khalid Al Sayed', 'F', '27 May 2006', 20, 'Female 57kg', ['S', 'S', '38'], false, true, 'Passport scan not uploaded yet.'),
+      athlete('LA', 'BWF-AT-0024', 'Layla Adel Fakhro', 'F', '11 Dec 2012', 13, 'Not assigned', ['XS', 'S', '36'], true, true, 'Born after 31 Dec 2011 — outside the age eligibility for Weightlifting.')
+    ];
+    var officials = [
+      { name: 'Ebrahim Ahmed Sanad', fn: 'Head Coach', phone: '+973 3900 1122', email: 'e.sanad@bwf.example', tshirt: 'L', track: 'L', suit: '52', suitColor: '#0F172A' },
+      { name: 'Fatema Hasan Ali', fn: 'Physio', phone: '+973 3655 8840', email: 'f.ali@bwf.example', tshirt: 'M', track: 'M', suit: 'Missing', suitColor: '#9A3412' },
+      { name: 'Khalid Yusuf Murad', fn: 'Team Manager', phone: '+973 3311 2207', email: 'k.murad@bwf.example', tshirt: 'XL', track: 'XL', suit: '54', suitColor: '#0F172A' }
+    ].map(function (o) { o.passView = 'View passport scan of ' + o.name; return o; });
+    var pill = function (ok) { return 'display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; ' + (ok ? 'background: #DCFCE7; color: #166534' : 'background: #FFEDD5; color: #9A3412'); };
+    var isOfficial = panel === 'official';
+    var picks = isOfficial ? [
+      { name: 'Mohamed Hasan Radhi', meta: 'BWF-TO-0006 · Coach', status: 'Complete', badge: pill(true) },
+      { name: 'Zainab Ali Marhoon', meta: 'BWF-TO-0009 · Doctor', status: 'Incomplete', badge: pill(false) }
+    ] : [
+      { name: 'Abbas Jaffar Salman', meta: 'BWF-AT-0018 · Male · 2004', status: 'Complete', badge: pill(true) },
+      { name: 'Hussain Ali Mansoor', meta: 'BWF-AT-0019 · Male · 2002', status: 'Incomplete', badge: pill(false) }
+    ];
+    var f = isOfficial
+      ? { first: 'Mohamed', last: 'Hasan Radhi', isMale: true, isFemale: false, dob: '1984-06-02', passport: 'BH2203318', cpr: '840602115', photoFile: 'photo.jpg · 410 KB', passFile: 'passport.pdf · 1.2 MB' }
+      : { first: 'Ahmed', last: 'Isa Al Khalifa', isMale: true, isFemale: false, dob: '2004-09-17', passport: 'BH3011457', cpr: '040917332', photoFile: 'photo.jpg · 580 KB', passFile: 'passport.pdf · 1.4 MB' };
+    return {
+      nav: nav, compare: compare, athletes: athletes, officials: officials,
+      isList: view === 'list', isGrid: view === 'grid', listBtn: seg(view === 'list'), gridBtn: seg(view === 'grid'),
+      showList: function () { self.setState({ view: 'list' }); },
+      showGrid: function () { self.setState({ view: 'grid' }); },
+      openAthlete: function () { self.setState({ panel: 'athlete' }); },
+      openOfficial: function () { self.setState({ panel: 'official' }); },
+      closePanel: function () { self.setState({ panel: 'none' }); },
+      panelOpen: panel !== 'none', isOfficial: isOfficial, isAthlete: !isOfficial,
+      panelTitle: isOfficial ? 'Add team official' : 'Add athlete',
+      newTitle: isOfficial ? 'Or add a new team official' : 'Or add a new athlete',
+      picks: picks, f: f
+    };
+  }
+}
+</script>
+</body>
+</html>

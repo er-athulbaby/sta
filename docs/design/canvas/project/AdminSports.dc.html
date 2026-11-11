@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin – Sports and events</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Admin navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+      <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+        <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+        <span style="font-size: 12px; color: #A9B8CC">Admin panel</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="9">
+        <a href="{{item.href}}" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">AH</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Ali Haroona</span>
+        <span style="color: #A9B8CC; font-size: 12px">Super Admin</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700">Sports &amp; events</h1>
+        <span style="color: #475569">Association → sports → events. Only STA can change these; associations see them read-only.</span>
+      </div>
+      <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">New sport</button>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <section aria-label="Sports" style="flex: 1 1 380px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 10px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Association
+            <select style="min-height: 44px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF">
+              <option>All associations</option>
+              <option>Bahrain Squash &amp; Badminton Federation</option>
+              <option>Bahrain Weightlifting Federation</option>
+            </select>
+          </label>
+        </div>
+        <ul style="list-style: none; margin: 0; padding: 8px">
+          <sc-for list="{{sports}}" as="s" hint-placeholder-count="7">
+            <li>
+              <button type="button" onClick="{{s.pick}}" aria-pressed="{{s.pressed}}" style="{{s.style}}">
+                <span style="display: flex; flex-direction: column; gap: 2px; text-align: left">
+                  <span style="font-weight: 600">{{s.name}}</span>
+                  <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #475569"><sc-if value="{{s.hasImg}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; width: 38px; height: 24px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span></sc-if><sc-if value="{{s.noImg}}" hint-placeholder-val="{{true}}"><span aria-hidden="true" style="{{s.logo}}">{{s.code}}</span></sc-if>{{s.assoc}}</span>
+                </span>
+                <span style="display: flex; align-items: center; gap: 8px">
+                  <span style="font-size: 12px; color: #475569">{{s.count}}</span>
+                  <span style="{{s.pill}}">{{s.status}}</span>
+                </span>
+              </button>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <section aria-labelledby="sport-title" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Sport name
+            <input value="{{sel.name}}" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Belongs to association
+            <select style="min-height: 44px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF">
+              <option>{{sel.assocFull}}</option>
+            </select>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600">
+            <input type="checkbox" checked="{{true}}" style="width: 20px; height: 20px; accent-color: #1F3A5F">
+            Active
+          </label>
+        </div>
+
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <h2 id="sport-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600">{{sel.name}} events</h2>
+              <span style="font-size: 13px; color: #475569">Events used in a game can be deactivated, not deleted</span>
+            </div>
+          </div>
+          <form onSubmit="{{addEvent}}" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 14px 20px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0">
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; flex: 2 1 220px">New event name
+              <input value="{{newName}}" onChange="{{setName}}" placeholder="e.g. Male Singles" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF">
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; flex: 1 1 140px">Gender
+              <select value="{{newGender}}" onChange="{{setGender}}" style="min-height: 44px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; font: 14px Inter, sans-serif; background: #FFFFFF">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Mixed">Mixed</option>
+              </select>
+            </label>
+            <button type="submit" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Add event</button>
+          </form>
+          <sc-if value="{{hasError}}" hint-placeholder-val="{{false}}">
+            <p role="alert" style="margin: 0; padding: 10px 20px; color: #991B1B; background: #FEF2F2; font-size: 13px">{{error}}</p>
+          </sc-if>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; min-width: 480px; border-collapse: collapse">
+              <thead>
+                <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                  <th scope="col" style="padding: 12px 20px; font-weight: 600">Event</th>
+                  <th scope="col" style="padding: 12px; font-weight: 600">Gender</th>
+                  <th scope="col" style="padding: 12px; font-weight: 600">Used in games</th>
+                  <th scope="col" style="padding: 12px 20px; font-weight: 600">Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{sel.events}}" as="e" hint-placeholder-count="4">
+                  <tr style="border-top: 1px solid #EEF2F6">
+                    <td style="padding: 10px 20px; font-weight: 600; color: {{e.color}}">{{e.name}}</td>
+                    <td style="padding: 10px 12px"><span style="{{e.genderStyle}}">{{e.gender}}</span></td>
+                    <td style="padding: 10px 12px; color: #334155">{{e.used}}</td>
+                    <td style="padding: 10px 20px">
+                      <button type="button" role="switch" aria-checked="{{e.activeAria}}" aria-label="{{e.toggleLabel}}" onClick="{{e.toggle}}" style="{{e.track}}"><span style="{{e.knob}}"></span></button>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      picked: 'badminton', newName: '', newGender: 'Male', error: '',
+      events: {
+        badminton: [["Male Singles", 'Male', 2, true], ["Female Singles", 'Female', 2, true], ["Male Doubles", 'Male', 1, true], ['Mixed Doubles', 'Mixed', 1, true], ["Female Doubles", 'Female', 0, false]],
+        squash: [["Male Singles", 'Male', 2, true], ["Female Singles", 'Female', 2, true], ['Mixed Team', 'Mixed', 1, true]],
+        weightlifting: [["Male 60kg", 'Male', 3, true], ["Male 75kg", 'Male', 3, true], ["Male 95kg", 'Male', 3, true], ["Male 110kg", 'Male', 3, true], ["Female 49kg", 'Female', 3, true], ["Female 57kg", 'Female', 3, true]],
+        athletics: [['100m', 'Male', 4, true], ['100m', 'Female', 4, true], ['200m', 'Male', 4, true], ['200m', 'Female', 4, true], ['400m', 'Male', 3, true], ['400m', 'Female', 3, true], ['60m Hurdles', 'Mixed', 0, true]],
+        judo: [['-66kg', 'Male', 2, true], ['-52kg', 'Female', 2, true], ['Mixed Team', 'Mixed', 1, true]],
+        chess: [['Rapid', 'Mixed', 2, true], ['Blitz', 'Mixed', 2, true]],
+        karate: [['Kata', 'Male', 2, true], ['Kata', 'Female', 2, true], ['Kumite -67kg', 'Male', 1, true]]
+      }
+    };
+  }
+  renderVals() {
+    var LC = { BWF: '#9A3412', BJF: '#3730A3', BSF: '#15803D', BKF: '#86198F', BCF: '#0F766E', BBF: '#BE185D', BEF: '#374151', BTF: '#854D0E', BAA: '#4D7C0F', BSW: '#0369A1' };
+    var lg = function (code, px) { return 'width: ' + px + 'px; height: ' + px + 'px; border-radius: 50%; background: ' + (LC[code] || '#374151') + '; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: ' + (px >= 30 ? 11 : 9) + 'px; flex-shrink: 0'; };
+    var cd = function (name) { var k = [['Weightlifting', 'BWF'], ['Judo', 'BJF'], ['Squash', 'BSF'], ['Karate', 'BKF'], ['Chess', 'BCF'], ['Billiards', 'BBF'], ['eSports', 'BEF'], ['Taekwondo', 'BTF'], ['Athletics', 'BAA'], ['Swimming', 'BSW']]; for (var i = 0; i < k.length; i++) { if (name.indexOf(k[i][0]) >= 0) { return k[i][1]; } } return ''; };
+    var self = this;
+    var st = this.state;
+    var sportDefs = [
+      ['badminton', 'Badminton', 'Squash & Badminton Federation', 'Bahrain Squash & Badminton Federation'],
+      ['squash', 'Squash', 'Squash & Badminton Federation', 'Bahrain Squash & Badminton Federation'],
+      ['weightlifting', 'Weightlifting', 'Weightlifting Federation', 'Bahrain Weightlifting Federation'],
+      ['athletics', 'Athletics', 'Athletics Association', 'Bahrain Athletics Association'],
+      ['judo', 'Judo', 'Judo Federation', 'Bahrain Judo Federation'],
+      ['karate', 'Karate', 'Karate Federation', 'Bahrain Karate Federation'],
+      ['chess', 'Chess', 'Chess Federation', 'Bahrain Chess Federation']
+    ];
+    var pill = function (bg, fg) { return 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + bg + '; color: ' + fg; };
+    var sports = sportDefs.map(function (d) {
+      var on = d[0] === st.picked;
+      return {
+        logo: lg(cd(d[3]), 24), hasImg: cd(d[3]) === 'BWF', noImg: cd(d[3]) !== 'BWF', code: cd(d[3]), name: d[1], assoc: d[2], count: st.events[d[0]].length + ' events', status: 'Active', pill: pill('#DCFCE7', '#166534'),
+        pressed: on ? 'true' : 'false', pick: function () { self.setState({ picked: d[0], error: '' }); },
+        style: 'width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 56px; padding: 6px 12px; border: 0; border-radius: 10px; cursor: pointer; font: inherit; color: inherit; background: ' + (on ? '#E8EEF6' : 'transparent')
+      };
+    });
+    var cur = sportDefs.filter(function (d) { return d[0] === st.picked; })[0];
+    var genderStyle = { Male: pill('#E0E7FF', '#1E3A8A'), Female: pill('#FCE7F3', '#9D174D'), Mixed: pill('#F1F5F9', '#334155') };
+    var setEvents = function (list) { var e = Object.assign({}, self.state.events); e[st.picked] = list; self.setState({ events: e }); };
+    var events = st.events[st.picked].map(function (ev, i) {
+      var active = ev[3];
+      return {
+        name: ev[0], gender: ev[1], genderStyle: genderStyle[ev[1]], used: ev[2] ? ev[2] + (ev[2] === 1 ? ' game' : ' games') : 'Not yet',
+        color: active ? '#0F172A' : '#475569', activeAria: active ? 'true' : 'false', toggleLabel: 'Active: ' + ev[0] + ' ' + ev[1],
+        toggle: function () { var list = st.events[st.picked].slice(); list[i] = [ev[0], ev[1], ev[2], !active]; setEvents(list); },
+        track: 'position: relative; width: 48px; height: 28px; border-radius: 999px; border: 0; padding: 0; cursor: pointer; background: ' + (active ? '#1F3A5F' : '#CBD5E1'),
+        knob: 'position: absolute; top: 3px; left: ' + (active ? '23px' : '3px') + '; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF'
+      };
+    });
+    var addEvent = function (e) {
+      if (e && e.preventDefault) { e.preventDefault(); }
+      var name = (self.state.newName || '').trim();
+      var g = self.state.newGender;
+      if (!name) { self.setState({ error: 'Type an event name first.' }); return; }
+      var exists = self.state.events[self.state.picked].some(function (x) { return x[0].toLowerCase() === name.toLowerCase() && x[1] === g; });
+      if (exists) { self.setState({ error: name + ' (' + g + ') already exists in this sport.' }); return; }
+      var list = self.state.events[self.state.picked].concat([[name, g, 0, true]]);
+      var all = Object.assign({}, self.state.events); all[self.state.picked] = list;
+      self.setState({ events: all, newName: '', error: '' });
+    };
+    var navItems = [['Dashboard', 'Main.dc.html'], ['Games', 'SetupPhases.dc.html'], ['Associations', 'AdminAssociations.dc.html'], ['Sports & events', 'AdminSports.dc.html'], ['Clothing items', 'SetupShortList.dc.html'], ['People', 'AdminPeople.dc.html'], ['Reports', '#'], ['Audit log', '#'], ['STA users', '#']];
+    var nav = navItems.map(function (it, i) {
+      var a = i === 3;
+      return { label: it[0], href: it[1], style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (a ? '600' : '500') + '; color: ' + (a ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (a ? '#23406A' : 'transparent') };
+    });
+    return {
+      nav: nav, sports: sports, sel: { name: cur[1], assocFull: cur[3], events: events },
+      newName: st.newName, newGender: st.newGender, hasError: st.error !== '', error: st.error,
+      setName: function (e) { self.setState({ newName: e.target.value }); },
+      setGender: function (e) { self.setState({ newGender: e.target.value }); },
+      addEvent: addEvent
+    };
+  }
+}
+</script>
+</body>
+</html>

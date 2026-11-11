@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin – Report builder</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Admin navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+      <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+        <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+        <span style="font-size: 12px; color: #A9B8CC">Admin panel</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="9">
+        <a href="{{item.href}}" aria-current="{{item.current}}" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">AH</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Ali Haroona</span>
+        <span style="color: #A9B8CC; font-size: 12px">Super Admin</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 360px; min-width: 0">
+        <span style="font-size: 13px; color: #475569"><a href="AdminReports.dc.html">Reports</a> / Report builder</span>
+        <label style="display: flex; flex-direction: column; gap: 4px">
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Report name</span>
+          <input value="Male entries by association" style="min-height: 48px; padding: 0 12px; margin-left: -12px; border: 1px solid transparent; border-radius: 10px; background: transparent; font: 700 28px 'Space Grotesk', sans-serif; color: #0F172A; max-width: 100%">
+        </label>
+        <span style="color: #475569">Saved today, 11:05 · Long / Short List entries</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #334155">Share
+          <select style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font: 14px Inter, sans-serif; color: #0F172A">
+            <option>Only me</option>
+            <option selected>Everyone with report access</option>
+          </select>
+        </label>
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 8px">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Export to Excel
+        </button>
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as copy</button>
+        <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Save</button>
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #FECACA; background: #FFFFFF; color: #B91C1C; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 8px">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>
+          Delete
+        </button>
+      </div>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <aside aria-label="Report settings" style="flex: 1 1 320px; max-width: 100%; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
+        <div style="padding: 16px 18px; border-bottom: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 6px">
+          <label for="rb-subject" style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.05em">Subject</label>
+          <select id="rb-subject" style="min-height: 44px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font: 14px Inter, sans-serif; color: #0F172A">
+            <option>People</option>
+            <option selected>Long / Short List entries</option>
+            <option>Submissions</option>
+            <option>Phase 1 answers</option>
+            <option>Phase 2 numbers</option>
+            <option>Clothing sizes</option>
+          </select>
+        </div>
+
+        <div style="padding: 16px 18px; border-bottom: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.05em">Columns</span>
+            <span style="font-size: 12px; color: #475569">6 shown · drag to reorder</span>
+          </div>
+          <sc-for list="{{colGroups}}" as="g" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; color: #475569; padding: 4px 0">{{g.name}}</span>
+              <sc-for list="{{g.cols}}" as="c" hint-placeholder-count="3">
+                <label style="{{c.row}}">
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="#94A3B8" style="flex-shrink: 0"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+                  <input type="checkbox" checked="{{c.on}}" onChange="{{c.toggle}}" style="width: 18px; height: 18px; accent-color: #1F3A5F; flex-shrink: 0">
+                  <span>{{c.label}}</span>
+                </label>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="padding: 16px 18px; border-bottom: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.05em">Filters</span>
+            <span style="font-size: 12px; color: #475569">Match all rules</span>
+          </div>
+          <sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 13px">
+              <span style="font-weight: 600">{{f.field}}</span>
+              <span style="color: #475569">{{f.op}}</span>
+              <span style="flex: 1 1 auto; min-width: 0; font-weight: 600; color: #1F3A5F">{{f.value}}</span>
+              <button type="button" aria-label="{{f.removeLabel}}" style="width: 32px; height: 32px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: #475569; display: inline-flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
+            </div>
+          </sc-for>
+          <button type="button" style="align-self: flex-start; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px dashed #94A3B8; background: #FFFFFF; color: #1F3A5F; font: 600 13px Inter, sans-serif">+ Add rule</button>
+        </div>
+
+        <div style="padding: 16px 18px; border-bottom: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.05em">Group by (up to 2)</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #475569">1st
+              <select style="min-height: 40px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font: 14px Inter, sans-serif; color: #0F172A"><option>Association</option></select>
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #475569">2nd
+              <select style="min-height: 40px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font: 14px Inter, sans-serif; color: #0F172A"><option>Sport</option></select>
+            </label>
+          </div>
+          <label style="display: flex; align-items: center; gap: 8px; min-height: 36px; font-size: 13px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #1F3A5F">Count of rows (subtotals and grand total)</label>
+        </div>
+
+        <div style="padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.05em">Sort</span>
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 8px">
+            <select aria-label="Sort by" style="min-height: 40px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font: 14px Inter, sans-serif; color: #0F172A"><option>Full name</option></select>
+            <select aria-label="Sort direction" style="min-height: 40px; padding: 0 10px; border: 1px solid #CBD5E1; border-radius: 10px; background: #FFFFFF; font: 14px Inter, sans-serif; color: #0F172A"><option>A → Z</option></select>
+          </div>
+        </div>
+      </aside>
+
+      <section aria-labelledby="res-title" style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="res-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600">Results</h2>
+            <span style="font-size: 13px; color: #475569">1,240 rows · grouped by Association › Sport · sorted by Full name</span>
+          </div>
+          <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #DBEAFE; color: #1E40AF; font-size: 12px; font-weight: 600">Updates as you change settings</span>
+        </div>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 640px; border-collapse: collapse">
+            <thead>
+              <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                <th scope="col" style="padding: 12px 20px; font-weight: 600">Full name</th>
+                <th scope="col" style="padding: 12px; font-weight: 600">Gender</th>
+                <th scope="col" style="padding: 12px; font-weight: 600">Date of birth</th>
+                <th scope="col" style="padding: 12px; font-weight: 600">Event</th>
+                <th scope="col" style="padding: 12px; font-weight: 600">List</th>
+                <th scope="col" style="padding: 12px 20px; font-weight: 600">Passport scan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="14">
+                <sc-if value="{{r.isG1}}" hint-placeholder-val="{{false}}">
+                  <tr style="background: #E8EEF6; border-top: 1px solid #CBD5E1">
+                    <th scope="colgroup" colspan="6" style="padding: 10px 20px; text-align: left; font-weight: 700; color: #1F3A5F">{{r.label}} <span style="font-weight: 500; color: #334155">· {{r.count}} rows</span></th>
+                  </tr>
+                </sc-if>
+                <sc-if value="{{r.isG2}}" hint-placeholder-val="{{false}}">
+                  <tr style="background: #F8FAFC; border-top: 1px solid #E2E8F0">
+                    <th scope="colgroup" colspan="6" style="padding: 8px 20px 8px 36px; text-align: left; font-weight: 600; color: #334155">{{r.label}} <span style="font-weight: 500; color: #475569">· {{r.count}}</span></th>
+                  </tr>
+                </sc-if>
+                <sc-if value="{{r.isRow}}" hint-placeholder-val="{{true}}">
+                  <tr style="border-top: 1px solid #EEF2F6">
+                    <td style="padding: 10px 20px 10px 36px; font-weight: 600">{{r.name}}</td>
+                    <td style="padding: 10px 12px">{{r.g}}</td>
+                    <td style="padding: 10px 12px; color: #334155">{{r.dob}}</td>
+                    <td style="padding: 10px 12px">{{r.event}}</td>
+                    <td style="padding: 10px 12px"><span style="{{r.listStyle}}">{{r.list}}</span></td>
+                    <td style="padding: 10px 20px; font-weight: 600; color: {{r.passColor}}">{{r.pass}}</td>
+                  </tr>
+                </sc-if>
+                <sc-if value="{{r.isSub}}" hint-placeholder-val="{{false}}">
+                  <tr style="border-top: 1px solid #E2E8F0">
+                    <th scope="row" colspan="5" style="padding: 8px 20px 8px 36px; text-align: left; font-size: 13px; font-weight: 600; color: #475569">{{r.label}}</th>
+                    <td style="padding: 8px 20px; font-weight: 700">{{r.count}}</td>
+                  </tr>
+                </sc-if>
+              </sc-for>
+              <tr style="border-top: 2px solid #1F3A5F; background: #F1F5F9">
+                <th scope="row" colspan="5" style="padding: 14px 20px; text-align: left; font-weight: 700">Grand total · 38 associations</th>
+                <td style="padding: 14px 20px; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700">1,240</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px; border-top: 1px solid #E2E8F0">
+          <span style="font-size: 13px; color: #475569">Showing 500 of 1,240 — export for all</span>
+          <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Export to Excel</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cols: { name: true, gender: true, dob: true, nat: false, fn: false, assoc: true, sport: true, event: true, list: true, status: false, tshirt: false, track: false, suit: false, pass: true, expiry: false } };
+  }
+  renderVals() {
+    var self = this;
+    var navItems = [['Dashboard', 'AdminDashboard.dc.html'], ['Games', 'SetupPhases.dc.html'], ['Associations', 'AdminAssociations.dc.html'], ['Sports & events', 'AdminSports.dc.html'], ['Clothing items', 'SetupShortList.dc.html'], ['People', 'AdminPeople.dc.html'], ['Reports', 'AdminReports.dc.html'], ['Audit log', '#'], ['STA users', '#']];
+    var nav = navItems.map(function (it, i) {
+      var a = i === 6;
+      return { label: it[0], href: it[1], current: a ? 'page' : 'false', style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (a ? '600' : '500') + '; color: ' + (a ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (a ? '#23406A' : 'transparent') };
+    });
+    var col = function (id, label) {
+      var on = !!self.state.cols[id];
+      return {
+        label: label, on: on,
+        toggle: function () { var c = Object.assign({}, self.state.cols); c[id] = !c[id]; self.setState({ cols: c }); },
+        row: 'display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 8px; border-radius: 8px; cursor: grab; ' + (on ? 'background: #F1F5FB; font-weight: 600' : 'color: #334155')
+      };
+    };
+    var colGroups = [
+      { name: 'Person', cols: [col('name', 'Full name'), col('gender', 'Gender'), col('dob', 'Date of birth'), col('nat', 'Nationality'), col('fn', 'Function (officials)')] },
+      { name: 'Entry', cols: [col('assoc', 'Association'), col('sport', 'Sport'), col('event', 'Event'), col('list', 'List (Long / Short)'), col('status', 'Submission status')] },
+      { name: 'Clothing', cols: [col('tshirt', 'T-Shirt'), col('track', 'Tracksuit'), col('suit', 'Suit')] },
+      { name: 'Documents', cols: [col('pass', 'Passport scan uploaded'), col('expiry', 'Passport expiry date')] }
+    ];
+    var filters = [
+      { field: 'Game', op: 'is', value: '6th Asian Indoor & Martial Arts Games 2026' },
+      { field: 'Association', op: 'is any of', value: 'BJF, BKF, BWF +35 more' },
+      { field: 'Gender', op: 'is', value: 'Male' }
+    ].map(function (f) { f.removeLabel = 'Remove rule ' + f.field; return f; });
+    var listStyle = function (s) { return 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; ' + (s === 'Short' ? 'background: #EDE9FE; color: #5B21B6' : 'background: #FEF3C7; color: #92400E'); };
+    var row = function (name, dob, event, list, pass) { return { isRow: true, name: name, g: 'M', dob: dob, event: event, list: list, listStyle: listStyle(list), pass: pass ? 'Yes' : 'No', passColor: pass ? '#166534' : '#9A3412' }; };
+    var g1 = function (label, count) { return { isG1: true, label: label, count: count }; };
+    var g2 = function (label, count) { return { isG2: true, label: label, count: count }; };
+    var sub = function (label, count) { return { isSub: true, label: label, count: count }; };
+    var rows = [
+      g1('Bahrain Judo Federation', 3), g2('Judo', 3),
+      row('Abdulla Hasan Mirza', '04 Feb 2002', "Male -73kg", 'Short', true),
+      row('Hasan Ali Abdulrasool', '22 Aug 2000', "Male -81kg", 'Short', true),
+      row('Mohamed Jaafar Saleh', '17 Jun 2004', "Male -66kg", 'Long', true),
+      sub('Count · Judo', 3),
+      g1('Bahrain Weightlifting Federation', 4), g2('Weightlifting', 4),
+      row('Ali Redha Isa', '19 Jan 2001', "Male 95kg", 'Short', true),
+      row('Hamad Jassim Buali', '02 Jul 2005', "Male 60kg", 'Short', true),
+      row('Sayed Mahmood Hashim', '08 Oct 1999', "Male 110kg", 'Short', true),
+      row('Yousif Abdulla Al Mannai', '14 Mar 2003', "Male 60kg", 'Short', true),
+      sub('Count · Weightlifting', 4),
+      g1('Bahrain Karate Federation', 2), g2('Karate', 2),
+      row('Ahmed Isa Al Khaja', '30 Nov 2003', "Male Kumite -67kg", 'Long', false),
+      row('Jassim Mohamed Rashed', '12 May 2001', "Male Kata", 'Long', true),
+      sub('Count · Karate', 2)
+    ];
+    return { nav: nav, colGroups: colGroups, filters: filters, rows: rows };
+  }
+}
+</script>
+</body>
+</html>

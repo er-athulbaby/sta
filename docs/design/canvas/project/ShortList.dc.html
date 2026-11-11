@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portal – Phase 4 Short List</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1F3A5F}a:hover{color:#0F2440}
+</style>
+</helmet>
+<div style="position: relative; min-height: 100vh; display: flex; flex-wrap: wrap; background: #F5F7FA; font-family: Inter, system-ui, sans-serif; color: #0F172A; font-size: 14px">
+
+  <nav aria-label="Portal navigation" style="flex: 1 1 248px; max-width: 100%; box-sizing: border-box; background: #0F2440; color: #E2E8F0; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px">
+        <div style="width: 40px; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 4px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><img src="/_blob/2f304cb4202092a8a167a0c221c1c36f" alt="Bahrain Olympic Committee logo" style="width: 100%; height: 100%; object-fit: contain" /></div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 12px; color: #A9B8CC">Bahrain Olympic Committee</span>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 16px; color: #FFFFFF">Sports Entry</span>
+          <span style="font-size: 12px; color: #A9B8CC">Association portal</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #1A3358">
+        <span style="display: inline-flex; width: 64px; height: 40px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; align-items: center; justify-content: center"><img src="/_blob/bb54e4c8de5b4e8f8217fbdc9a5f32b0" alt="Bahrain Weightlifting Federation logo" style="width: 100%; height: 100%; object-fit: contain" /></span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-weight: 600; font-size: 13px; color: #FFFFFF">Bahrain Weightlifting Federation</span>
+          <span style="font-size: 12px; color: #A9B8CC">BWF</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{nav}}" as="item" hint-placeholder-count="6">
+        <a href="#" style="{{item.style}}">{{item.label}}</a>
+      </sc-for>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 8px; border-top: 1px solid #23406A">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px">MK</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="color: #FFFFFF; font-weight: 600; font-size: 13px">Mariam Khalil</span>
+        <span style="color: #A9B8CC; font-size: 12px">Association Editor</span>
+      </div>
+    </div>
+  </nav>
+
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px">
+
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; background: #F5F3FF; border: 1px solid #DDD6FE; border-radius: 14px; padding: 16px 20px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: #475569"><a href="#">Games</a> / 6th Asian Indoor &amp; Martial Arts Games 2026 / Phase 4</span>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700">Short List</h1>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #EDE9FE; color: #5B21B6; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #6D28D9; flex-shrink: 0"></span>Phase 4</span>
+          <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #E0E7FF; color: #1E3A8A; font-size: 12px; font-weight: 600">Draft · saved 09:20</span>
+        </div>
+        <span style="color: #475569">Deadline 5 Nov 2026 · 2 days left · Choose from your submitted Long List</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Preview PDF</button>
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif">Save as draft</button>
+        <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif">Submit for approval</button>
+      </div>
+    </header>
+
+    <div role="note" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; color: #334155">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B21B6" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v5h1"/></svg>
+      Everyone on your Long List is shown per sport. Tick the people for the Short List — the counts update as you tick. Going over a maximum is allowed only with a justification.
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <section aria-labelledby="sport-title" style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="sport-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">Weightlifting</h2>
+            <span style="font-size: 13px; color: #475569">Long List: 5 athletes, 3 team officials · <strong style="color: #0F172A">{{pickedText}}</strong></span>
+          </div>
+          <span style="{{statusStyle}}">{{statusText}}</span>
+        </div>
+
+        <h3 style="margin: 0; padding: 14px 20px 6px; font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">Athletes</h3>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 620px; border-collapse: collapse">
+            <thead>
+              <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                <th scope="col" style="padding: 8px 20px; font-weight: 600">On Short List</th>
+                <th scope="col" style="padding: 8px 12px; font-weight: 600">Gender</th>
+                <th scope="col" style="padding: 8px 12px; font-weight: 600">Event</th>
+                <th scope="col" style="padding: 8px 20px; font-weight: 600">Passport</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{athletes}}" as="p" hint-placeholder-count="5">
+                <tr style="border-top: 1px solid #EEF2F6; background: {{p.bg}}">
+                  <td style="padding: 4px 20px">
+                    <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
+                      <input type="checkbox" checked="{{p.on}}" onChange="{{p.toggle}}" style="width: 22px; height: 22px; accent-color: #6D28D9; flex-shrink: 0">
+                      <span style="width: 34px; height: 34px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0" aria-hidden="true">{{p.initials}}</span>
+                      <span style="display: flex; flex-direction: column"><span style="font-weight: 600; color: {{p.nameColor}}">{{p.name}}</span><span style="font-size: 12px; color: #475569">{{p.code}}</span></span>
+                    </label>
+                  </td>
+                  <td style="padding: 4px 12px">{{p.gender}}</td>
+                  <td style="padding: 4px 12px; font-weight: 600; color: #1F3A5F">{{p.event}}</td>
+                  <td style="padding: 4px 20px"><a href="#" aria-label="{{p.view}}" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">View</a></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="margin: 0; padding: 18px 20px 6px; font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; border-top: 1px solid #E2E8F0">Team officials</h3>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 620px; border-collapse: collapse">
+            <thead>
+              <tr style="text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em">
+                <th scope="col" style="padding: 8px 20px; font-weight: 600">On Short List</th>
+                <th scope="col" style="padding: 8px 12px; font-weight: 600">Function</th>
+                <th scope="col" style="padding: 8px 20px; font-weight: 600">Passport</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{officials}}" as="p" hint-placeholder-count="3">
+                <tr style="border-top: 1px solid #EEF2F6; background: {{p.bg}}">
+                  <td style="padding: 4px 20px">
+                    <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
+                      <input type="checkbox" checked="{{p.on}}" onChange="{{p.toggle}}" style="width: 22px; height: 22px; accent-color: #6D28D9; flex-shrink: 0">
+                      <span style="font-weight: 600; color: {{p.nameColor}}">{{p.name}}</span>
+                    </label>
+                  </td>
+                  <td style="padding: 4px 12px">{{p.fn}}</td>
+                  <td style="padding: 4px 20px"><a href="#" aria-label="{{p.view}}" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">View</a></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 16px">
+        <section aria-labelledby="count-title" aria-live="polite" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="count-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Weightlifting · ticked vs maximum</h2>
+            <span style="font-size: 12px; color: #475569">Updates as you tick</span>
+          </div>
+          <sc-for list="{{meters}}" as="m" hint-placeholder-count="3">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 14px">
+                <span style="font-weight: 600">{{m.label}}</span>
+                <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: {{m.color}}">{{m.value}} / max {{m.max}}</span>
+              </div>
+              <div style="height: 8px; border-radius: 999px; background: #E2E8F0; overflow: hidden">
+                <div style="height: 8px; border-radius: 999px; background: {{m.bar}}; width: {{m.pct}}%"></div>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+
+        <sc-if value="{{over}}" hint-placeholder-val="{{true}}">
+          <section aria-labelledby="just-title" style="background: #F5F3FF; border: 2px solid #6D28D9; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <h2 id="just-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">Justification needed</h2>
+              <span style="font-size: 13px; font-weight: 600; color: #5B21B6">{{overText}}</span>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Why do you need more than the maximum? (required to submit)
+              <textarea rows="6" style="padding: 10px 12px; border: 1px solid #A78BFA; border-radius: 10px; font: 14px/1.5 Inter, sans-serif; resize: vertical; background: #FFFFFF">Hamad Jassim Buali and Yousif Abdulla Al Mannai both lift in Male 60kg and finished first and second at the 2026 national championship. We ask to enter four male athletes so that both can compete; the federation covers the cost of the extra athlete.</textarea>
+            </label>
+            <span style="font-size: 12px; color: #475569">STA sees this on the Short List PDF and decides.</span>
+          </section>
+        </sc-if>
+        <sc-if value="{{withinLimits}}" hint-placeholder-val="{{false}}">
+          <div role="status" style="padding: 12px 16px; border-radius: 12px; background: #DCFCE7; color: #166534; font-weight: 600">Within all maximums — no justification needed.</div>
+        </sc-if>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { on: { ya: true, hj: true, ar: true, sm: true, nk: true, es: true, fa: false, km: true } };
+  }
+  renderVals() {
+    var self = this;
+    var on = this.state.on;
+    var LIM = { male: 3, female: 3, officials: 2 };
+    var toggle = function (id) { return function () { var n = Object.assign({}, self.state.on); n[id] = !n[id]; self.setState({ on: n }); }; };
+    var row = function (p) {
+      var isOn = !!on[p.id];
+      p.on = isOn; p.toggle = toggle(p.id); p.bg = isOn ? '#FFFFFF' : '#F8FAFC'; p.nameColor = isOn ? '#0F172A' : '#475569';
+      p.view = 'View passport scan of ' + p.name;
+      return p;
+    };
+    var athletes = [
+      { id: 'ya', initials: 'YA', code: 'BWF-AT-0012', name: 'Yousif Abdulla Al Mannai', g: 'm', event: 'Male 60kg' },
+      { id: 'hj', initials: 'HJ', code: 'BWF-AT-0015', name: 'Hamad Jassim Buali', g: 'm', event: 'Male 60kg' },
+      { id: 'ar', initials: 'AR', code: 'BWF-AT-0007', name: 'Ali Redha Isa', g: 'm', event: 'Male 95kg' },
+      { id: 'sm', initials: 'SM', code: 'BWF-AT-0003', name: 'Sayed Mahmood Hashim', g: 'm', event: 'Male 110kg' },
+      { id: 'nk', initials: 'NK', code: 'BWF-AT-0021', name: 'Noor Khalid Al Sayed', g: 'f', event: 'Female 57kg' }
+    ].map(function (p) { p.gender = p.g === 'm' ? 'Male' : 'Female'; return row(p); });
+    var officials = [
+      { id: 'es', name: 'Ebrahim Ahmed Sanad', fn: 'Head Coach' },
+      { id: 'fa', name: 'Fatema Hasan Ali', fn: 'Physio' },
+      { id: 'km', name: 'Khalid Yusuf Murad', fn: 'Team Manager' }
+    ].map(row);
+    var male = 0, female = 0, offs = 0;
+    athletes.forEach(function (p) { if (p.on) { if (p.g === 'm') { male += 1; } else { female += 1; } } });
+    officials.forEach(function (p) { if (p.on) { offs += 1; } });
+    var meter = function (label, v, max) {
+      var bad = v > max;
+      return { label: label, value: v, max: max, pct: Math.min(100, Math.round((v / max) * 100)), color: bad ? '#9A3412' : '#0F172A', bar: bad ? '#C2410C' : '#6D28D9', bad: bad };
+    };
+    var meters = [meter('Male', male, LIM.male), meter('Female', female, LIM.female), meter('Team officials', offs, LIM.officials)];
+    var overs = meters.filter(function (m) { return m.bad; }).map(function (m) { return m.label + ' ' + m.value + ' / max ' + m.max; });
+    var over = overs.length > 0;
+    var pill = function (bg, fg) { return 'display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + bg + '; color: ' + fg; };
+    var navItems = ['Home', 'Games', 'Athletes & officials', 'Excel import', 'Team', 'Association profile'];
+    var nav = navItems.map(function (label, i) {
+      var active = i === 1;
+      return { label: label, style: 'display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: ' + (active ? '600' : '500') + '; color: ' + (active ? '#FFFFFF' : '#C7D2E0') + '; background: ' + (active ? '#23406A' : 'transparent') };
+    });
+    return {
+      nav: nav, athletes: athletes, officials: officials, meters: meters,
+      pickedText: 'Ticked: ' + male + ' male, ' + female + ' female, ' + offs + ' team officials',
+      over: over, withinLimits: !over,
+      overText: 'Over the maximum: Weightlifting — ' + overs.join(' · '),
+      statusText: over ? 'Over a maximum' : 'Within maximums',
+      statusStyle: over ? pill('#FFEDD5', '#9A3412') : pill('#DCFCE7', '#166534')
+    };
+  }
+}
+</script>
+</body>
+</html>
