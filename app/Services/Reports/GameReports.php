@@ -20,14 +20,49 @@ final class GameReports
         'phase2Totals' => 'Phase 2 totals',
         'longList' => 'Long List',
         'shortList' => 'Short List',
-        'overLimit' => 'Short List over limit',
+        'overLimit' => 'Over limit',
         'expiringDocuments' => 'Expiring documents',
-        'clothingSizeCounts' => 'Clothing sizes (counts)',
-        'clothingSizesByPerson' => 'Clothing sizes (per person)',
+        'clothingSizeCounts' => 'Clothing size counts',
+        'clothingSizesByPerson' => 'Clothing sizes by person',
     ];
+
+    /** Canvas AdminReports list: report => [phase of its chip (null shows "Any"), hint]. */
+    public const META = [
+        'phase1Answers' => [1, 'Yes / No / Maybe per association and sport'],
+        'phase2Totals' => [2, 'Athletes per association, sport and gender'],
+        'longList' => [3, 'Everyone entered in Phase 3'],
+        'shortList' => [4, 'Final entries with justifications'],
+        'overLimit' => [4, 'Short Lists above a maximum, with justification'],
+        'expiringDocuments' => [null, 'Passports expiring before the game ends'],
+        'clothingSizeCounts' => [3, 'How many of each size, per item'],
+        'clothingSizesByPerson' => [3, 'One row per person, one column per item'],
+    ];
+
+    /** Columns the preview's "All N associations" row adds up. */
+    private const SUMS = ['phase2Totals' => [4, 5, 6, 7, 8, 9], 'clothingSizeCounts' => [3]];
 
     public const PERSON_HEADINGS = ['Association', 'Code', 'Name', 'Type', 'Sport', 'Event', 'Gender', 'Date of birth',
         'Age at games start', 'Nationality', 'Passport expiry'];
+
+    /**
+     * The preview's total row: how many associations a report covers and its column sums (column index => sum).
+     * Phase 2 adds only its per-sport Total rows (the event rows would count twice); clothing counts leave out their
+     * own "All associations" rows.
+     *
+     * @param  array{headings: list<string>, rows: list<list<scalar|null>>}  $data
+     * @return array{associations: int, sums: array<int, int>}
+     */
+    public static function summary(string $report, array $data): array
+    {
+        $rows = array_filter($data['rows'], fn (array $r) => $r[0] !== 'All associations'
+            && ($report !== 'phase2Totals' || $r[2] === 'Total'));
+        $sums = [];
+        foreach (self::SUMS[$report] ?? [] as $i) {
+            $sums[$i] = array_sum(array_map(fn (array $r) => (int) ($r[$i] ?? 0), $rows));
+        }
+
+        return ['associations' => count(array_unique(array_column($rows, 0))), 'sums' => $sums];
+    }
 
     public function phase1Answers(Game $game): array
     {

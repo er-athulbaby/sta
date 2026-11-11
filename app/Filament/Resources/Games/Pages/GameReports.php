@@ -3,24 +3,21 @@
 namespace App\Filament\Resources\Games\Pages;
 
 use App\Enums\StaPermission;
-use App\Exports\LiteralRow;
+use App\Filament\Concerns\ShowsReadyMadeReports;
 use App\Filament\Resources\Games\GameResource;
-use App\Services\Reports\GameReports as Reports;
+use App\Models\Game;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
-use Illuminate\Support\Str;
-use OpenSpout\Writer\XLSX\Writer;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/** One game's ready-made reports (linked from the games list and the game dashboard): the same band as the Reports page. */
 class GameReports extends Page
 {
     use InteractsWithRecord;
+    use ShowsReadyMadeReports;
 
     protected static string $resource = GameResource::class;
 
     protected string $view = 'filament.resources.games.pages.game-reports';
-
-    public string $report = 'phase1Answers';
 
     public static function canAccess(array $parameters = []): bool
     {
@@ -37,33 +34,13 @@ class GameReports extends Page
         return $this->record->name.' - reports';
     }
 
-    /** @return array{headings: list<string>, rows: list<list<scalar|null>>} */
-    public function reportData(): array
+    public function getPageClasses(): array
     {
-        abort_unless(array_key_exists($this->report, Reports::REPORTS), 404);
-
-        return app(Reports::class)->{$this->report}($this->record);
+        return ['sta-canvas-page'];
     }
 
-    public function export(): StreamedResponse
+    protected function reportGame(): ?Game
     {
-        $data = $this->reportData();
-
-        return response()->streamDownload(function () use ($data) {
-            $tmp = tempnam(sys_get_temp_dir(), 'rep');
-            try {
-                $writer = new Writer;
-                $writer->openToFile($tmp);
-                $writer->addRow(LiteralRow::from($data['headings']));
-                foreach ($data['rows'] as $row) {
-                    $writer->addRow(LiteralRow::from($row));
-                }
-                $writer->close();
-                readfile($tmp);
-            } finally {
-                @unlink($tmp);
-            }
-        }, Str::slug($this->record->name).'-'.Str::kebab($this->report).'.xlsx',
-            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+        return $this->record;
     }
 }

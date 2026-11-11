@@ -64,14 +64,60 @@ final readonly class ReportResult
     }
 
     /**
+     * The screen's lines (canvas AdminReportBuilder): a header opening each group (label, row count), its rows, a
+     * subtotal closing it (row count, group totals), then the grand total. Cells of group/subtotal/total lines are the
+     * column totals ('' where none).
+     *
+     * @return list<array{kind: string, level?: int, label?: string, count?: int, cells: list<string|int|float|null>}>
+     */
+    public function screenLines(): array
+    {
+        $lines = [];
+        $open = [];
+        $close = function (int $from) use (&$lines, &$open) {
+            for ($level = count($open) - 1; $level >= $from; $level--) {
+                $g = $open[$level];
+                $lines[] = ['kind' => 'subtotal', 'level' => $level, 'label' => $g['label'], 'count' => $g['count'], 'cells' => $this->totalValues($g['totals'])];
+                unset($open[$level]);
+            }
+        };
+        foreach ($this->rows as $row) {
+            foreach (array_keys($row['keys']) as $level) {
+                $id = self::keyId(array_slice($row['keys'], 0, $level + 1));
+                if (($open[$level]['id'] ?? null) === $id) {
+                    continue;
+                }
+                $close($level);
+                $group = $this->groups[$id] ?? ['label' => '—', 'count' => 0, 'totals' => []];
+                $open[$level] = [...$group, 'id' => $id];
+                $lines[] = ['kind' => 'group', 'level' => $level, 'label' => $group['label'], 'count' => $group['count'], 'cells' => []];
+            }
+            $lines[] = ['kind' => 'row', 'cells' => array_map(fn (Field $f) => $f->display($row['cells'][$f->key] ?? null), $this->columns)];
+        }
+        $close(0);
+        $lines[] = ['kind' => 'total', 'label' => "Total ({$this->rowCount})", 'count' => $this->rowCount, 'cells' => $this->totalValues($this->totals)];
+
+        return $lines;
+    }
+
+    /**
      * @param  array<string, mixed>  $totals
      * @return list<string|int|float>
      */
     private function totalCells(string $label, array $totals): array
     {
-        $cells = array_map(fn (Field $f) => array_key_exists($f->key, $totals) && $totals[$f->key] !== null ? $f->display($totals[$f->key]) : '', $this->columns);
+        $cells = $this->totalValues($totals);
         $cells[0] = $cells[0] === '' ? $label : "{$label} · {$cells[0]}";
 
         return $cells;
+    }
+
+    /**
+     * @param  array<string, mixed>  $totals
+     * @return list<string|int|float>
+     */
+    private function totalValues(array $totals): array
+    {
+        return array_map(fn (Field $f) => array_key_exists($f->key, $totals) && $totals[$f->key] !== null ? $f->display($totals[$f->key]) : '', $this->columns);
     }
 }

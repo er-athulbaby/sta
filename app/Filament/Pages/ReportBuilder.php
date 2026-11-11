@@ -3,7 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Enums\StaPermission;
-use App\Exports\LiteralRow;
+use App\Exports\Xlsx;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Models\SavedReport;
 use App\Services\Reports\Builder\Engine;
@@ -16,6 +16,7 @@ use App\Services\Reports\Builder\Subject;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Panel;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -23,7 +24,6 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
-use OpenSpout\Writer\XLSX\Writer;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Spec 14 builder. $def is raw input; ReportDefinition::fromArray() validates it on every run and save. */
@@ -77,6 +77,17 @@ class ReportBuilder extends Page
     public function getTitle(): string
     {
         return $this->reportId ? $this->name : 'New report';
+    }
+
+    public function getPageClasses(): array
+    {
+        return ['sta-canvas-page'];
+    }
+
+    /** Canvas header: breadcrumb, the report name as an editable h1, and the Share / Export / Save actions. */
+    public function getHeader(): ?View
+    {
+        return view('filament.pages.report-builder-header');
     }
 
     public function subject(): ?Subject
@@ -164,6 +175,36 @@ class ReportBuilder extends Page
         $this->def['groups'] = array_values($this->def['groups']);
     }
 
+    /** Canvas "Group by (up to 2)" selects: "" removes that level (and the next moves up), anything else sets or adds it. */
+    public function setGroup(int $i, string $field): void
+    {
+        if ($field === '') {
+            $this->removeGroup($i);
+
+            return;
+        }
+        if (! isset($this->def['groups'][$i])) {
+            if ($i !== count($this->def['groups'] ?? [])) {
+                return;
+            }
+            $this->addGroup();
+        }
+        if (isset($this->def['groups'][$i])) {
+            $this->def['groups'][$i]['field'] = $field;
+            $this->updatedDef($field, "groups.{$i}.field");
+        }
+    }
+
+    /** Drag and drop in the Columns list: move one column to another place. */
+    public function moveColumnTo(int $from, int $to): void
+    {
+        $columns = array_values((array) ($this->def['columns'] ?? []));
+        if (isset($columns[$from], $columns[$to])) {
+            array_splice($columns, $to, 0, array_splice($columns, $from, 1));
+            $this->def['columns'] = $columns;
+        }
+    }
+
     public function moveColumn(int $i, int $by): void
     {
         $columns = array_values((array) ($this->def['columns'] ?? []));
@@ -210,21 +251,8 @@ class ReportBuilder extends Page
             DB::table('saved_reports')->where('id', $this->reportId)->update(['last_run_at' => now()]);
         }
 
-        return response()->streamDownload(function () use ($result) {
-            $tmp = tempnam(sys_get_temp_dir(), 'rb');
-            try {
-                $writer = new Writer;
-                $writer->openToFile($tmp);
-                $writer->addRow(LiteralRow::from(array_map(fn (Field $f) => $f->label, $result->columns)));
-                foreach ($result->lines() as $line) {
-                    $writer->addRow(LiteralRow::from($line['cells']));
-                }
-                $writer->close();
-                readfile($tmp);
-            } finally {
-                @unlink($tmp);
-            }
-        }, (Str::slug($this->name) ?: 'report').'.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+        return Xlsx::download((Str::slug($this->name) ?: 'report').'.xlsx', array_map(fn (Field $f) => $f->label, $result->columns),
+            array_column($result->lines(), 'cells'));
     }
 
     private function persist(?SavedReport $saved, string $name, string $visibility): void

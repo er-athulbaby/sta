@@ -276,3 +276,11 @@ it('exports text starting with "=" as literal text, never a formula', function (
     expect($sheet)->not->toMatch('/<f[ >]/')
         ->and($sheet.$strings)->toContain('=1+1');
 });
+
+it('previews the first rows with an "All N associations" total row of the per-sport totals', function () {
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    $html = livewire(GameReportsPage::class, ['record' => $this->game->getRouteKey()])->set('report', 'phase2Totals')->html();
+    expect($html)->toContain('Athletes per association, sport and gender · preview of the first 3 of 3 rows')
+        ->toMatch('/All 1 association<\/th>(\s|<!--.*?-->)*<td[^>]*>2<\/td>/s');
+});

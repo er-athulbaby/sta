@@ -364,3 +364,11 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 
 /* Task 10: the game dashboard (canvas Main.dc.html) spaces its sections 24px apart. */
 .sta-dashboard-page .fi-page-header-main-ctn, .sta-dashboard-page .fi-page-main, .sta-dashboard-page .fi-page-content { row-gap: 24px; }
+
+/* Task 12: reports (canvas AdminReports / AdminReportBuilder; layout is inline in the views) */
+.sta-report-item:not([aria-current]):hover { background: #F1F5F9 !important; }
+.sta-report-item:focus-visible, .sta-tab:focus-visible, .sta-title-input:focus-visible { outline: 2px solid var(--sta-primary); outline-offset: 2px; }
+.sta-tab { min-height: 44px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #475569; font: 600 14px Inter, sans-serif; cursor: pointer; }
+.sta-tab[aria-selected="true"] { border-bottom-color: #1F3A5F; color: #0F172A; }
+.sta-title-input:hover:not(:disabled), .sta-title-input:focus { border-color: #CBD5E1 !important; background: #FFFFFF !important; }
+.sta-rule select:hover, .sta-rule select:focus { border-color: #CBD5E1 !important; background-color: #FFFFFF !important; }
