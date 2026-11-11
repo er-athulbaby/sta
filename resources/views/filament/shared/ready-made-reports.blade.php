@@ -7,6 +7,7 @@
     $total = count($data['rows']);
     $preview = array_slice($data['rows'], 0, 6);
     [$phase, $hint] = GameReports::META[$this->report];
+    $description = GameReports::META[$this->report][2] ?? $hint;
     $summary = GameReports::summary($this->report, $data);
     $firstSum = array_key_first($summary['sums']);
     $numeric = array_map(fn (int $i) => $data['rows'] !== [] && collect($data['rows'])->every(fn ($r) => $r[$i] === null || is_int($r[$i]) || is_float($r[$i])), array_keys($data['headings']));
@@ -41,7 +42,7 @@
                         <span style="display: inline-flex; align-items: center; height: 26px; align-self: flex-start; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #F1F5F9; color: #334155; white-space: nowrap">Any</span>
                     @endif
                     <h3 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600">{{ GameReports::REPORTS[$this->report] }}</h3>
-                    <span style="font-size: 13px; color: #475569">{{ $hint }} · preview of the first {{ count($preview) }} of {{ $total }} {{ str('row')->plural($total) }}</span>
+                    <span style="font-size: 13px; color: #475569">{{ $description }} · preview of the first {{ count($preview) }} of {{ $total }} {{ str('row')->plural($total) }}</span>
                 </div>
                 <button type="button" wire:click="export" @disabled(! $hasGame) style="{{ $outline }}">
                     <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
@@ -61,7 +62,7 @@
                         @forelse ($preview as $row)
                             <tr style="border-top: 1px solid #EEF2F6">
                                 @foreach ($row as $i => $cell)
-                                    <td style="padding: {{ $pad($i) }}; white-space: nowrap; {{ $i === 0 ? 'font-weight: 600;' : '' }} {{ $numeric[$i] ? 'text-align: right' : '' }}">{{ $cell }}</td>
+                                    <td style="padding: {{ $pad($i) }}; white-space: nowrap; {{ $i === 0 ? 'font-weight: 600;' : '' }} {{ $numeric[$i] ? 'text-align: right;' : '' }} {{ $i === $last && $numeric[$i] ? 'font-weight: 700' : '' }}">{{ $cell }}</td>
                                 @endforeach
                             </tr>
                         @empty
@@ -80,7 +81,7 @@
                     </tbody>
                 </table>
             </div>
-            <div style="padding: 12px 20px; border-top: 1px solid #E2E8F0; font-size: 13px; color: #475569">Export to Excel gives every row. Only submitted entries are included. Expiring documents and clothing sizes use an association's Short List when its Phase 4 is submitted, otherwise its Long List.</div>
+            <div title="Only submitted entries are included. Expiring documents and clothing sizes use an association's Short List when its Phase 4 is submitted, otherwise its Long List." style="padding: 12px 20px; border-top: 1px solid #E2E8F0; font-size: 13px; color: #475569">Export to Excel gives every row.</div>
         </div>
     </div>
 </section>

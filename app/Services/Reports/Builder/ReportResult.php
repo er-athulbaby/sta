@@ -2,6 +2,8 @@
 
 namespace App\Services\Reports\Builder;
 
+use Illuminate\Support\Str;
+
 /** What a run produced: raw values; lines() formats them for the screen and Excel. */
 final readonly class ReportResult
 {
@@ -66,11 +68,12 @@ final readonly class ReportResult
     /**
      * The screen's lines (canvas AdminReportBuilder): a header opening each group (label, row count), its rows, a
      * subtotal closing it (row count, group totals), then the grand total. Cells of group/subtotal/total lines are the
-     * column totals ('' where none).
+     * column totals ('' where none). The grand total reads "Grand total · 38 associations" (the number of first-level
+     * groups, named after $groupLabel, the first group field's label) or "Grand total · 1,240 rows" without grouping.
      *
      * @return list<array{kind: string, level?: int, label?: string, count?: int, cells: list<string|int|float|null>}>
      */
-    public function screenLines(): array
+    public function screenLines(?string $groupLabel = null): array
     {
         $lines = [];
         $open = [];
@@ -95,7 +98,11 @@ final readonly class ReportResult
             $lines[] = ['kind' => 'row', 'cells' => array_map(fn (Field $f) => $f->display($row['cells'][$f->key] ?? null), $this->columns)];
         }
         $close(0);
-        $lines[] = ['kind' => 'total', 'label' => "Total ({$this->rowCount})", 'count' => $this->rowCount, 'cells' => $this->totalValues($this->totals)];
+        $topGroups = count(array_filter(array_keys($this->groups), fn (string $id) => count(json_decode($id, true)) === 1));
+        $label = $groupLabel !== null && $this->groups !== []
+            ? number_format($topGroups).' '.Str::plural(mb_strtolower($groupLabel), $topGroups)
+            : number_format($this->rowCount).' '.Str::plural('row', $this->rowCount);
+        $lines[] = ['kind' => 'total', 'label' => "Grand total · {$label}", 'count' => $this->rowCount, 'cells' => $this->totalValues($this->totals)];
 
         return $lines;
     }

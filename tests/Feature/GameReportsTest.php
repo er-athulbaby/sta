@@ -281,6 +281,6 @@ it('previews the first rows with an "All N associations" total row of the per-sp
     actingInAdmin(User::factory()->superAdmin()->create());
 
     $html = livewire(GameReportsPage::class, ['record' => $this->game->getRouteKey()])->set('report', 'phase2Totals')->html();
-    expect($html)->toContain('Athletes per association, sport and gender · preview of the first 3 of 3 rows')
+    expect($html)->toContain('Athletes entered per association and sport · preview of the first 3 of 3 rows')
         ->toMatch('/All 1 association<\/th>(\s|<!--.*?-->)*<td[^>]*>2<\/td>/s');
 });

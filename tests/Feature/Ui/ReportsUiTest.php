@@ -44,7 +44,32 @@ it('defaults to the first game the user may report on and ignores any other', fu
     actingInAdmin($user);
 
     livewire(Reports::class)->assertSet('game', $published->id)->assertDontSee('Draft Games')
-        ->set('game', $draft->id)->assertSee('No games yet.')->call('export')->assertNoFileDownloaded();
+        ->set('game', $draft->id)->assertSet('game', $published->id)
+        ->set('game', 'abc')->assertSet('game', $published->id)
+        ->call('export')->assertFileDownloaded('published-games-phase1-answers.xlsx');
+    livewire(Reports::class, ['game' => $draft->id])->assertSet('game', $published->id);
+    $this->get(Reports::getUrl().'?game=abc')->assertOk();
+    $this->get(Reports::getUrl().'?game='.$draft->id)->assertOk()->assertDontSee('Draft Games');
+});
+
+it('refuses to export a saved report whose definition no longer validates, with a message', function () {
+    $broken = savedUiReport($this->admin, 'private', 'Broken', ['columns' => ['cpr_no']]);
+
+    livewire(Reports::class)->call('exportSaved', $broken->id)->assertNoFileDownloaded()
+        ->assertNotified('This report cannot be exported');
+});
+
+it('ignores group and column moves outside the allowed range and refuses an unknown group field', function () {
+    $page = livewire(ReportBuilder::class)->call('setGroup', 0, 'association')->call('setGroup', 1, 'gender');
+    $groups = $page->get('def.groups');
+    $columns = $page->get('def.columns');
+
+    $page->call('setGroup', 5, 'full_name')->call('setGroup', -1, 'full_name')->call('setGroup', 2, 'full_name')
+        ->assertSet('def.groups', $groups)
+        ->call('moveColumnTo', 0, 99)->call('moveColumnTo', -1, 0)->assertSet('def.columns', $columns)
+        ->call('setGroup', 0, 'nope')->assertSee('Choose a field to group by.')
+        ->call('save')->assertHasErrors('groups.0.field');
+    expect(SavedReport::count())->toBe(0);
 });
 
 it('adds up only the per-sport totals of Phase 2 and leaves out the "All associations" clothing rows', function () {
@@ -106,7 +131,7 @@ it('groups from the 1st / 2nd selects with group rows, subtotals and a grand tot
         ->set('def.columns', ['full_name', 'association'])
         ->call('setGroup', 0, 'association')
         ->assertSet('def.groups', [['field' => 'association', 'bucket' => null]]);
-    expect($page->html())->toMatch('/grouped by Association.*background: #E8EEF6.*Bahrain Judo Federation <span[^>]*>· 2 rows.*Count · Bahrain Judo Federation.*border-top: 2px solid #1F3A5F.*Total \(2\)/s');
+    expect($page->html())->toMatch('/grouped by Association.*background: #E8EEF6.*Bahrain Judo Federation <span[^>]*>· 2 rows.*Count · Bahrain Judo Federation.*border-top: 2px solid #1F3A5F.*Grand total · 1 association<\/th>.*?<td[^>]*font-size: 18px[^>]*>2<\/td>/su');
 
     $page->call('setGroup', 1, 'full_name')->assertCount('def.groups', 2)
         ->call('setGroup', 0, '')->assertSet('def.groups', [['field' => 'full_name', 'bucket' => null]])

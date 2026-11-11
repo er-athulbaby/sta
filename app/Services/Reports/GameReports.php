@@ -26,10 +26,10 @@ final class GameReports
         'clothingSizesByPerson' => 'Clothing sizes by person',
     ];
 
-    /** Canvas AdminReports list: report => [phase of its chip (null shows "Any"), hint]. */
+    /** Canvas AdminReports list: report => [phase of its chip (null shows "Any"), hint, optional preview description]. */
     public const META = [
         'phase1Answers' => [1, 'Yes / No / Maybe per association and sport'],
-        'phase2Totals' => [2, 'Athletes per association, sport and gender'],
+        'phase2Totals' => [2, 'Athletes per association, sport and gender', 'Athletes entered per association and sport'],
         'longList' => [3, 'Everyone entered in Phase 3'],
         'shortList' => [4, 'Final entries with justifications'],
         'overLimit' => [4, 'Short Lists above a maximum, with justification'],

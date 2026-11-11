@@ -205,7 +205,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($result->screenLines() as $line)
+                            @foreach ($result->screenLines($groups !== [] ? ($fields[$groups[0]['field'] ?? '']->label ?? null) : null) as $line)
                                 @if ($line['kind'] === 'group' && $line['level'] === 0)
                                     <tr style="background: #E8EEF6; border-top: 1px solid #CBD5E1">
                                         <th scope="colgroup" colspan="{{ $n }}" style="padding: 10px 20px; text-align: left; font-weight: 700; color: #1F3A5F">{{ $line['label'] }} <span style="font-weight: 500; color: #334155">· {{ number_format($line['count']) }} {{ str('row')->plural($line['count']) }}</span></th>
@@ -224,9 +224,9 @@
                                     @php
                                         $cells = $line['cells'];
                                         $text = $line['kind'] === 'subtotal' ? 'Count · '.$line['label'] : $line['label'];
-                                        if ($line['kind'] === 'subtotal' && $n > 1 && $cells[$n - 1] === '') {
+                                        if ($n > 1 && $cells[$n - 1] === '') {
                                             $cells[$n - 1] = number_format($line['count']);
-                                        } elseif ($line['kind'] === 'subtotal') {
+                                        } else {
                                             $text .= ' ('.number_format($line['count']).')';
                                         }
                                         if ($cells[0] !== '') {

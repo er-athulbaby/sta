@@ -63,11 +63,11 @@ it('updates results live and saves a new report', function () {
     actingInAdmin($this->owner);
 
     livewire(ReportBuilder::class)
-        ->assertSee('Ali Hasan')->assertSee('Karim Ahmed')->assertSee('Total (3)')
+        ->assertSee('Ali Hasan')->assertSee('Karim Ahmed')->assertSee('Grand total · 3 rows')
         ->call('addFilter')
         ->set('def.filters.0.op', 'contains')
         ->set('def.filters.0.value', 'ali')
-        ->assertSee('Ali Hasan')->assertDontSee('Karim Ahmed')->assertSee('Total (1)')
+        ->assertSee('Ali Hasan')->assertDontSee('Karim Ahmed')->assertSee('Grand total · 1 row')
         ->set('name', 'Judo people')
         ->set('visibility', 'shared')
         ->call('save')
@@ -86,7 +86,7 @@ it('resets the definition when the subject changes and asks for a game', functio
         ->assertSet('def.columns', Registry::get('entries')->defaultColumns())
         ->assertSee('Choose a game.')
         ->set('def.game_id', (string) $game->id)
-        ->assertDontSee('Choose a game.')->assertSee('Total (0)');
+        ->assertDontSee('Choose a game.')->assertSee('Grand total · 0 rows');
 });
 
 it('refuses invalid values and too long names', function () {

@@ -13,13 +13,16 @@ use App\Services\Reports\Builder\Field;
 use App\Services\Reports\Builder\FieldType;
 use App\Services\Reports\Builder\Registry;
 use App\Services\Reports\Builder\ReportDefinition;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Url;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -37,9 +40,9 @@ class Reports extends Page
 
     protected string $view = 'filament.pages.reports';
 
-    /** The game of the ready-made reports; only games from games() are used. */
+    /** The game of the ready-made reports, always one of games() (or null when there is none). Untyped: ?game= may be any text. */
     #[Url]
-    public ?int $game = null;
+    public int|string|null $game = null;
 
     protected static function requiredPermission(): StaPermission
     {
@@ -48,7 +51,18 @@ class Reports extends Page
 
     public function mount(): void
     {
-        $this->game ??= $this->games()->keys()->first();
+        $this->game = $this->allowedGame($this->game);
+    }
+
+    public function updatedGame(mixed $value): void
+    {
+        $this->game = $this->allowedGame($value);
+    }
+
+    /** The given game id if this user may report on it, else the first game they may. */
+    private function allowedGame(mixed $id): ?int
+    {
+        return is_numeric($id) && $this->games()->has((int) $id) ? (int) $id : $this->games()->keys()->first();
     }
 
     public function getPageClasses(): array
@@ -84,7 +98,7 @@ class Reports extends Page
 
     protected function reportGame(): ?Game
     {
-        return $this->game !== null && $this->games()->has($this->game) ? Game::find($this->game) : null;
+        return is_numeric($this->game) && $this->games()->has((int) $this->game) ? Game::find((int) $this->game) : null;
     }
 
     /**
@@ -125,11 +139,18 @@ class Reports extends Page
     }
 
     /** A saved card's "Export to Excel": the same file as the builder's export, for a report this user may see. */
-    public function exportSaved(int $id): StreamedResponse
+    public function exportSaved(int $id): ?StreamedResponse
     {
         $saved = SavedReport::findOrFail($id);
         $this->authorize('view', $saved);
-        $result = app(Engine::class)->run(ReportDefinition::fromArray($saved->definition, auth()->user()), null);
+        try {
+            $definition = ReportDefinition::fromArray($saved->definition, auth()->user());
+        } catch (ValidationException $e) {
+            Notification::make()->title('This report cannot be exported')->body(Arr::first(Arr::flatten($e->errors())))->danger()->send();
+
+            return null;
+        }
+        $result = app(Engine::class)->run($definition, null);
         DB::table('saved_reports')->where('id', $saved->id)->update(['last_run_at' => now()]); // not updated_at: running is not editing
 
         return Xlsx::download((Str::slug($saved->name) ?: 'report').'.xlsx', array_map(fn (Field $f) => $f->label, $result->columns),
