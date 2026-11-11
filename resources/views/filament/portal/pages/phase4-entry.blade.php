@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    {{-- Canvas: ShortList.dc.html (header band via getHeader()). --}}
     @include('filament.portal.partials.phase-top', ['pdfKey' => 'short_list', 'pdfLabel' => 'View Short List PDF'])
 
     @if (! $this->longListSubmitted())
@@ -8,137 +9,175 @@
             [$slotAthletes, $slotOfficials] = $this->longListSlots();
             $people = $this->longListPeople();
             $over = $this->overLimits();
-            $sports = $this->visibleSports();
+            $kinds = ['men' => 'Male', 'women' => 'Female', 'officials' => 'Team officials'];
+            $overText = collect($over)->groupBy('sport')
+                ->map(fn ($items, $sport) => $sport.' — '.$items->map(fn ($o) => $kinds[$o['kind']].' '.$o['count'].' / max '.$o['max'])->implode(' · '))
+                ->implode('; ');
+            // People of the Long List per sport (only those that still exist in this association) and the ticked ids.
+            $ids = fn ($list) => array_values(array_filter(array_map('intval', (array) $list), fn ($id) => $people->has($id)));
+            $sports = $this->visibleSports()->map(function ($gs) use ($slotAthletes, $slotOfficials, $ids) {
+                $events = $gs->gameEvents->filter(fn ($ge) => $ids($slotAthletes[$ge->id] ?? []) !== []);
+                $officialIds = $ids($slotOfficials[$gs->id] ?? []);
+
+                return $events->isEmpty() && $officialIds === [] ? null : ['gs' => $gs, 'events' => $events, 'officials' => $officialIds,
+                    'athletes' => $events->flatMap(fn ($ge) => $ids($slotAthletes[$ge->id]))->unique()->count(), 'ticked' => $this->tickedCounts($gs)];
+            })->filter();
+            $isOver = fn (int $v, $max) => $max !== null && $v > $max;
+            $sportOver = fn ($s) => $isOver($s['ticked']['male'], $s['gs']->p4_max_men) || $isOver($s['ticked']['female'], $s['gs']->p4_max_women)
+                || $isOver($s['ticked']['officials'], $s['gs']->p4_max_officials);
+            $headRow = 'text-align: left; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.05em';
+            $subhead = 'margin: 0; font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em';
+            $view = 'display: inline-flex; align-items: center; min-height: 44px; font-weight: 600';
+            $pill = 'display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 600; ';
+            $url = fn ($path) => \App\Filament\Shared\AttachmentActions::url($path);
         @endphp
 
-        <div class="sta-banner sta-banner-info" role="note">Everyone on your Long List is shown per sport. Tick the people for the Short List — the counts update as you tick. Going over a maximum is allowed only with a justification.</div>
+        <div role="note" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; color: #334155">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B21B6" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v5h1"/></svg>
+            Everyone on your Long List is shown per sport. Tick the people for the Short List — the counts update as you tick. Going over a maximum is allowed only with a justification.
+        </div>
 
-        <div class="sta-split">
-            <div class="sta-main">
-                @foreach ($sports as $gs)
-                    @php
-                        $events = $gs->gameEvents->filter(fn ($ge) => ! empty($slotAthletes[$ge->id]));
-                        $ticked = $this->tickedCounts($gs);
-                        $sportOver = collect($over)->contains('sport', $gs->sport->name);
-                    @endphp
-                    @continue($events->isEmpty() && empty($slotOfficials[$gs->id]))
-                    <x-sta.card :heading="$gs->sport->name"
-                        :description="'Ticked: '.$ticked['male'].' male, '.$ticked['female'].' female, '.$ticked['officials'].' team officials'"
-                        wire:key="sport-{{ $gs->id }}">
-                        <x-slot:actions>
-                            <x-sta.pill :status="$sportOver ? 'warn' : 'ok'">{{ $sportOver ? 'Over a maximum' : 'Within maximums' }}</x-sta.pill>
-                        </x-slot:actions>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+            <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+                @foreach ($sports as $s)
+                    @php $gs = $s['gs']; $t = $s['ticked']; @endphp
+                    <section aria-labelledby="sport-title-{{ $gs->id }}" wire:key="sport-{{ $gs->id }}" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+                            <div style="display: flex; flex-direction: column; gap: 2px">
+                                <h2 id="sport-title-{{ $gs->id }}" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">{{ $gs->sport->name }}</h2>
+                                <span style="font-size: 13px; color: #475569">Long List: {{ $s['athletes'] }} {{ Str::plural('athlete', $s['athletes']) }}, {{ count($s['officials']) }} {{ Str::plural('team official', count($s['officials'])) }} · <strong style="color: #0F172A">Ticked: {{ $t['male'] }} male, {{ $t['female'] }} female, {{ $t['officials'] }} team officials</strong></span>
+                            </div>
+                            <span style="{{ $pill }}{{ $sportOver($s) ? 'background: #FFEDD5; color: #9A3412' : 'background: #DCFCE7; color: #166534' }}">{{ $sportOver($s) ? 'Over a maximum' : 'Within maximums' }}</span>
+                        </div>
 
-                        @if ($events->isNotEmpty())
-                            <h3 class="sta-subhead">Athletes</h3>
-                            <div class="sta-scroll">
-                                <table class="sta-table">
-                                    <thead><tr><th scope="col">On Short List</th><th scope="col">Gender</th><th scope="col">Event</th><th scope="col">Passport</th></tr></thead>
+                        @if ($s['events']->isNotEmpty())
+                            <h3 style="{{ $subhead }}; padding: 14px 20px 6px">Athletes</h3>
+                            <div style="overflow-x: auto">
+                                <table style="width: 100%; min-width: 620px; border-collapse: collapse">
+                                    <thead>
+                                        <tr style="{{ $headRow }}">
+                                            <th scope="col" style="padding: 8px 20px; font-weight: 600">On Short List</th>
+                                            <th scope="col" style="padding: 8px 12px; font-weight: 600">Gender</th>
+                                            <th scope="col" style="padding: 8px 12px; font-weight: 600">Event</th>
+                                            <th scope="col" style="padding: 8px 20px; font-weight: 600">Passport</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
-                                        @foreach ($events as $ge)
-                                            @foreach ($slotAthletes[$ge->id] as $id)
-                                                @php $p = $people->get((int) $id); @endphp
-                                                @continue(! $p)
-                                                <tr wire:key="a-{{ $ge->id }}-{{ $id }}">
-                                                    <td>
-                                                        <label class="sta-tick">
-                                                            <input type="checkbox" value="{{ $id }}" wire:model.live="athletes.{{ $ge->id }}" @disabled($readOnlyReason)>
-                                                            <x-sta.person-avatar :name="$p->fullName()" />
-                                                            <span class="sta-who-text"><span class="sta-who-name">{{ $p->fullName() }}</span><span class="sta-who-sub">{{ $p->code }}</span></span>
+                                        @foreach ($s['events'] as $ge)
+                                            @php $ticked = array_map('intval', (array) ($athletes[$ge->id] ?? [])); @endphp
+                                            @foreach ($ids($slotAthletes[$ge->id]) as $id)
+                                                @php $p = $people[$id]; $on = in_array($id, $ticked, true); @endphp
+                                                <tr wire:key="a-{{ $ge->id }}-{{ $id }}" style="border-top: 1px solid #EEF2F6; background: {{ $on ? '#FFFFFF' : '#F8FAFC' }}">
+                                                    <td style="padding: 4px 20px">
+                                                        <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
+                                                            <input type="checkbox" value="{{ $id }}" wire:model.live="athletes.{{ $ge->id }}" @disabled($readOnlyReason) style="width: 22px; height: 22px; accent-color: #6D28D9; flex-shrink: 0">
+                                                            <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0">{{ \App\Support\Sta::initials($p->fullName()) }}</span>
+                                                            <span style="display: flex; flex-direction: column"><span style="font-weight: 600; color: {{ $on ? '#0F172A' : '#475569' }}">{{ $p->fullName() }}</span><span style="font-size: 12px; color: #475569">{{ $p->code }}</span></span>
                                                         </label>
                                                     </td>
-                                                    <td>{{ $p->gender?->label() }}</td>
-                                                    <td class="sta-entered">{{ $ge->event->name }} ({{ $ge->event->gender->label() }})</td>
-                                                    <td>
+                                                    <td style="padding: 4px 12px">{{ $p->gender?->label() }}</td>
+                                                    <td style="padding: 4px 12px; font-weight: 600; color: #1F3A5F">{{ $ge->event->name }}</td>
+                                                    <td style="padding: 4px 20px">
                                                         @if ($p->passport_scan_path)
-                                                            <a href="{{ \App\Filament\Shared\AttachmentActions::url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}">View</a>
+                                                            <a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="{{ $view }}">View</a>
                                                         @else
-                                                            <span class="sta-muted">Missing</span>
+                                                            <span style="color: #9A3412; font-weight: 600">Missing</span>
                                                         @endif
                                                     </td>
                                                 </tr>
                                             @endforeach
-                                            @error('athletes.'.$ge->id)<tr><td colspan="4"><p class="sta-error" role="alert">{{ $message }}</p></td></tr>@enderror
+                                            @error('athletes.'.$ge->id)<tr><td colspan="4" style="padding: 4px 20px 10px"><p role="alert" style="margin: 0; font-size: 13px; color: #B91C1C; font-weight: 600">{{ $message }}</p></td></tr>@enderror
                                         @endforeach
                                     </tbody>
                                 </table>
                             </div>
                         @endif
 
-                        @if (! empty($slotOfficials[$gs->id]))
-                            <h3 class="sta-subhead sta-subhead-rule">Team officials</h3>
-                            <div class="sta-scroll">
-                                <table class="sta-table">
-                                    <thead><tr><th scope="col">On Short List</th><th scope="col">Function</th><th scope="col">Passport</th></tr></thead>
+                        @if ($s['officials'] !== [])
+                            @php $ticked = array_map('intval', (array) ($officials[$gs->id] ?? [])); @endphp
+                            <h3 style="{{ $subhead }}; padding: 18px 20px 6px; border-top: 1px solid #E2E8F0">Team officials</h3>
+                            <div style="overflow-x: auto">
+                                <table style="width: 100%; min-width: 620px; border-collapse: collapse">
+                                    <thead>
+                                        <tr style="{{ $headRow }}">
+                                            <th scope="col" style="padding: 8px 20px; font-weight: 600">On Short List</th>
+                                            <th scope="col" style="padding: 8px 12px; font-weight: 600">Function</th>
+                                            <th scope="col" style="padding: 8px 20px; font-weight: 600">Passport</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
-                                        @foreach ($slotOfficials[$gs->id] as $id)
-                                            @php $p = $people->get((int) $id); @endphp
-                                            @continue(! $p)
-                                            <tr wire:key="o-{{ $gs->id }}-{{ $id }}">
-                                                <td>
-                                                    <label class="sta-tick">
-                                                        <input type="checkbox" value="{{ $id }}" wire:model.live="officials.{{ $gs->id }}" @disabled($readOnlyReason)>
-                                                        <span class="sta-who-text"><span class="sta-who-name">{{ $p->fullName() }}</span><span class="sta-who-sub">{{ $p->code }}</span></span>
+                                        @foreach ($s['officials'] as $id)
+                                            @php $p = $people[$id]; $on = in_array($id, $ticked, true); @endphp
+                                            <tr wire:key="o-{{ $gs->id }}-{{ $id }}" style="border-top: 1px solid #EEF2F6; background: {{ $on ? '#FFFFFF' : '#F8FAFC' }}">
+                                                <td style="padding: 4px 20px">
+                                                    <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
+                                                        <input type="checkbox" value="{{ $id }}" wire:model.live="officials.{{ $gs->id }}" @disabled($readOnlyReason) style="width: 22px; height: 22px; accent-color: #6D28D9; flex-shrink: 0">
+                                                        <span style="font-weight: 600; color: {{ $on ? '#0F172A' : '#475569' }}">{{ $p->fullName() }}</span>
                                                     </label>
                                                 </td>
-                                                <td>{{ $p->function }}</td>
-                                                <td>
+                                                <td style="padding: 4px 12px">{{ $p->function }}</td>
+                                                <td style="padding: 4px 20px">
                                                     @if ($p->passport_scan_path)
-                                                        <a href="{{ \App\Filament\Shared\AttachmentActions::url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}">View</a>
+                                                        <a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="{{ $view }}">View</a>
                                                     @else
-                                                        <span class="sta-muted">Missing</span>
+                                                        <span style="color: #9A3412; font-weight: 600">Missing</span>
                                                     @endif
                                                 </td>
                                             </tr>
                                         @endforeach
-                                        @error('officials.'.$gs->id)<tr><td colspan="3"><p class="sta-error" role="alert">{{ $message }}</p></td></tr>@enderror
+                                        @error('officials.'.$gs->id)<tr><td colspan="3" style="padding: 4px 20px 10px"><p role="alert" style="margin: 0; font-size: 13px; color: #B91C1C; font-weight: 600">{{ $message }}</p></td></tr>@enderror
                                     </tbody>
                                 </table>
                             </div>
                         @endif
-                    </x-sta.card>
+                    </section>
                 @endforeach
-
-                <x-sta.card heading="People on the Short List">
-                    @include('filament.shared.long-list-people', ['rows' => $this->listRows()])
-                </x-sta.card>
             </div>
 
-            <aside class="sta-aside" aria-label="Short List maximums">
-                <x-sta.card heading="Ticked vs maximum" description="Updates as you tick">
-                    <div class="sta-card-body sta-stack" aria-live="polite">
-                        @foreach ($sports as $gs)
-                            @php $ticked = $this->tickedCounts($gs); @endphp
-                            <p class="sta-meter-label">{{ $gs->sport->name }}</p>
-                            <x-sta.meter label="Male" :value="$ticked['male']" :max="$gs->p4_max_men" style="--meter: #6D28D9" />
-                            <x-sta.meter label="Female" :value="$ticked['female']" :max="$gs->p4_max_women" style="--meter: #6D28D9" />
-                            <x-sta.meter label="Team officials" :value="$ticked['officials']" :max="$gs->p4_max_officials" style="--meter: #6D28D9" />
+            <aside aria-label="Short List maximums" style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+                @foreach ($sports as $s)
+                    @php $gs = $s['gs']; @endphp
+                    <section aria-labelledby="count-title-{{ $gs->id }}" aria-live="polite" wire:key="meters-{{ $gs->id }}" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+                        <div style="display: flex; flex-direction: column; gap: 2px">
+                            <h2 id="count-title-{{ $gs->id }}" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">{{ $gs->sport->name }} · ticked vs maximum</h2>
+                            <span style="font-size: 12px; color: #475569">Updates as you tick</span>
+                        </div>
+                        @foreach ([['Male', $s['ticked']['male'], $gs->p4_max_men], ['Female', $s['ticked']['female'], $gs->p4_max_women], ['Team officials', $s['ticked']['officials'], $gs->p4_max_officials]] as [$label, $v, $max])
+                            @php
+                                $bad = $isOver($v, $max);
+                                $pct = $max === null ? 0 : ($max > 0 ? min(100, (int) round($v / $max * 100)) : ($v > 0 ? 100 : 0));
+                            @endphp
+                            <div style="display: flex; flex-direction: column; gap: 6px">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 14px">
+                                    <span style="font-weight: 600">{{ $label }}</span>
+                                    <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: {{ $bad ? '#9A3412' : '#0F172A' }}">{{ $v }} / {{ $max === null ? 'no max' : 'max '.$max }}</span>
+                                </div>
+                                <div role="progressbar" aria-label="{{ $gs->sport->name }} {{ $label }}" aria-valuemin="0" aria-valuemax="{{ $max ?? 0 }}" aria-valuenow="{{ $v }}" aria-valuetext="{{ $v }} / {{ $max === null ? 'no max' : 'max '.$max }}" style="height: 8px; border-radius: 999px; background: #E2E8F0; overflow: hidden">
+                                    <div style="height: 8px; border-radius: 999px; background: {{ $bad ? '#C2410C' : '#6D28D9' }}; width: {{ $pct }}%"></div>
+                                </div>
+                            </div>
                         @endforeach
-                    </div>
-                </x-sta.card>
+                    </section>
+                @endforeach
 
-                <x-sta.card heading="Justification needed" :band="$over ? 'violet' : null" :class="$over ? 'sta-justify' : ''">
-                    <div class="sta-card-body sta-stack">
-                        @if ($over)
-                            <ul class="sta-warn-list">
-                                @foreach ($over as $o)<li>{{ \App\Services\Phases\ShortListChecks::describe($o) }}</li>@endforeach
-                            </ul>
-                        @else
-                            <p class="sta-muted" role="status">Within all maximums — no justification needed.</p>
-                        @endif
-                        <label class="sta-field" for="justification">Why do you need more than the maximum? (required to submit when over, at most 2000 characters)
-                            <textarea id="justification" wire:model="justification" rows="6" maxlength="2000" class="sta-input" @disabled($readOnlyReason)></textarea>
-                        </label>
-                        @error('justification')<p class="sta-error">{{ $message }}</p>@enderror
-                        <span class="sta-muted">STA sees this on the Short List PDF and decides.</span>
+                {{-- The textarea always renders (ruling U5): the canvas violet "Justification needed" card when over; within, the
+                     canvas green status and a plain "Justification" card. One section, so Livewire's morph markers stay balanced. --}}
+                @unless ($over)
+                    <div role="status" style="padding: 12px 16px; border-radius: 12px; background: #DCFCE7; color: #166534; font-weight: 600">Within all maximums — no justification needed.</div>
+                @endunless
+                <section aria-labelledby="just-title" style="border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; {{ $over ? 'background: #F5F3FF; border: 2px solid #6D28D9' : 'background: #FFFFFF; border: 1px solid #E2E8F0' }}">
+                    <div style="display: flex; flex-direction: column; gap: 4px">
+                        <h2 id="just-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600">{{ $over ? 'Justification needed' : 'Justification' }}</h2>
+                        @if ($over)<span style="font-size: 13px; font-weight: 600; color: #5B21B6">Over the maximum: {{ $overText }}</span>@endif
                     </div>
-                </x-sta.card>
+                    <label for="justification" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Why do you need more than the maximum? (required to submit)
+                        <textarea id="justification" wire:model="justification" rows="6" maxlength="2000" @disabled($readOnlyReason) style="padding: 10px 12px; border: 1px solid {{ $over ? '#A78BFA' : '#CBD5E1' }}; border-radius: 10px; font: 14px/1.5 Inter, sans-serif; resize: vertical; background: #FFFFFF"></textarea>
+                    </label>
+                    @error('justification')<p role="alert" style="margin: 0; font-size: 13px; color: #B91C1C; font-weight: 600">{{ $message }}</p>@enderror
+                    <span style="font-size: 12px; color: #475569">STA sees this on the Short List PDF and decides.</span>
+                </section>
             </aside>
         </div>
-
-        @unless ($readOnlyReason)
-            <div><x-filament::button color="gray" wire:click="save">Save as draft</x-filament::button></div>
-        @endunless
     @endif
 
     @include('filament.partials.comments', ['comments' => $this->submission->commentsNewestFirst()])

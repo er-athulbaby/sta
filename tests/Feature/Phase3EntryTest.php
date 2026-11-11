@@ -84,7 +84,7 @@ it('flags an event over its submitted phase 2 number without blocking', function
 
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id, (string) $this->omar->id])
-        ->assertSee('Long List 2 / Phase 2: 1')->assertSee('Over the Phase 2 number')
+        ->assertSeeText('Long List 2 / Phase 2: 1')->assertSee('Over the Phase 2 number')
         ->call('save')->assertHasNoErrors();
     expect(Entry::count())->toBe(2);
 });
@@ -195,7 +195,7 @@ it('adds a team official with the official form', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->callAction('addOfficial', ['first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male', 'function' => 'Team Manager',
             'nationality' => 'Bahrain', 'passport_no' => 'BH9998887', 'passport_expiry' => now()->addYears(2)->toDateString()])
-        ->assertHasNoActionErrors()->assertSee('Nasser Ali – Team Manager');
+        ->assertHasNoActionErrors()->assertSee('Nasser Ali')->assertSee('Team Manager');
 
     expect(Person::where('first_name', 'Nasser')->sole()->type)->toBe(PersonType::Official);
 });
@@ -215,7 +215,8 @@ it('offers List and Grid views and a link to the registry', function () {
         ->assertSeeHtml('longListView.'.$this->admin->id)
         ->assertSeeHtml("x-on:click=\"view = 'list'\"")->assertSeeHtml("x-on:click=\"view = 'grid'\"")
         ->assertSeeHtml("x-if=\"view === 'grid'\"")
-        ->assertSee('Open registry')->assertSeeHtml(PersonResource::getUrl('index'));
+        ->assertActionExists('addAthlete', fn ($action) => str_contains((string) $action->getModalDescription(), 'Open registry')
+            && str_contains((string) $action->getModalDescription(), e(PersonResource::getUrl('index'))));
 });
 
 it('hides the add buttons while the Long List is read-only', function () {

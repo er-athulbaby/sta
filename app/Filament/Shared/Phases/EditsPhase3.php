@@ -60,12 +60,6 @@ trait EditsPhase3
         return app(LongListChecks::class)->rows($this->submission, $this->athletes, $this->officials);
     }
 
-    /** Link offered next to the pickers; the portal page overrides it (STA edit pages have no registry link). */
-    public function registryUrl(): ?string
-    {
-        return null;
-    }
-
     /** Chip labels: only people of this submission's association (never another association's). */
     public function chipPeople(): Collection
     {

@@ -49,9 +49,9 @@ it('counts ticked people per sport', function () {
 
 it('shows meters, the violet justification card when over, and the all-clear when within', function () {
     livewire(Phase4Entry::class, ['game' => $this->game->id])
-        ->assertSee('Ticked vs maximum')->assertSee('2 of 1')->assertSeeHtml('is-over')
-        ->assertSee('Justification needed')->assertSee('Over a maximum')->assertSee('Judo: 2 male athletes (limit 1)')
-        ->assertSeeHtml('sta-band-violet')
+        ->assertSee('Judo · ticked vs maximum')->assertSee('2 / max 1')->assertSeeHtml('color: #9A3412">2 / max 1')
+        ->assertSee('Justification needed')->assertSee('Over a maximum')->assertSee('Over the maximum: Judo — Male 2 / max 1')
+        ->assertSeeHtml('border: 2px solid #6D28D9')
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])
         ->assertSee('Within all maximums — no justification needed.')->assertSee('Within maximums');
 });
@@ -60,4 +60,13 @@ it('always renders the justification textarea', function () {
     livewire(Phase4Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])
         ->assertSeeHtml('id="justification"');
+});
+
+it('draws the ShortList canvas sections in order', function () {
+    livewire(Phase4Entry::class, ['game' => $this->game->id])
+        ->assertSeeInOrder(['Short List', 'Phase 4', 'Choose from your submitted Long List', 'Preview PDF', 'Save as draft',
+            'Everyone on your Long List is shown per sport', 'Judo', 'Ticked: 2 male, 0 female, 1 team officials', 'Over a maximum',
+            'Athletes', 'On Short List', 'Gender', 'Event', 'Passport', 'Team officials', 'Function',
+            'Judo · ticked vs maximum', 'Updates as you tick', 'Male', 'Female', 'Team officials', 'Justification needed',
+            'Why do you need more than the maximum? (required to submit)', 'STA sees this on the Short List PDF and decides.']);
 });

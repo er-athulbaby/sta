@@ -14,6 +14,7 @@ use Filament\Panel;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 
 class Phase3Entry extends Page
 {
@@ -41,11 +42,6 @@ class Phase3Entry extends Page
         $this->mountPortal($game, 3);
     }
 
-    public function registryUrl(): ?string
-    {
-        return PersonResource::getUrl('index');
-    }
-
     protected function getHeaderActions(): array
     {
         return [$this->addPersonAction(PersonType::Athlete), $this->addPersonAction(PersonType::Official),
@@ -59,6 +55,8 @@ class Phase3Entry extends Page
 
         return CreateAction::make($type === PersonType::Athlete ? 'addAthlete' : 'addOfficial')
             ->label($label)->modalHeading($label)
+            // Canvas side panel: "stays on the Long List page" and its "Open registry" link.
+            ->modalDescription(fn () => new HtmlString('Stays on the Long List page · <a href="'.e(PersonResource::getUrl('index')).'" target="_blank" style="font-weight: 600">Open registry</a>'))
             ->color('gray')->slideOver()->createAnother(false)
             ->visible(fn () => $this->readOnlyReason === null)
             ->model(Person::class)

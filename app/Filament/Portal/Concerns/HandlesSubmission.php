@@ -5,6 +5,8 @@ namespace App\Filament\Portal\Concerns;
 use App\Enums\Role;
 use App\Enums\SubmissionStatus;
 use App\Filament\Portal\Pages\Games;
+use App\Jobs\GenerateLongListPdf;
+use App\Jobs\GenerateShortListPdf;
 use App\Models\Association;
 use App\Models\Game;
 use App\Models\GamePhase;
@@ -12,14 +14,15 @@ use App\Models\Submission;
 use App\Services\Phases\PhaseGate;
 use App\Services\Phases\StaleSubmission;
 use App\Services\Phases\SubmissionWorkflow;
-use App\Support\Sta;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
-use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Submission plumbing shared by the portal phase pages and the STA edit pages.
@@ -53,27 +56,39 @@ trait HandlesSubmission
         $this->refreshLoadedAt();
     }
 
-    /** Spec 17: phase pages wear their phase colour (theme: .sta-phase-page.sta-ph-N .fi-header). */
+    /** Spec 17: phase pages wear their phase colour; sta-canvas-page drops Filament's header and content spacing. */
     public function getPageClasses(): array
     {
-        return ['sta-canvas-page', 'sta-phase-page', 'sta-ph-'.$this->submission->phase];
+        return ['sta-canvas-page', 'sta-ph-'.$this->submission->phase];
     }
 
-    public function getHeading(): string|Htmlable
+    /** Canvas header bands: Phase2.dc.html (phases 1 and 2, with the stepper), LongList / ShortList.dc.html (phases 3 and 4). */
+    public function getHeader(): ?View
     {
-        $p = $this->submission->phase;
-        [$phaseState] = Sta::phaseStatus($this->gameModel->phase($p));
-        $status = $this->submission->status;
-        $saved = $status === SubmissionStatus::Draft && $this->submission->updated_at ? ' · saved '.$this->submission->updated_at->format('H:i') : '';
-
-        return Sta::heading($this->phaseHeadingTitle(), $p, "Phase {$p} of 4 · {$phaseState}", Sta::submissionPill($status), $status->label().$saved);
+        return view($this->submission->phase <= 2 ? 'filament.portal.partials.phase-header' : 'filament.portal.partials.list-header',
+            ['title' => $this->phaseHeadingTitle()]);
     }
 
-    public function getSubheading(): ?string
+    /** Canvas "Preview PDF" (phases 3 and 4): saves first while editable, then streams the PDF a submit would produce. */
+    public function previewPdf(): ?StreamedResponse
     {
-        $deadline = $this->submission->gamePhase()->effectiveDeadline($this->submission);
+        $job = match ($this->submission->phase) {
+            3 => new GenerateLongListPdf($this->submission),
+            4 => new GenerateShortListPdf($this->submission),
+            default => abort(404),
+        };
+        if ($this->readOnlyReason === null) {
+            $before = $this->loadedVersion;
+            $this->save();
+            if ($this->loadedVersion === $before) {
+                return null; // save() halted or failed validation; its notification or errors are on screen
+            }
+        }
+        $pdf = $job->output();
 
-        return $deadline ? 'Deadline '.$deadline->format('j M Y H:i').' · '.Sta::daysLeft($deadline) : 'No deadline set';
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf;
+        }, Str::slug(GamePhase::NAMES[$this->submission->phase]).'-preview.pdf', ['Content-Type' => 'application/pdf']);
     }
 
     protected function phaseHeadingTitle(): string

@@ -61,8 +61,8 @@ it('compares with Phase 2 and summarises the people on the list', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id, (string) $this->omar->id])
         ->assertSee('Compared with your Phase 2 numbers')->assertSee('Men -60kg · 2 of 1')->assertSee('1 event differs')
-        ->assertSee('People on your Long List')->assertSee('2 male · 0 female · 0 team officials')
-        ->assertSee('Long List 2 / Phase 2: 1')->assertSee('Over the Phase 2 number');
+        ->assertSee('Athletes (2)')->assertSeeText('2 male · 0 female · 0 team officials')
+        ->assertSeeText('Long List 2 / Phase 2: 1')->assertSee('Over the Phase 2 number');
 });
 
 it('ignores a person from another association', function () {
@@ -78,4 +78,25 @@ it('ignores a person from another association', function () {
         ->assertSet("officials.{$this->judo->id}", [])
         ->set("athletes.{$this->m60->id}", [(string) $foreign->id])
         ->assertDontSee('Zed Foreign');
+});
+
+it('draws the LongList and LongListEvents canvas sections in order', function () {
+    Submission::for($this->game, $this->assoc, 3)->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->assertSeeInOrder(['Long List', 'Phase 3', 'Preview PDF', 'Save as draft', 'Submit to STA',
+            'Judo', 'Add athlete', 'Add team official', 'Pick athletes from your registry', 'Men -60kg', 'Search athletes…',
+            'Team officials', 'Search officials by name or function',
+            'Athletes (1)', 'Team officials (0)', 'Warnings (', 'List', 'Grid',
+            'Athlete', 'Gender', 'Born · age', 'Event', 'Scans', 'Warning', 'Ali Hasan', 'Team officials'])
+        ->assertSeeHtml('role="listbox"')->assertSeeHtml('aria-multiselectable="true"')
+        ->assertSee('Female and inactive athletes are not listed for this event.');
+});
+
+it('streams a preview of the Long List PDF after saving the draft', function () {
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('addAthleteChip', $this->m60->id, (string) $this->ali->id)
+        ->call('previewPdf')->assertFileDownloaded('long-list-preview.pdf');
+
+    expect(Entry::count())->toBe(1);
 });

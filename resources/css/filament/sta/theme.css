@@ -107,7 +107,6 @@
 .fi-header-heading { font-family: var(--sta-font-heading); font-size: 30px; font-weight: 700; letter-spacing: -0.01em; color: var(--sta-text); }
 .fi-header-subheading { color: var(--sta-text-2); font-size: 14px; }
 .fi-breadcrumbs { font-size: 13px; color: var(--sta-text-2); }
-.sta-phase-page .fi-header { padding: 16px 20px; border-radius: var(--sta-radius-card); background: var(--ph-tint); border: 1px solid var(--ph-border); }
 .sta-heading { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .sta-heading .sta-phase-chip, .sta-heading .sta-pill { height: 28px; font-family: Inter, ui-sans-serif, sans-serif; letter-spacing: 0; }
 
@@ -178,7 +177,6 @@
 
 .sta-grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
 .sta-grid-phase { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.sta-grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px; }
 .sta-kpi { background: #FFFFFF; border: 1px solid var(--sta-border); border-radius: var(--sta-radius-tile); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 .sta-kpi-label { font-size: 13px; color: var(--sta-text-2); }
 .sta-kpi-value { font-family: var(--sta-font-heading); font-size: 30px; font-weight: 700; line-height: 1.1; }
@@ -259,17 +257,11 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-banner-warn { background: #FFF7ED; color: var(--sta-warn); border-color: #FED7AA; }
 .sta-banner-ok { background: #DCFCE7; color: #166534; border-color: #BBF7D0; }
 
-.sta-split { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
-.sta-main { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
-.sta-aside { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 
 .sta-tag { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 8px; background: var(--sta-selected); color: var(--sta-primary); font-weight: 600; font-size: 13px; }
 .sta-chip-person { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 4px 0 6px; border-radius: 8px; background: var(--sta-selected); color: var(--sta-text); font-size: 13px; }
 .sta-chip-person.is-bad { background: #FEF2F2; box-shadow: inset 0 0 0 1px #FCA5A5; }
 .sta-chip-person button { width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--sta-text-2); cursor: pointer; }
-.sta-token-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 48px; padding: 6px 8px; border: 1px solid var(--sta-border-strong); border-radius: var(--sta-radius-ctl); background: #FFFFFF; }
-.sta-token-field.is-error { border-color: #DC2626; }
-.sta-token-field select { flex: 1 1 160px; min-width: 140px; min-height: 36px; border: 0; background: transparent; font: 14px Inter, ui-sans-serif, sans-serif; }
 
 .sta-list { list-style: none; margin: 0; padding: 0; }
 .sta-list-item { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; padding: 14px 20px; border-top: 1px solid var(--sta-row); }
@@ -297,26 +289,9 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-seg > label { min-height: 36px; padding: 0 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px Inter, ui-sans-serif, sans-serif; color: var(--sta-text-3); cursor: pointer; }
 .sta-seg > label:has(input:checked) { background: #FFFFFF; color: var(--sta-text); box-shadow: 0 1px 2px rgba(15, 23, 42, .08); }
 .sta-seg > label:has(input:focus-visible) { outline: 2px solid var(--sta-primary); outline-offset: 2px; }
-/* Task 5: Long List */
-.sta-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.sta-compare { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; background: #F1F5F9; color: var(--sta-text-3); }
-.sta-compare.is-over { background: #FFEDD5; color: var(--sta-warn); font-weight: 600; }
-.sta-event-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 16px; }
-.sta-event-box { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: var(--sta-radius-tile); border: 1px solid var(--sta-border); background: #FFFFFF; }
-.sta-event-box-officials { background: #F8FAFC; }
-.sta-event-name { font-weight: 700; font-size: 15px; }
+/* Shared Long List people table (submission view) */
 .sta-entered { font-weight: 600; color: var(--sta-primary); }
 .sta-warn-list { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--sta-warn); line-height: 1.4; }
-.sta-banner.sta-warn-list { display: block; padding: 10px 12px; }
-.sta-person-card { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-
-/* Task 6: Short List */
-.sta-subhead { margin: 0; padding: 14px 20px 6px; font-size: 13px; font-weight: 700; color: var(--sta-text-2); text-transform: uppercase; letter-spacing: .05em; }
-.sta-subhead-rule { border-top: 1px solid var(--sta-border); padding-top: 18px; }
-.sta-tick { display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer; }
-.sta-tick input[type='checkbox'] { width: 22px; height: 22px; accent-color: #6D28D9; flex-shrink: 0; }
-.sta-justify { border-width: 2px; border-color: #6D28D9; }
-.sta-justify .sta-warn-list { color: #5B21B6; font-weight: 600; }
 
 /* Task 7: person pages use the canvas soft background */
 .fi-body:has(.sta-bg-alt) { background: var(--sta-bg-home); }

@@ -29,7 +29,7 @@ it('tints a phase page and shows chip, status, deadline and stepper', function (
     actingInPortal(User::factory()->assocEditor($this->assoc)->create());
 
     livewire(Phase1Entry::class, ['game' => $this->game->id])
-        ->assertSeeHtml('sta-phase-page')->assertSeeHtml('sta-ph-1')
+        ->assertSeeHtml('sta-ph-1')
         ->assertSee('Entry by Sport')->assertSee('Phase 1 of 4 · Open')->assertSee('Draft · saved')
         ->assertSee('6 days left')->assertSeeHtml('aria-current="step"');
 });

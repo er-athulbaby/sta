@@ -3,7 +3,6 @@
 namespace App\Filament\Portal\Pages;
 
 use App\Enums\Role;
-use App\Filament\Portal\Concerns\CanvasPhaseHeader;
 use App\Filament\Portal\Concerns\HandlesSubmission;
 use App\Filament\Shared\Phases\EditsPhase2;
 use Filament\Pages\Page;
@@ -12,7 +11,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class Phase2Entry extends Page
 {
-    use CanvasPhaseHeader, EditsPhase2, HandlesSubmission;
+    use EditsPhase2, HandlesSubmission;
 
     protected string $view = 'filament.portal.pages.phase2-entry';
 

@@ -98,7 +98,7 @@ it('asks for the Long List first when it is not submitted', function () {
 });
 
 it('warns live when over a limit and needs a justification to submit', function () {
-    $page = livewire(Phase4Entry::class, ['game' => $this->game->id])->assertSee('Judo: 2 male athletes (limit 1)');
+    $page = livewire(Phase4Entry::class, ['game' => $this->game->id])->assertSee('Over the maximum: Judo — Male 2 / max 1');
 
     $page->callAction('submit')->assertNotified(ShortListChecks::JUSTIFICATION_REQUIRED);
     expect(phase4()->status)->toBe(SubmissionStatus::Draft);
@@ -110,7 +110,7 @@ it('warns live when over a limit and needs a justification to submit', function 
 
 it('submits without a justification once within the limits', function () {
     livewire(Phase4Entry::class, ['game' => $this->game->id])
-        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->assertDontSee('(limit 1)')
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->assertDontSee('Over the maximum')
         ->callAction('submit');
 
     expect(phase4()->status)->toBe(SubmissionStatus::Submitted)->and(phase4()->justification)->toBeNull();

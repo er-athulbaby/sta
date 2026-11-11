@@ -7,7 +7,6 @@ use App\Enums\SubmissionStatus;
 use App\Models\GamePhase;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\HtmlString;
 
 /** Canvas design tokens and small display helpers shared by Blade views and PDFs (spec 17). */
 final class Sta
@@ -76,13 +75,5 @@ final class Sta
             1 => '1 day left',
             default => $days.' days left',
         };
-    }
-
-    /** Page heading with optional phase chip and status pill (rendered inside Filament's <h1>). */
-    public static function heading(string $title, ?int $phase = null, ?string $phaseLabel = null, ?string $pill = null, ?string $pillLabel = null): HtmlString
-    {
-        return new HtmlString(Blade::render(
-            '<x-sta.heading :title="$title" :phase="$phase" :phase-label="$phaseLabel" :pill="$pill" :pill-label="$pillLabel" />',
-            compact('title', 'phase', 'phaseLabel', 'pill', 'pillLabel')));
     }
 }

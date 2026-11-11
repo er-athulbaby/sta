@@ -1,5 +1,5 @@
-{{-- Phase pages: stepper, read-only reason and the signed PDF link. Pass $pdfKey (pdf_paths key or null) and $pdfLabel.
-     With $canvas (Phase 1 and 2) the stepper is in the header band (phase-header) and the Phase2.dc.html deadline banner is drawn here. --}}
+{{-- Phase pages, below the header band: read-only reason and the signed PDF link. Pass $pdfKey (pdf_paths key or null) and $pdfLabel.
+     With $canvas (Phase 1 and 2) the Phase2.dc.html deadline banner is drawn too; the Long List / Short List canvases have none. --}}
 @if ($canvas ?? false)
     @php $deadline = $this->submission->gamePhase()->effectiveDeadline($this->submission); @endphp
     @if ($deadline)
@@ -11,8 +11,6 @@
             @endif
         </div>
     @endif
-@else
-    <x-sta.stepper :game="$this->gameModel" :current="$this->submission->phase" />
 @endif
 
 @if ($readOnlyReason)

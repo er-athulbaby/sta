@@ -34,6 +34,15 @@ class GenerateLongListPdf implements ShouldQueue
 
     public function handle(): void
     {
+        $s = $this->submission->fresh();
+        $path = 'submissions/'.$s->reference_no.'/'.static::FILE;
+        Storage::disk(config('filesystems.private'))->put($path, $this->output());
+        $s->forceFill(['pdf_paths' => [static::KEY => $path]])->saveQuietly();
+    }
+
+    /** The PDF bytes for the saved entries (also the portal "Preview PDF"). */
+    public function output(): string
+    {
         $s = $this->submission->fresh(['game.clothingItems', 'association']);
         $sports = $s->game->phase2SportsFor($s->association)->keyBy('id');
         $entries = $s->entries()->get()->filter(fn ($e) => $sports->has($e->game_sport_id));
@@ -96,8 +105,7 @@ class GenerateLongListPdf implements ShouldQueue
             'gameLogo' => GenerateEntryByEventPdfs::dataUri($s->game->logo_path),
             'title' => static::TITLE, 'justification' => $s->justification,
         ])->render();
-        $path = 'submissions/'.$s->reference_no.'/'.static::FILE;
-        Storage::disk(config('filesystems.private'))->put($path, Pdf::loadHTML($html)->setPaper('a4', 'landscape')->output());
-        $s->forceFill(['pdf_paths' => [static::KEY => $path]])->saveQuietly();
+
+        return Pdf::loadHTML($html)->setPaper('a4', 'landscape')->output();
     }
 }
