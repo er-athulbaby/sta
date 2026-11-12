@@ -3,11 +3,11 @@
 @if ($canvas ?? false)
     @php $deadline = $this->submission->gamePhase()->effectiveDeadline($this->submission); @endphp
     @if ($deadline)
-        <div role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; background: #FFF7ED; color: #9A3412; border: 1px solid #FED7AA">
+        <div role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; background: var(--sta-bg-orange-50, #FFF7ED); color: var(--sta-fg-orange-800, #9A3412); border: 1px solid var(--sta-bd-orange-200, #FED7AA)">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
             <span style="font-weight: 600">Deadline {{ $deadline->format('j M Y') }} · {{ \App\Support\Sta::daysLeft($deadline) }}</span>
             @if (! $readOnlyReason && filament()->getId() === 'portal' && $this->submission->status !== \App\Enums\SubmissionStatus::Submitted)
-                <span style="color: #7C2D12">Reminder emails go out automatically until you submit.</span>
+                <span style="color: var(--sta-fg-orange-900, #7C2D12)">Reminder emails go out automatically until you submit.</span>
             @endif
         </div>
     @endif

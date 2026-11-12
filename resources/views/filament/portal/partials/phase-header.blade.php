@@ -10,7 +10,7 @@
     $staEdit = filament()->getId() === 'admin';
 @endphp
 <header class="sta-ph-{{ $p }}" style="display: flex; flex-direction: column; gap: 14px; background: var(--ph-tint); border: 1px solid var(--ph-border); border-radius: 14px; padding: 16px 20px">
-    <span style="font-size: 13px; color: #475569">
+    <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">
         @foreach ($crumbs as $url => $label)
             @if (! $loop->first) / @endif
             @if (is_string($url))<a href="{{ $url }}">{{ $label }}</a>@else{{ $label }}@endif

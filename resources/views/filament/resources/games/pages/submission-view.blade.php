@@ -78,14 +78,14 @@
     @elseif ($s->phase === 4)
         <x-sta.card heading="Short List">
             @if (($lines = $this->overLimitLines()) || filled($s->justification))
-                <div class="sta-card-body sta-stack" style="border-bottom: 1px solid #E2E8F0">
+                <div class="sta-card-body sta-stack" style="border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
                     @if ($lines)
                         <ul class="sta-warn-list">
                             @foreach ($lines as $line)<li>Over the limit: {{ $line }}</li>@endforeach
                         </ul>
                     @endif
                     @if (filled($s->justification))
-                        <p class="whitespace-pre-line" style="padding: 12px 14px; border-radius: 10px; background: #F5F3FF; border: 1px solid #DDD6FE"><span style="font-weight: 600; color: #5B21B6">Justification:</span> {{ $s->justification }}</p>
+                        <p class="whitespace-pre-line" style="padding: 12px 14px; border-radius: 10px; background: var(--sta-bg-violet-50, #F5F3FF); border: 1px solid var(--sta-bd-violet-200, #DDD6FE)"><span style="font-weight: 600; color: var(--sta-fg-violet-800, #5B21B6)">Justification:</span> {{ $s->justification }}</p>
                     @endif
                 </div>
             @endif
@@ -102,7 +102,7 @@
                 <tbody>
                     @forelse ($this->auditTrail() as $a)
                         <tr class="align-top">
-                            <td class="py-1" style="white-space: nowrap; color: #475569">{{ $a->created_at->format('j M Y H:i') }}</td>
+                            <td class="py-1" style="white-space: nowrap; color: var(--sta-fg-muted, #475569)">{{ $a->created_at->format('j M Y H:i') }}</td>
                             <td class="py-1" style="font-weight: 600">{{ $a->causer?->name ?? 'System' }}</td>
                             <td class="py-1">{{ class_basename($a->subject_type) }} {{ $a->event }}</td>
                             <td class="py-1 text-xs">{{ implode(', ', array_keys($a->properties->get('attributes', $a->properties->get('old', [])))) }}</td>

@@ -4,8 +4,8 @@
     $portal = filament()->getId() === 'portal';
     $can = fn (string $name) => $portal && ($this->getAction($name, isMounting: false)?->isVisible() ?? false);
     $btn = 'min-height: 48px; border-radius: 10px; cursor: pointer; font: 600 14px Inter, sans-serif; ';
-    $secondary = $btn.'flex: 1 1 120px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A';
-    $primary = $btn.'flex: 2 1 180px; border: 0; background: #1F3A5F; color: #FFFFFF; font-size: 15px';
+    $secondary = $btn.'flex: 1 1 120px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A)';
+    $primary = $btn.'flex: 2 1 180px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font-size: 15px';
     $isAdmin = auth()->user()->role === \App\Enums\Role::AssocAdmin;
     $adminName = $isAdmin ? null : \App\Models\User::where('association_id', $this->submission->association_id)
         ->where('role', \App\Enums\Role::AssocAdmin)->where('is_active', true)->value('name');
@@ -26,7 +26,7 @@
         @endif
     </div>
     @if ($portal)
-        <span style="font-size: 12px; color: #475569; line-height: 1.5">A saved draft is never submitted.
+        <span style="font-size: 12px; color: var(--sta-fg-muted, #475569); line-height: 1.5">A saved draft is never submitted.
             @if ($isAdmin)
                 After you submit, it goes straight to STA.
             @else

@@ -4,9 +4,9 @@
 @if ($read)
     @php
         [$bg, $ring, $fg] = match ($read['tone']) {
-            'ok' => ['#F0FDF4', '#BBF7D0', '#166534'],
-            'warn' => ['#FFF7ED', '#FED7AA', '#9A3412'],
-            default => ['#FEF2F2', '#FCA5A5', '#991B1B'],
+            'ok' => ['var(--sta-bg-green-50, #F0FDF4)', 'var(--sta-bd-green-200, #BBF7D0)', 'var(--sta-fg-green-800, #166534)'],
+            'warn' => ['var(--sta-bg-orange-50, #FFF7ED)', 'var(--sta-bd-orange-200, #FED7AA)', 'var(--sta-fg-orange-800, #9A3412)'],
+            default => ['var(--sta-bg-red-50, #FEF2F2)', 'var(--sta-bd-red-300, #FCA5A5)', 'var(--sta-fg-red-800, #991B1B)'],
         };
     @endphp
     <div role="{{ $read['tone'] === 'error' ? 'alert' : 'status' }}" style="display: flex; gap: 10px; padding: 12px; border-radius: 10px; background: {{ $bg }}; box-shadow: inset 0 0 0 1px {{ $ring }}; font-size: 13px; color: {{ $fg }}; line-height: 1.5">

@@ -26,9 +26,9 @@ class ActivityLogResource extends Resource
 
     private const PILL = 'display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap';
 
-    private const MEDICAL_PILL = '<span style="'.self::PILL.'; background: #F1F5F9; color: #334155"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Medical data changed</span>';
+    private const MEDICAL_PILL = '<span style="'.self::PILL.'; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-strong, #334155)"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Medical data changed</span>';
 
-    private const DOCUMENTS_PILL = '<span style="'.self::PILL.'; background: #E0E7FF; color: #1E3A8A">Documents changed</span>';
+    private const DOCUMENTS_PILL = '<span style="'.self::PILL.'; background: var(--sta-bg-indigo-100, #E0E7FF); color: var(--sta-fg-blue-900, #1E3A8A)">Documents changed</span>';
 
     protected static function requiredPermission(): StaPermission
     {

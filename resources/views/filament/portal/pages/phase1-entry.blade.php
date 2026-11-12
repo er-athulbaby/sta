@@ -3,10 +3,10 @@
     @include('filament.portal.partials.phase-top', ['pdfKey' => 'entry_by_sport', 'pdfLabel' => 'View Entry by Sport PDF', 'canvas' => true])
 
     <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
-        <section aria-labelledby="phase1-title" style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
-            <div style="display: flex; flex-direction: column; gap: 2px; padding: 16px 20px; border-bottom: 1px solid #E2E8F0">
+        <section aria-labelledby="phase1-title" style="flex: 999 1 520px; min-width: 0; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 16px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
                 <h2 id="phase1-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">Sports you were invited to</h2>
-                <span style="font-size: 13px; color: #475569">Tell STA whether you plan to take part. Numbers per event come in Phase 2 (Entry by Number).</span>
+                <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">Tell STA whether you plan to take part. Numbers per event come in Phase 2 (Entry by Number).</span>
             </div>
             <ul class="sta-list">
                 @forelse ($this->sports as $gs)

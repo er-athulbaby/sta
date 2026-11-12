@@ -131,7 +131,7 @@ it('groups from the 1st / 2nd selects with group rows, subtotals and a grand tot
         ->set('def.columns', ['full_name', 'association'])
         ->call('setGroup', 0, 'association')
         ->assertSet('def.groups', [['field' => 'association', 'bucket' => null]]);
-    expect($page->html())->toMatch('/grouped by Association.*background: #E8EEF6.*Bahrain Judo Federation <span[^>]*>· 2 rows.*Count · Bahrain Judo Federation.*border-top: 2px solid #1F3A5F.*Grand total · 1 association<\/th>.*?<td[^>]*font-size: 18px[^>]*>2<\/td>/su');
+    expect($page->html())->toMatch('/grouped by Association.*background: var\(--sta-bg-selected, #E8EEF6\).*Bahrain Judo Federation <span[^>]*>· 2 rows.*Count · Bahrain Judo Federation.*border-top: 2px solid var\(--sta-bd-brand, #1F3A5F\).*Grand total · 1 association<\/th>.*?<td[^>]*font-size: 18px[^>]*>2<\/td>/su');
 
     $page->call('setGroup', 1, 'full_name')->assertCount('def.groups', 2)
         ->call('setGroup', 0, '')->assertSet('def.groups', [['field' => 'full_name', 'bucket' => null]])

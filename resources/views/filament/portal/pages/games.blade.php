@@ -5,10 +5,10 @@
             $g = $item['game'];
             $dates = $g->start_date->format('j M').' – '.$g->end_date->format('j M Y');
         @endphp
-        <section wire:key="game-{{ $g->id }}" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; display: flex; flex-direction: column">
-            <div style="display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border-bottom: 1px solid #E2E8F0">
+        <section wire:key="game-{{ $g->id }}" style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; display: flex; flex-direction: column">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
                 <h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">{{ $g->name }}</h2>
-                <span style="font-size: 13px; color: #475569">{{ $dates }} · {{ $item['rows']->count() }} {{ \Illuminate\Support\Str::plural('phase', $item['rows']->count()) }}</span>
+                <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $dates }} · {{ $item['rows']->count() }} {{ \Illuminate\Support\Str::plural('phase', $item['rows']->count()) }}</span>
             </div>
             <div style="padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
                 @foreach ($item['rows'] as $row)

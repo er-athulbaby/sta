@@ -12,30 +12,30 @@
     $lower = fn (string $s) => preg_match('/^[A-Z][a-z]/', $s) ? lcfirst($s) : $s;
     $phase = $this->personPhase();
     $photo = $person?->photo_path ? \App\Filament\Shared\AttachmentActions::url($person->photo_path) : null;
-    $secondary = 'min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box; cursor: pointer';
+    $secondary = 'min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box; cursor: pointer';
 @endphp
-<header style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px 24px">
+<header style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; padding: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px 24px">
     <div style="flex: 1 1 420px; min-width: 0; display: flex; align-items: center; gap: 16px">
         @if ($photo)
             <img src="{{ $photo }}" alt="Photo of {{ $name }}" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0">
         @else
-            <div role="img" aria-label="Photo of {{ $name }}" style="width: 64px; height: 64px; border-radius: 50%; background: #2B4C7E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; flex-shrink: 0">{{ $person ? \App\Support\Sta::initials($name) : '' }}</div>
+            <div role="img" aria-label="Photo of {{ $name }}" style="width: 64px; height: 64px; border-radius: 50%; background: var(--sta-bg-avatar, #2B4C7E); color: var(--sta-fg-on-brand, #FFFFFF); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; flex-shrink: 0">{{ $person ? \App\Support\Sta::initials($name) : '' }}</div>
         @endif
         <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
-            <span style="font-size: 13px; color: #475569"><a href="{{ $resource::getUrl('index') }}">{{ $listLabel }}</a> / {{ $crumb }}</span>
+            <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)"><a href="{{ $resource::getUrl('index') }}">{{ $listLabel }}</a> / {{ $crumb }}</span>
             <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.01em">{{ $name }}</h1>
             @if ($person)
                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
                     @if ($phase)
                         <span class="sta-ph-{{ $phase }}" style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--ph-bg); color: var(--ph-fg); white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: var(--ph-dot); flex-shrink: 0"></span>Phase {{ $phase }} · {{ $phase === 3 ? 'Long List' : 'Short List' }}</span>
                     @endif
-                    <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: #E8EEF6; color: #1F3A5F; font: 600 13px 'Space Grotesk', sans-serif; letter-spacing: 0.02em">{{ $person->code }}</span>
+                    <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: var(--sta-bg-selected, #E8EEF6); color: var(--sta-fg-brand, #1F3A5F); font: 600 13px 'Space Grotesk', sans-serif; letter-spacing: 0.02em">{{ $person->code }}</span>
                     @if ($official && filled($person->function))
-                        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: #F1F5F9; color: #334155; font-size: 12px; font-weight: 600">{{ $person->function }}</span>
+                        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-strong, #334155); font-size: 12px; font-weight: 600">{{ $person->function }}</span>
                     @endif
-                    <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; {{ $missing ? 'background: #FFEDD5; color: #9A3412' : 'background: #DCFCE7; color: #166534' }}">{{ $missing ? 'Incomplete' : 'Complete' }}</span>
+                    <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; {{ $missing ? 'background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412)' : 'background: var(--sta-bg-green-100, #DCFCE7); color: var(--sta-fg-green-800, #166534)' }}">{{ $missing ? 'Incomplete' : 'Complete' }}</span>
                     @if ($missing)
-                        <span style="font-size: 13px; color: #9A3412">Missing: {{ implode(', ', array_map($lower, $missing)) }}</span>
+                        <span style="font-size: 13px; color: var(--sta-fg-orange-800, #9A3412)">Missing: {{ implode(', ', array_map($lower, $missing)) }}</span>
                     @endif
                 </div>
             @endif
@@ -44,6 +44,6 @@
     <div style="display: flex; flex-wrap: wrap; gap: 12px">
         <a href="{{ $resource::getUrl('index') }}" style="{{ $secondary }}">Cancel</a>
         <button type="button" wire:click="{{ $this->personSubmitMethod() }}" wire:loading.attr="disabled" style="{{ $secondary }}">Save as draft</button>
-        <button type="button" wire:click="saveAndClose" wire:loading.attr="disabled" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif; cursor: pointer">Save</button>
+        <button type="button" wire:click="saveAndClose" wire:loading.attr="disabled" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 14px Inter, sans-serif; cursor: pointer">Save</button>
     </div>
 </header>

@@ -7,6 +7,7 @@ use App\Filament\Portal\Pages\EditAssociationProfile;
 use App\Models\Association;
 use App\Support\InitialsAvatarProvider;
 use App\Support\Sta;
+use Filament\Enums\ThemeMode;
 use Filament\Enums\UserMenuPosition;
 use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -51,7 +52,9 @@ class PortalPanelProvider extends PanelProvider
             ])
             ->font('Inter', url: Sta::FONTS_URL, provider: GoogleFontProvider::class)
             ->viteTheme('resources/css/filament/sta/theme.css')
-            ->darkMode(false)
+            ->darkMode()
+            // The approved canvas is the light theme; users can switch to Dark or System from the user menu.
+            ->defaultThemeMode(ThemeMode::Light)
             ->sidebarWidth('15.5rem')
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->defaultAvatarProvider(InitialsAvatarProvider::class)

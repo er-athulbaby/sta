@@ -49,9 +49,9 @@ it('counts ticked people per sport', function () {
 
 it('shows meters, the violet justification card when over, and the all-clear when within', function () {
     livewire(Phase4Entry::class, ['game' => $this->game->id])
-        ->assertSee('Judo · ticked vs maximum')->assertSee('2 / max 1')->assertSeeHtml('color: #9A3412">2 / max 1')
+        ->assertSee('Judo · ticked vs maximum')->assertSee('2 / max 1')->assertSeeHtml('color: var(--sta-fg-orange-800, #9A3412)">2 / max 1')
         ->assertSee('Justification needed')->assertSee('Over a maximum')->assertSee('Over the maximum: Judo — Male 2 / max 1')
-        ->assertSeeHtml('border: 2px solid #6D28D9')
+        ->assertSeeHtml('border: 2px solid var(--sta-bd-violet-700, #6D28D9)')
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])
         ->assertSee('Within all maximums — no justification needed.')->assertSee('Within maximums');
 });

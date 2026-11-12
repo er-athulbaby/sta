@@ -21,12 +21,12 @@
     $can = fn (string $name) => $portal && ($this->getAction($name, isMounting: false)?->isVisible() ?? false);
     $preview = $portal && ! ($eventsScreen ?? false) && ($p === 3 || $this->longListSubmitted());
     $editorNote = ($eventsScreen ?? false) && $portal && auth()->user()->role !== \App\Enums\Role::AssocAdmin;
-    $secondary = 'min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font: 600 14px Inter, sans-serif; cursor: pointer';
-    $primary = 'min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #1F3A5F; color: #FFFFFF; font: 600 14px Inter, sans-serif; cursor: pointer';
+    $secondary = 'min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 14px Inter, sans-serif; cursor: pointer';
+    $primary = 'min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 14px Inter, sans-serif; cursor: pointer';
 @endphp
 <header class="sta-ph-{{ $p }}" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; background: var(--ph-tint); border: 1px solid var(--ph-border); border-radius: 14px; padding: 16px 20px">
     <div style="display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 13px; color: #475569">
+        <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">
             @foreach ($crumbs as $url => $label)
                 @if (! $loop->first) / @endif
                 @if (is_string($url))<a href="{{ $url }}">{{ $label }}</a>@else{{ $label }}@endif
@@ -38,7 +38,7 @@
             <x-sta.phase-chip :phase="$p" style="height: 28px" />
             <x-sta.pill :status="\App\Support\Sta::submissionPill($status)" style="height: 28px; padding: 0 12px">{{ $status->label().$saved }}</x-sta.pill>
         </div>
-        <span style="color: #475569">{{ implode(' · ', array_filter($line)) }}</span>
+        <span style="color: var(--sta-fg-muted, #475569)">{{ implode(' · ', array_filter($line)) }}</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
         @unless ($portal)
@@ -60,7 +60,7 @@
             <button type="button" wire:click="mountAction('approve')" style="{{ $primary }}">Approve and submit to STA</button>
         @endif
         @if ($editorNote && $can('submit'))
-            <span style="flex-basis: 100%; text-align: right; font-size: 12px; color: #475569">The association admin sees <strong>Submit to STA</strong> here.</span>
+            <span style="flex-basis: 100%; text-align: right; font-size: 12px; color: var(--sta-fg-muted, #475569)">The association admin sees <strong>Submit to STA</strong> here.</span>
         @endif
     </div>
 </header>

@@ -123,7 +123,7 @@ it('lists the people with Just added and the not saved state on the events scree
         ->call('save')->assertHasErrors(["athletes.{$this->m60->id}"])
         ->assertSeeHtmlInOrder(['Person', 'Gender', 'Role', 'Sport · events'])
         ->assertSee('Just added')->assertSee('Team official · '.$this->coach->function)
-        ->assertSee('Judo · Men -60kg — not saved')->assertSeeHtml('color: #B91C1C">Judo · Men -60kg — not saved');
+        ->assertSee('Judo · Men -60kg — not saved')->assertSeeHtml('color: var(--sta-fg-red-700, #B91C1C)">Judo · Men -60kg — not saved');
 });
 
 it('labels events with their gender unless the name says it', function () {
