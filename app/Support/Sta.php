@@ -11,8 +11,6 @@ use Carbon\CarbonInterface;
 /** Canvas design tokens and small display helpers shared by Blade views and PDFs (spec 17). */
 final class Sta
 {
-    public const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap';
-
     /** Association colours of the canvas (docs/design/canvas/project/Main.dc.html, the LC map). */
     public const AVATAR_COLOURS = ['#9A3412', '#3730A3', '#15803D', '#86198F', '#0F766E', '#BE185D', '#374151', '#854D0E', '#4D7C0F', '#0369A1'];
 

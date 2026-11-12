@@ -7,10 +7,9 @@ use App\Filament\Portal\Auth\EditMyProfile;
 use App\Filament\Portal\Pages\EditAssociationProfile;
 use App\Models\Association;
 use App\Support\InitialsAvatarProvider;
-use App\Support\Sta;
 use Filament\Enums\ThemeMode;
 use Filament\Enums\UserMenuPosition;
-use Filament\FontProviders\GoogleFontProvider;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -52,7 +51,7 @@ class PortalPanelProvider extends PanelProvider
                 'info' => Color::Indigo,     // Draft / Male
                 'pink' => Color::Pink,       // Female (event gender badge)
             ])
-            ->font('Inter', url: Sta::FONTS_URL, provider: GoogleFontProvider::class)
+            ->font('Inter', provider: LocalFontProvider::class) // self-hosted in the theme (resources/css/fonts.css)
             ->viteTheme('resources/css/filament/sta/theme.css')
             ->darkMode()
             // The approved canvas is the light theme; users can switch to Dark or System from the user menu.

@@ -50,14 +50,14 @@ final class PdfContext
      */
     public static function pdf(string $html, string $orientation = 'portrait'): string
     {
-        // DejaVu's glyph box is ~1.16em and dompdf scales line-height by it (x1.1 by default), so a ratio of 0.86
+        // Inter's ascender + descender is 1.21em and dompdf scales line-height by it (x1.1 by default), so a ratio of 0.83
         // makes CSS line-height mean what it means in the browser, as on the samples.
-        $pdf = Pdf::setOption('fontHeightRatio', 0.86)->setOption('isFontSubsettingEnabled', true)->loadHTML($html)->setPaper('a4', $orientation);
+        $pdf = Pdf::setOption('fontHeightRatio', 0.83)->setOption('isFontSubsettingEnabled', true)->loadHTML($html)->setPaper('a4', $orientation);
         $pdf->render();
         // Footer baseline and right edge in pt, measured from the rendered footer (48px / 40px page margins).
         [$right, $baseline] = $orientation === 'landscape' ? [30, 32.0] : [36, 38.0];
         $pdf->getCanvas()->page_script(function (int $page, int $pages, Canvas $canvas, FontMetrics $metrics) use ($right, $baseline) {
-            $font = $metrics->getFont('DejaVu Sans');
+            $font = $metrics->getFont('Inter');
             $text = "Page {$page} of {$pages}";
             $x = $canvas->get_width() - $right - $metrics->getTextWidth($text, $font, 9);
             $y = $canvas->get_height() - $baseline - $metrics->getFontBaseline($font, 9);

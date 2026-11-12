@@ -1,7 +1,13 @@
 {{-- Shared PDF styles (spec 17, PdfPhase1–4 samples). dompdf renders at 96 dpi, so the sample's px values map 1:1 to A4. Portrait values here; the Long List overrides the page size ones. --}}
+@php $font = fn (string $file) => str_replace('\\', '/', resource_path('fonts/'.$file)); @endphp
 <style>
+    {{-- The samples' fonts, bundled (SIL OFL, resources/fonts): Inter for text, Space Grotesk for the title. --}}
+    @font-face { font-family: 'Inter'; font-weight: normal; font-style: normal; src: url("{{ $font('Inter/Inter-Regular.ttf') }}") format('truetype'); }
+    @font-face { font-family: 'Inter'; font-weight: bold; font-style: normal; src: url("{{ $font('Inter/Inter-Bold.ttf') }}") format('truetype'); }
+    @font-face { font-family: 'Space Grotesk'; font-weight: normal; font-style: normal; src: url("{{ $font('SpaceGrotesk/SpaceGrotesk-Medium.ttf') }}") format('truetype'); }
+    @font-face { font-family: 'Space Grotesk'; font-weight: bold; font-style: normal; src: url("{{ $font('SpaceGrotesk/SpaceGrotesk-Bold.ttf') }}") format('truetype'); }
     @page { margin: 48px 48px 90px; }
-    body { margin: 0; font-family: 'DejaVu Sans', sans-serif; font-size: 13px; color: #0F172A; }
+    body { margin: 0; font-family: 'Inter', 'DejaVu Sans', sans-serif; font-size: 13px; color: #0F172A; }
     table { border-collapse: collapse; }
     .muted { color: #475569; }
     .c { text-align: center; }
@@ -15,7 +21,7 @@
     .chip-2 { background: #CCFBF1; color: #115E59; } .chip-2 .dot { background: #0F766E; }
     .chip-3 { background: #FEF3C7; color: #92400E; } .chip-3 .dot { background: #B45309; }
     .chip-4 { background: #EDE9FE; color: #5B21B6; } .chip-4 .dot { background: #6D28D9; }
-    h1 { margin: 6px 0 0; font-size: 30px; font-weight: bold; }
+    h1 { margin: 6px 0 0; font-family: 'Space Grotesk', 'DejaVu Sans', sans-serif; font-size: 30px; line-height: 1.1; font-weight: bold; }
     .alogo { display: inline-block; width: 56px; height: 32px; padding: 3px; border: 1px solid #E2E8F0; border-radius: 8px; text-align: center; }
     .grid { width: 100%; border-collapse: collapse; }
     .grid th, .grid td { border: 1px solid #94A3B8; }

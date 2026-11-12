@@ -1,7 +1,6 @@
 {{-- Shared head of the public invitation pages: canvas fonts, colours, brand block, inputs and buttons (no design screen). --}}
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="{{ \App\Support\Sta::FONTS_URL }}" rel="stylesheet">
+@vite('resources/css/fonts.css'){{-- self-hosted Inter and Space Grotesk --}}
 <style>
     body{font-family:Inter,system-ui,Arial,sans-serif;background:#F5F7FA;color:#0F172A;margin:0;padding:24px;font-size:14px}
     main{max-width:440px;margin:40px auto;background:#fff;padding:28px;border-radius:14px;border:1px solid #E2E8F0}
