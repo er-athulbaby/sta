@@ -44,11 +44,15 @@ class Games extends Page
     /** @return Collection<int, array{game: Game, rows: Collection}> published games the association is invited to, with a row per enabled phase */
     public static function forTenant(Association $tenant): Collection
     {
-        return Game::whereNotNull('published_at')->whereHas('associations', fn ($q) => $q->whereKey($tenant->getKey()))
-            ->with('phases')->orderBy('start_date')->get()
-            ->map(fn (Game $g) => ['game' => $g, 'rows' => $g->phases->where('enabled', true)->sortBy('phase')->map(function (GamePhase $p) use ($g, $tenant) {
-                $sub = Submission::withoutGlobalScope('association')
-                    ->where(['game_id' => $g->id, 'association_id' => $tenant->id, 'phase' => $p->phase])->first();
+        $games = Game::whereNotNull('published_at')->whereHas('associations', fn ($q) => $q->whereKey($tenant->getKey()))
+            ->with('phases')->orderBy('start_date')->get();
+        // One query for all of this association's submissions on these games (no query per game × phase).
+        $subs = Submission::withoutGlobalScope('association')->where('association_id', $tenant->getKey())
+            ->whereIn('game_id', $games->modelKeys())->get()->keyBy(fn (Submission $s) => $s->game_id.'-'.$s->phase);
+
+        return $games
+            ->map(fn (Game $g) => ['game' => $g, 'rows' => $g->phases->where('enabled', true)->sortBy('phase')->map(function (GamePhase $p) use ($g, $subs) {
+                $sub = $subs->get($g->id.'-'.$p->phase);
                 $page = match ($p->phase) {
                     1 => Phase1Entry::class,
                     2 => Phase2Entry::class,

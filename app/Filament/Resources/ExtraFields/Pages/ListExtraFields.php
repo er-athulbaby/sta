@@ -10,6 +10,12 @@ class ListExtraFields extends ListRecords
 {
     protected static string $resource = ExtraFieldResource::class;
 
+    /** Canvas list pages have no "X / List" breadcrumb. */
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     protected function getHeaderActions(): array
     {
         return [CreateAction::make()];

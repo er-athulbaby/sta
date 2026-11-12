@@ -2,7 +2,9 @@
 
 use App\Enums\EventGender;
 use App\Enums\PhaseStatus;
+use App\Enums\SubmissionStatus;
 use App\Filament\Portal\Pages\Games;
+use App\Filament\Portal\Pages\Home;
 use App\Filament\Portal\Pages\Phase1Entry;
 use App\Filament\Portal\Pages\Phase2Entry;
 use App\Models\Association;
@@ -53,7 +55,44 @@ it('draws the portal menu like Phase2.dc.html: brand, association block, items, 
     expect($html)->toMatch('/class="fi-sidebar-header".*?Association portal.*?sta-assoc-block.*?Bahrain Weightlifting Federation.*?BWF/s')
         ->not->toContain('fi-tenant-menu')
         ->toContain('sta-user-role">Association Admin<');
-    $this->get("/portal/{$this->assoc->id}")->assertSeeInOrder(['Home', 'Games', 'Athletes &amp; officials', 'Excel import', 'Team', 'Association profile'], escape: false);
+    // The menu order is checked inside the sidebar nav only (page content could otherwise satisfy it).
+    preg_match('/<nav[^>]*class="fi-sidebar-nav".*?<\/nav>/s', $html, $nav);
+    expect($nav[0] ?? '')->toMatch('/>\s*Home\s*<.*?>\s*Games\s*<.*?Athletes &amp; officials.*?Excel import.*?>\s*Team\s*<.*?Association profile/s')
+        ->not->toContain('Dashboard');
+});
+
+it('lists only published games the association is invited to, with its own statuses, from one submission query', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
+    $this->game->phase(2)->update(['enabled' => true, 'status' => PhaseStatus::Draft]);
+    Game::factory()->draft()->create(['name' => 'Hidden Draft Games'])->associations()->attach($this->assoc);
+    Game::factory()->create(['name' => 'Not Invited Games']);
+    $other = Association::factory()->create();
+    $this->game->associations()->attach($other);
+    Submission::for($this->game, $other, 1)->update(['status' => SubmissionStatus::Submitted]);
+    actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
+
+    $rows = Games::forTenant($this->assoc);
+    expect($rows->pluck('game.name')->all())->toBe(['Asian Indoor Games'])
+        ->and($rows[0]['rows']->pluck('submission', 'phase')->all())->toBe([1 => 'No response', 2 => 'No response'])
+        ->and($rows[0]['rows']->firstWhere('phase', 2)['url'])->toBeNull();
+
+    $this->get("/portal/{$this->assoc->id}")->assertOk()->assertSeeLivewire(Home::class)
+        ->assertSee('Asian Indoor Games')->assertDontSee('Hidden Draft Games')->assertDontSee('Not Invited Games')
+        ->assertSee(Phase1Entry::getUrl(['game' => $this->game->id]), false)->assertDontSee(Phase2Entry::getUrl(['game' => $this->game->id]), false);
+
+    // More games do not add queries: the association's submissions load once.
+    DB::enableQueryLog();
+    Games::forTenant($this->assoc);
+    $one = count(DB::getQueryLog());
+    foreach (range(1, 3) as $i) {
+        $g = Game::factory()->create();
+        $g->associations()->attach($this->assoc);
+        $g->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open]);
+        Submission::for($g, $this->assoc, 1);
+    }
+    DB::flushQueryLog();
+    Games::forTenant($this->assoc);
+    expect(count(DB::getQueryLog()))->toBe($one);
 });
 
 it('lays out Phase 2 in the Phase2.dc.html order and wording', function () {

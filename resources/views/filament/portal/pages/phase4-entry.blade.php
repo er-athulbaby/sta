@@ -23,8 +23,8 @@
                     'athletes' => $events->flatMap(fn ($ge) => $ids($slotAthletes[$ge->id]))->unique()->count(), 'ticked' => $this->tickedCounts($gs)];
             })->filter();
             $isOver = fn (int $v, $max) => $max !== null && $v > $max;
-            $sportOver = fn ($s) => $isOver($s['ticked']['male'], $s['gs']->p4_max_men) || $isOver($s['ticked']['female'], $s['gs']->p4_max_women)
-                || $isOver($s['ticked']['officials'], $s['gs']->p4_max_officials);
+            // The pill uses ShortListChecks' over list (same counts as submit and the PDF), matched by game sport id.
+            $sportOver = fn ($s) => collect($over)->contains('game_sport_id', $s['gs']->id);
             $headRow = 'text-align: left; font-size: 12px; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em';
             $subhead = 'margin: 0; font-size: 13px; font-weight: 700; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em';
             $view = 'display: inline-flex; align-items: center; min-height: 44px; font-weight: 600';

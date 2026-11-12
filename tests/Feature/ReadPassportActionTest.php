@@ -123,3 +123,18 @@ it('treats a throwing reader as unreadable and reports it', function () {
         ->assertSet('passportRead', ['tone' => 'error', 'text' => "Couldn't read the passport. Try a clearer, flat scan."]);
     Exceptions::assertReported(fn (RuntimeException $e) => $e->getMessage() === 'tesseract missing');
 });
+
+it('clears the read result box when the passport scan is replaced or removed', function () {
+    fakeReader(null);
+
+    $page = livewire(CreatePerson::class)
+        ->fillForm(['passport_scan_path' => UploadedFile::fake()->image('passport.jpg')])
+        ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
+        ->assertSet('passportRead.tone', 'error')
+        ->fillForm(['passport_scan_path' => UploadedFile::fake()->image('other.jpg')])
+        ->assertSet('passportRead', null)
+        ->callAction(TestAction::make('readPassport')->schemaComponent('passport_scan_path'))
+        ->assertSet('passportRead.tone', 'error')
+        ->set('data.passport_scan_path', null)
+        ->assertSet('passportRead', null);
+});

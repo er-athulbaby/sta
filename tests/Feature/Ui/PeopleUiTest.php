@@ -30,7 +30,7 @@ it('shows the admin People KPI tiles', function () {
     Person::factory()->official()->create(['passport_expiry' => now()->addMonths(2)->toDateString()]);
 
     $page = livewire(AdminListPeople::class)
-        ->assertSee('Team officials')->assertSee('Passport expires within 6 months')->assertSee('Missing passport scan');
+        ->assertSee('Team officials')->assertSee('Passport expired or expires within 6 months')->assertSee('Missing passport scan');
 
     expect($page->instance()->kpis())->toMatchArray(['athletes' => 2, 'officials' => 1, 'expiring' => 1, 'missingScan' => 3]);
 });

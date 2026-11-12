@@ -2,8 +2,10 @@
 
 use App\Enums\EventGender;
 use App\Enums\PhaseStatus;
+use App\Enums\StaPermission;
 use App\Filament\Portal\Pages\Phase1Entry;
 use App\Filament\Portal\Pages\Phase2Entry;
+use App\Filament\Resources\Games\Pages\StaPhase1Edit;
 use App\Models\Association;
 use App\Models\Event;
 use App\Models\Game;
@@ -11,6 +13,7 @@ use App\Models\GameEvent;
 use App\Models\GameSport;
 use App\Models\InterestAnswer;
 use App\Models\Sport;
+use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
 
@@ -60,4 +63,61 @@ it('lays out Phase 2 with participant meters, event entry totals and the policy 
         ->assertSee('Judo limits')->assertSee('Male participants')->assertSee('3 of 2')->assertSeeHtml('is-over')
         ->assertSee('Event entries')->assertSee('Entry policy')->assertSee('One athlete per weight.')
         ->assertSee('Up to 2 athletes')->assertSeeHtml('>Male</th>')->assertSeeHtml('>Female</th>');
+});
+
+it('hints that a note needs an answer, and never saves a note without one', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
+
+    livewire(Phase1Entry::class, ['game' => $this->game->id])
+        ->assertDontSee('Choose an answer to save the note')
+        ->set("notes.{$this->judo->id}", 'Waiting for the trials')
+        ->assertSee('Choose an answer to save the note')
+        ->call('save')->assertHasNoErrors()
+        ->set("answers.{$this->judo->id}", 'yes')
+        ->assertDontSee('Choose an answer to save the note');
+
+    expect(InterestAnswer::count())->toBe(0);
+    expect(file_get_contents(resource_path('css/filament/sta/theme.css')))->toContain('.sta-seg > label { min-height: var(--sta-target);');
+});
+
+it('ignores crafted Phase 1 answers and escapes notes', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
+    $foreign = GameSport::factory()->create(['game_id' => Game::factory()->create()->id]);
+
+    livewire(Phase1Entry::class, ['game' => $this->game->id])
+        ->set("answers.{$foreign->id}", 'yes')->set("notes.{$foreign->id}", 'Not mine')
+        ->set('answers.999999', 'yes')
+        ->set("answers.{$this->judo->id}", 'definitely')->set("notes.{$this->judo->id}", 'x')
+        ->call('save')->assertHasNoErrors();
+    expect(InterestAnswer::count())->toBe(0);
+
+    livewire(Phase1Entry::class, ['game' => $this->game->id])
+        ->set("notes.{$this->judo->id}", '<b>bold</b>')->call('save')
+        ->assertSee('Choose an answer to save the note')->assertDontSeeHtml('<b>bold</b>');
+});
+
+it('keeps a read-only Phase 1 and its notes unchanged', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->subDay()]);
+
+    livewire(Phase1Entry::class, ['game' => $this->game->id])
+        ->assertSeeHtml('disabled')
+        ->set("answers.{$this->judo->id}", 'yes')->set("notes.{$this->judo->id}", 'Late note')
+        ->call('save')
+        ->assertDontSee('Choose an answer to save the note');
+
+    expect(InterestAnswer::count())->toBe(0);
+});
+
+it('lets STA save a Phase 1 note', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->subDay()]);
+    $s = Submission::for($this->game, $this->assoc, 1);
+    $sta = User::factory()->sta()->create();
+    $sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    actingInAdmin($sta);
+
+    livewire(StaPhase1Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->set("answers.{$this->judo->id}", 'maybe')->set("notes.{$this->judo->id}", 'Confirmed by phone')
+        ->call('save')->assertHasNoErrors();
+
+    expect(InterestAnswer::sole()->note)->toBe('Confirmed by phone');
 });

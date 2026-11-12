@@ -114,26 +114,39 @@ final class ShortListChecks
     /**
      * @param  iterable<GameSport>  $sports  with sport and gameEvents loaded
      * @param  array<int, PersonGender>  $genders  person id => gender
-     * @return list<array{sport: string, kind: string, count: int, max: int}>
+     * @return list<array{sport: string, game_sport_id: int, kind: string, count: int, max: int}>
      */
     public static function over(iterable $sports, array $athletes, array $officials, array $genders): array
     {
         $out = [];
         foreach ($sports as $gs) {
-            $people = $gs->gameEvents->flatMap(fn ($ge) => (array) ($athletes[$ge->id] ?? []))->map(fn ($id) => (int) $id)->unique();
-            $count = [
-                'men' => $people->filter(fn ($id) => ($genders[$id] ?? null) === PersonGender::Male)->count(),
-                'women' => $people->filter(fn ($id) => ($genders[$id] ?? null) === PersonGender::Female)->count(),
-                'officials' => collect((array) ($officials[$gs->id] ?? []))->map(fn ($id) => (int) $id)->unique()->count(),
-            ];
+            $count = self::counts($gs, $athletes, $officials, $genders);
             foreach (['men' => $gs->p4_max_men, 'women' => $gs->p4_max_women, 'officials' => $gs->p4_max_officials] as $kind => $max) {
                 if ($max !== null && $count[$kind] > (int) $max) {
-                    $out[] = ['sport' => $gs->sport->name, 'kind' => $kind, 'count' => $count[$kind], 'max' => (int) $max];
+                    $out[] = ['sport' => $gs->sport->name, 'game_sport_id' => $gs->id, 'kind' => $kind, 'count' => $count[$kind], 'max' => (int) $max];
                 }
             }
         }
 
         return $out;
+    }
+
+    /**
+     * The one Short List count per sport (limits, the PDF and the on-screen meters): distinct male and female athletes over
+     * the sport's events, and distinct team officials.
+     *
+     * @param  array<int, PersonGender|null>  $genders  person id => gender
+     * @return array{men: int, women: int, officials: int}
+     */
+    public static function counts(GameSport $gs, array $athletes, array $officials, array $genders): array
+    {
+        $people = $gs->gameEvents->flatMap(fn ($ge) => (array) ($athletes[$ge->id] ?? []))->map(fn ($id) => (int) $id)->unique();
+
+        return [
+            'men' => $people->filter(fn ($id) => ($genders[$id] ?? null) === PersonGender::Male)->count(),
+            'women' => $people->filter(fn ($id) => ($genders[$id] ?? null) === PersonGender::Female)->count(),
+            'officials' => collect((array) ($officials[$gs->id] ?? []))->map(fn ($id) => (int) $id)->unique()->count(),
+        ];
     }
 
     public static function describe(array $over): string

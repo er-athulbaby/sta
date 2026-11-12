@@ -98,7 +98,7 @@ it('draws the admin People list with its filters and the person aside', function
     $later = Person::factory()->official()->create(['passport_expiry' => now()->addYears(3)->toDateString()]);
 
     $page = livewire(AdminListPeople::class)
-        ->assertSeeInOrder(['People', 'Export Excel', 'Athletes', 'Team officials', 'Passport expires within 6 months', 'Missing passport scan'])
+        ->assertSeeInOrder(['People', 'Export Excel', 'Athletes', 'Team officials', 'Passport expired or expires within 6 months', 'Missing passport scan'])
         ->assertSeeInOrder(['Name, passport or CPR', 'All associations', 'All', 'Athletes', 'Officials', 'Expiring passports',
             'Name', 'Association', 'Type', 'Passport expiry', 'Scans'])
         ->call('selectPerson', $soon->id);
@@ -229,4 +229,23 @@ it('deletes from the admin aside through the table delete action', function () {
     livewire(AdminListPeople::class)->assertSeeHtml("mountTableAction('delete', '{$p->getKey()}')")
         ->call('mountTableAction', 'delete', (string) $p->getKey())->callMountedAction();
     expect(Person::find($p->id))->toBeNull();
+});
+
+it('never lists or opens another association\'s person in the portal registry table', function () {
+    actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+    $mine = Person::factory()->create(['association_id' => $this->assoc->id]);
+    $theirs = otherAssociationPerson(['first_name' => 'Foreign', 'last_name' => 'Person']);
+
+    livewire(PortalListPeople::class)->assertCanSeeTableRecords([$mine])->assertCanNotSeeTableRecords([$theirs])
+        ->set('tableSearch', 'Foreign')->assertCanNotSeeTableRecords([$theirs])->assertDontSee('Foreign Person');
+    $this->get(PortalPersonResource::getUrl('edit', ['record' => $theirs]))->assertNotFound();
+});
+
+it('names the registry photo column for assistive technology', function () {
+    actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+    $p = Person::factory()->create(['association_id' => $this->assoc->id, 'first_name' => 'Hamad', 'last_name' => 'Buali']);
+
+    $column = livewire(PortalListPeople::class)->instance()->getTable()->getColumn('photo_path');
+    expect($column->getLabel())->toBe('Photo')
+        ->and($column->record($p)->getExtraImgAttributes())->toBe(['alt' => 'Photo of Hamad Buali']);
 });

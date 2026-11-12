@@ -10,6 +10,12 @@ class ListClothingItems extends ListRecords
 {
     protected static string $resource = ClothingItemResource::class;
 
+    /** Canvas list pages have no "X / List" breadcrumb. */
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     protected function getHeaderActions(): array
     {
         return [CreateAction::make()];

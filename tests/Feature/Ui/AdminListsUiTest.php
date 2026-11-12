@@ -177,3 +177,14 @@ it('brands the public invitation pages', function () {
     $this->get('/invitations/not-a-real-token')->assertStatus(410)
         ->assertSee('Bahrain Olympic Committee')->assertSee('Sports Entry')->assertSee('invalid or has expired');
 });
+
+it('draws the theme-only pages without Filament\'s "X / List" breadcrumb', function () {
+    foreach (['/admin/clothing-items', '/admin/sta-users', '/admin/extra-fields', '/admin/settings'] as $url) {
+        expect($this->get($url)->assertOk()->getContent())->not->toContain('fi-breadcrumbs');
+    }
+    $a = Association::factory()->create();
+    actingInPortal(User::factory()->assocAdmin($a)->create());
+    foreach (["/portal/{$a->id}/members", "/portal/{$a->id}/invitations", "/portal/{$a->id}/import-people"] as $url) {
+        expect($this->get($url)->assertOk()->getContent())->not->toContain('fi-breadcrumbs');
+    }
+});

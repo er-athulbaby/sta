@@ -15,7 +15,7 @@
                         <div class="sta-seg" role="radiogroup" aria-label="{{ $gs->sport->name }}">
                             @foreach (['yes' => 'Yes', 'no' => 'No', 'maybe' => 'Maybe'] as $value => $label)
                                 <label>
-                                    <input type="radio" name="answer-{{ $gs->id }}" wire:model="answers.{{ $gs->id }}" value="{{ $value }}" @disabled($readOnlyReason)>
+                                    <input type="radio" name="answer-{{ $gs->id }}" wire:model.live="answers.{{ $gs->id }}" value="{{ $value }}" @disabled($readOnlyReason)>
                                     {{ $label }}
                                 </label>
                             @endforeach
@@ -25,8 +25,12 @@
                         @endunless
                         <label class="sta-field" style="flex: 2 1 240px">
                             <span class="sta-sr-only">Note for {{ $gs->sport->name }}</span>
-                            <input type="text" maxlength="255" class="sta-input" placeholder="Note (optional)" wire:model="notes.{{ $gs->id }}" @disabled($readOnlyReason)>
+                            <input type="text" maxlength="255" class="sta-input" placeholder="Note (optional)" wire:model.blur="notes.{{ $gs->id }}" @disabled($readOnlyReason)>
                         </label>
+                        {{-- A note is stored with its answer, so a note without an answer would not be saved. --}}
+                        @if (! $readOnlyReason && trim((string) ($notes[$gs->id] ?? '')) !== '' && ! isset($answers[$gs->id]))
+                            <p class="sta-muted" role="status" style="margin: 0; flex-basis: 100%">Choose an answer to save the note</p>
+                        @endif
                         @error('notes.'.$gs->id)<p class="sta-error" role="alert">{{ $message }}</p>@enderror
                     </li>
                 @empty

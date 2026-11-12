@@ -3,7 +3,7 @@
      [id, person, sub]), $chosen (ids), $add / $remove (Livewire method names), $arg (first argument), $listLabel,
      $filterHtml (trusted markup, values escaped by the caller), $footer, $error. Read-only: chips without × and no input. --}}
 @php
-    $field = 'display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 48px; box-sizing: border-box; padding: 6px 8px; border-radius: 10px; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid '.($error ? 'var(--sta-bd-red-600, #DC2626)' : 'var(--sta-bd-line-strong, #CBD5E1)');
+    $field = 'display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 48px; box-sizing: border-box; padding: 1px 8px; border-radius: 10px; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid '.($error ? 'var(--sta-bd-red-600, #DC2626)' : 'var(--sta-bd-line-strong, #CBD5E1)');
     $avatar = 'border-radius: 50%; background: var(--sta-bg-avatar, #2B4C7E); color: var(--sta-fg-on-brand, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0';
 @endphp
 <div style="display: flex; flex-direction: column; gap: 8px"
@@ -25,7 +25,7 @@
                 <span style="font-weight: 600">{{ $c['person']->fullName() }}</span>
                 <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $c['sub'] }}</span>
                 @unless ($readOnlyReason)
-                    <button type="button" wire:click="{{ $remove }}({{ $arg }}, {{ $c['person']->id }})" aria-label="{{ $c['removeLabel'] }}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--sta-fg-muted, #475569); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
+                    <button type="button" wire:click="{{ $remove }}({{ $arg }}, {{ $c['person']->id }})" aria-label="{{ $c['removeLabel'] }}" style="width: 44px; height: 44px; margin: -4px -4px -4px -8px; border: 0; border-radius: 6px; background: transparent; color: var(--sta-fg-muted, #475569); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
                 @endunless
             </span>
         @endforeach
@@ -34,7 +34,7 @@
                 x-bind:aria-expanded="open" x-bind:aria-activedescendant="active" x-model="q" placeholder="{{ $placeholder }}"
                 x-on:focus="open = true" x-on:click="open = true" x-on:input="open = true; active = null"
                 x-on:keydown.down.prevent="open = true; move(1)" x-on:keydown.up.prevent="open = true; move(-1)" x-on:keydown.enter.prevent="pick()"
-                style="flex: 1 1 140px; min-width: 120px; min-height: 36px; border: 0; outline: none; background: transparent; font: 14px Inter, sans-serif">
+                style="flex: 1 1 140px; min-width: 120px; min-height: 44px; border: 0; outline: none; background: transparent; font: 14px Inter, sans-serif">
         @endunless
     </div>
     @unless ($readOnlyReason)

@@ -21,8 +21,10 @@ use App\Models\Sport;
 use App\Models\Submission;
 use App\Models\User;
 use App\Support\Sta;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Livewire\livewire;
 
@@ -232,4 +234,106 @@ it('gives STA both Long List screens without the side panel', function () {
     $this->get($events)->assertOk();
 
     expect(Entry::count())->toBe(2);
+});
+
+it('counts only the people that get a chip and draws 44px chip and picker targets', function () {
+    $other = Association::factory()->create();
+    $foreign = Person::factory()->complete()->create(['association_id' => $other->id]);
+    Person::withoutGlobalScopes()->whereKey($foreign->id)->update(['association_id' => $other->id]);
+
+    livewire(Phase3Events::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id, (string) $foreign->id, '999999'])
+        ->assertSeeText('Long List 1')->assertSeeText('1 athlete · 0 team officials')
+        ->assertSeeHtml('width: 44px; height: 44px; margin: -4px -4px -4px -8px')
+        ->assertSeeHtml('min-width: 120px; min-height: 44px');
+});
+
+it('keeps a read-only Long List: no × or picker, and chip calls change nothing', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $s->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+    $s->update(['status' => SubmissionStatus::Submitted]);
+
+    livewire(Phase3Events::class, ['game' => $this->game->id])
+        ->assertSee('Ali Hasan')->assertDontSeeHtml('aria-label="Remove Ali Hasan')->assertDontSeeHtml('role="combobox"')
+        ->call('addAthleteChip', $this->m60->id, $this->omar->id)
+        ->call('removeAthleteChip', $this->m60->id, $this->ali->id)
+        ->call('addOfficialChip', $this->judo->id, $this->coach->id)
+        ->assertSet("athletes.{$this->m60->id}", [(string) $this->ali->id])
+        ->assertSet("officials.{$this->judo->id}", []);
+});
+
+it('lets STA remove and add chips on the events screen', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $s->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(StaPhase3EventsEdit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->call('removeAthleteChip', $this->m60->id, $this->ali->id)
+        ->call('addOfficialChip', $this->judo->id, $this->coach->id)
+        ->assertSet("athletes.{$this->m60->id}", [])->assertSet("officials.{$this->judo->id}", [(string) $this->coach->id])
+        ->call('save')->assertHasNoErrors();
+
+    expect(Entry::pluck('person_id')->all())->toBe([$this->coach->id]);
+});
+
+it('asks for the sport of a new team official when the panel covers several sports', function () {
+    $karate = GameSport::factory()->create(['game_id' => $this->game->id,
+        'sport_id' => Sport::factory()->create(['association_id' => $this->assoc->id, 'name' => 'Karate'])->id]);
+    $official = ['function' => 'Team Manager', 'first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male',
+        'nationality' => 'Bahrain', 'phone' => '3644 7712', 'email' => 'n.ali@example.com', 'passport_no' => 'BH9998887',
+        'passport_expiry' => now()->addYears(2)->toDateString()];
+
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('openPanel', 'official')
+        ->assertSeeHtmlInOrder(['Sport', 'Judo', 'Karate', 'Mobile'])
+        ->set('newPerson', $official)
+        ->call('createPerson', true)->assertHasErrors(['newPersonSport'])->assertSee('Choose the sport for this team official.');
+    expect(Person::where('first_name', 'Nasser')->exists())->toBeFalse();
+
+    $page->set('newPersonSport', (string) $karate->id)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
+    expect(Entry::where(['person_id' => Person::where('first_name', 'Nasser')->sole()->id, 'game_sport_id' => $karate->id])->exists())->toBeTrue();
+});
+
+it('closes the panel and shows the list errors when the new person is saved but the Long List is not', function () {
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->coach->id]) // an official in an athlete event: a Long List error
+        ->call('openPanel', 'athlete')
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->set('newPersonEvent', (string) $this->m60->id)
+        ->call('createPerson', true)
+        ->assertSet('panel', null)->assertHasErrors(["athletes.{$this->m60->id}"])
+        ->assertNotified('Saved to the registry, but the Long List was not saved');
+
+    $hamad = Person::where('first_name', 'Hamad')->sole();
+    expect(Entry::count())->toBe(0);
+    $page->assertSet("athletes.{$this->m60->id}", [(string) $this->coach->id, (string) $hamad->id]);
+});
+
+it('deletes the uploaded files when the new person cannot be saved', function () {
+    Storage::fake(config('filesystems.private'));
+    Person::creating(fn () => throw new RuntimeException('database down'));
+
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('openPanel', 'athlete')
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->set('newPersonPhoto', UploadedFile::fake()->image('me.jpg'));
+
+    expect(fn () => $page->call('createPerson', false))->toThrow(RuntimeException::class);
+    expect(Storage::disk(config('filesystems.private'))->allFiles('photos'))->toBe([]);
+});
+
+it('names only the gaps the short form can fill, sends the rest to the registry, and views an upload', function () {
+    Storage::fake(config('filesystems.private'));
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])->call('openPanel', 'athlete');
+
+    expect($page->instance()->shortFormMissing())->toBe(['Photo', 'Passport scan', 'CPR number', 'CPR scan'])
+        ->and($page->instance()->shortFormLeavesRest())->toBeTrue();
+    $page->assertSee('Photo, Passport scan, CPR number and CPR scan missing — you can still save as draft. Complete the rest in the registry.')
+        ->assertDontSee('Passport issuing country')
+        ->set('newPersonPhoto', UploadedFile::fake()->image('me.jpg'))
+        ->assertSee('me.jpg')->assertSeeHtml('aria-label="View the photo"')->assertDontSeeHtml('aria-label="Remove the photo"')
+        ->call('viewUpload', 'newPersonPhoto')->assertFileDownloaded('me.jpg');
+    expect($page->instance()->viewUpload('panel'))->toBeNull();
 });

@@ -28,7 +28,8 @@ final class PersonTable
             ->deferFilters(false) // the canvas list applies its association select and "Expiring passports" toggle at once
             ->description('Passport dates in orange expire within 6 months.')
             ->columns([
-                ImageColumn::make('photo_path')->label('')->circular()->disk(config('filesystems.private'))->visibility('private')
+                ImageColumn::make('photo_path')->label('Photo')->circular()->disk(config('filesystems.private'))->visibility('private')
+                    ->extraImgAttributes(fn (Person $record) => ['alt' => 'Photo of '.$record->fullName()])
                     ->defaultImageUrl(fn (Person $record) => InitialsAvatarProvider::svg(Sta::initials($record->fullName()))),
                 TextColumn::make('last_name')->label('Name')->formatStateUsing(fn (Person $record) => $record->fullName())
                     ->description(fn (Person $record) => $record->code)->weight(FontWeight::SemiBold)

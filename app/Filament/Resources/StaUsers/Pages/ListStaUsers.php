@@ -10,6 +10,12 @@ class ListStaUsers extends ListRecords
 {
     protected static string $resource = StaUserResource::class;
 
+    /** Canvas list pages have no "X / List" breadcrumb. */
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

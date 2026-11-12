@@ -9,7 +9,7 @@
             'label' => ($several ? $gs->sport->name.' · ' : '').\App\Support\Sta::eventLabel($ge->event)]));
         $picks = $this->panelCandidates();
         $input = 'min-height: 44px; padding: 0 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; font: 14px Inter, sans-serif; background: var(--sta-bg-surface, #FFFFFF)';
-        $addBtn = 'min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--sta-bd-brand, #1F3A5F); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer';
+        $addBtn = 'min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--sta-bd-brand, #1F3A5F); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer';
         $pill = 'display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; ';
         $btn = 'min-height: 44px; padding: 0 14px; border-radius: 10px; font: 600 14px Inter, sans-serif; cursor: pointer; ';
     @endphp
@@ -131,6 +131,16 @@
                         @if ($m = $err('newPersonEvent'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                     </label>
                 @endunless
+                @if ($isOfficial && $several)
+                    {{-- Opened without a sport (several on the page): "Save and add to Long List" needs to know which one. --}}
+                    <label style="grid-column: 1 / -1; {{ $lbl }}">Sport
+                        <select wire:model="newPersonSport" style="{{ $field }}; padding: 0 10px; background: var(--sta-bg-surface, #FFFFFF)">
+                            <option value="">Choose…</option>
+                            @foreach ($panelSports as $gs)<option value="{{ $gs->id }}">{{ $gs->sport->name }}</option>@endforeach
+                        </select>
+                        @if ($m = $err('newPersonSport'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                    </label>
+                @endif
                 @if ($isOfficial)
                     <label style="{{ $lbl }}">Mobile
                         <input type="tel" wire:model.blur="newPerson.phone" autocomplete="off" style="{{ $field }}">
@@ -167,7 +177,8 @@
                         <div style="{{ $fileRow }}" wire:key="file-{{ $prop }}">
                             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--sta-fg-green-800, #166534)"><path d="m5 12 4 4 10-10"/></svg>
                             <span style="color: var(--sta-fg-green-800, #166534); font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere">{{ $this->{$prop}->getClientOriginalName() }} · {{ \Illuminate\Support\Number::fileSize($this->{$prop}->getSize()) }}</span>
-                            <button type="button" wire:click="$set('{{ $prop }}', null)" aria-label="Remove the {{ $what }}" style="min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer">Remove</button>
+                            {{-- Canvas: an uploaded file row offers "View" (the file as chosen, before it is saved). --}}
+                            <button type="button" wire:click="viewUpload('{{ $prop }}')" aria-label="View the {{ $what }}" style="min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer">View</button>
                         </div>
                     @else
                         <label style="{{ $uploadBtn }}" wire:key="file-{{ $prop }}">
@@ -193,10 +204,11 @@
                     @endforeach
                 </div>
             @endif
-            @if ($missing)
+            @php $rest = $this->shortFormLeavesRest(); @endphp
+            @if ($missing || $rest)
                 <div role="status" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--sta-bg-orange-50, #FFF7ED); color: var(--sta-fg-orange-800, #9A3412); font-size: 13px">
                     <span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; background: var(--sta-bg-orange-100, #FFEDD5); font-weight: 700; font-size: 12px; flex-shrink: 0">Incomplete</span>
-                    <span>{{ \Illuminate\Support\Arr::join($missing, ', ', ' and ') }} missing — you can still save as draft.</span>
+                    <span>{{ $missing ? \Illuminate\Support\Arr::join($missing, ', ', ' and ').' missing — you can still save as draft.' : 'You can still save as draft.' }}{{ $rest ? ' Complete the rest in the registry.' : '' }}</span>
                 </div>
             @endif
             <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px">

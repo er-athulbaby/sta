@@ -97,6 +97,12 @@ final class PersonForm
             $section('passport')->schema([
                 Flex::make([
                     self::need(self::upload('passport_scan_path', 'Passport scan', 'scans', $scanTypes, 5120), 'passport_scan_path')
+                        // A new or removed scan makes the last "Read details from passport" result stale.
+                        ->afterStateUpdated(function ($livewire) {
+                            if (property_exists($livewire, 'passportRead')) {
+                                $livewire->passportRead = null;
+                            }
+                        })
                         ->extraFieldWrapperAttributes(['class' => 'sta-flex-320'], merge: true)
                         ->belowContent([
                             $scanHelp,

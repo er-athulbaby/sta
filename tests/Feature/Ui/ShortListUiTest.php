@@ -1,9 +1,11 @@
 <?php
 
 use App\Enums\EventGender;
+use App\Enums\PersonGender;
 use App\Enums\PhaseStatus;
 use App\Enums\SubmissionStatus;
 use App\Filament\Portal\Pages\Phase4Entry;
+use App\Filament\Resources\Games\Pages\StaPhase4Edit;
 use App\Models\Association;
 use App\Models\Event;
 use App\Models\Game;
@@ -13,6 +15,7 @@ use App\Models\Person;
 use App\Models\Sport;
 use App\Models\Submission;
 use App\Models\User;
+use App\Services\Phases\ShortListChecks;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
 
@@ -84,4 +87,48 @@ it('draws the ShortList canvas sections in order', function () {
             'Athletes', 'On Short List', 'Gender', 'Event', 'Passport', 'Team officials', 'Function',
             'Judo · ticked vs maximum', 'Updates as you tick', 'Male', 'Female', 'Team officials', 'Justification needed',
             'Why do you need more than the maximum? (required to submit)', 'STA sees this on the Short List PDF and decides.']);
+});
+
+it('counts the meters with the same method as the limits and matches the over pill by game sport id', function () {
+    $w52 = GameEvent::factory()->create(['game_id' => $this->game->id, 'game_sport_id' => $this->judo->id,
+        'event_id' => Event::factory()->create(['sport_id' => $this->judo->sport_id, 'name' => 'Women -52kg', 'gender' => EventGender::Women])->id]);
+    $sara = Person::factory()->create(['gender' => PersonGender::Female, 'association_id' => $this->assoc->id, 'first_name' => 'Sara', 'last_name' => 'Ali']);
+    Submission::for($this->game, $this->assoc, 3)->entries()->create(['person_id' => $sara->id, 'game_event_id' => $w52->id, 'game_sport_id' => $this->judo->id]);
+    $this->judo->update(['p4_max_men' => 5, 'p4_max_women' => 0, 'p4_max_officials' => 2]);
+
+    $page = livewire(Phase4Entry::class, ['game' => $this->game->id]);
+    $gs = $this->judo->fresh('gameEvents');
+    expect($page->instance()->tickedCounts($gs))->toBe(['male' => 2, 'female' => 1, 'officials' => 1])
+        ->and(ShortListChecks::counts($gs, $page->get('athletes'), $page->get('officials'), [$this->ali->id => PersonGender::Male,
+            $this->omar->id => PersonGender::Male, $sara->id => PersonGender::Female]))->toBe(['men' => 2, 'women' => 1, 'officials' => 1]);
+    $page->assertSeeHtml('aria-label="Judo Female" aria-valuemin="0" aria-valuemax="0" aria-valuenow="1"')
+        ->assertSeeHtml('aria-label="Judo Team officials" aria-valuemin="0" aria-valuemax="2" aria-valuenow="1"')
+        ->assertSee('Over a maximum')->assertSee('Over the maximum: Judo — Female 1 / max 0')
+        ->set("athletes.{$w52->id}", [])
+        ->assertSee('Within maximums')->assertDontSee('Over a maximum');
+});
+
+it('keeps a read-only Short List: ticks disabled and a save changes nothing', function () {
+    $p4 = Submission::for($this->game, $this->assoc, 4);
+    livewire(Phase4Entry::class, ['game' => $this->game->id]); // preloads the Long List
+    $p4->update(['status' => SubmissionStatus::Submitted]);
+
+    livewire(Phase4Entry::class, ['game' => $this->game->id])
+        ->assertSeeHtml('wire:model.live="athletes.'.$this->m60->id.'" disabled')
+        ->set("athletes.{$this->m60->id}", [])->set('justification', 'Changed')->call('save');
+
+    expect($p4->entries()->count())->toBe(3)->and($p4->fresh()->justification)->toBeNull();
+});
+
+it('gives STA the Short List meters and the justification card', function () {
+    $p4 = Submission::for($this->game, $this->assoc, 4);
+    actingInAdmin(User::factory()->superAdmin()->create());
+
+    livewire(StaPhase4Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $p4])
+        ->assertSee('Judo · ticked vs maximum')->assertSee('Over a maximum')->assertSee('Justification needed')
+        ->assertSeeHtml('<span aria-hidden="true" style="width: 34px')
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->set('justification', 'Kept for the record')->call('save')->assertHasNoErrors()
+        ->assertSee('Within all maximums — no justification needed.')->assertSee('Justification')->assertDontSee('Justification needed');
+
+    expect($p4->fresh()->justification)->toBe('Kept for the record');
 });

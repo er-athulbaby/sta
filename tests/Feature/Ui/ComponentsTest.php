@@ -107,3 +107,10 @@ it('tolerates missing props', function () {
 
     expect($html)->not->toContain('aria-valuemax="0"')->toContain('aria-valuetext="5 of 4"');
 });
+
+it('draws an uploaded association logo on the invite list as the 54 x 34 canvas box', function () {
+    $a = Association::factory()->create(['logo_path' => 'logos/bwf.png']);
+
+    expect(Blade::render('<x-sta.assoc-avatar :association="$a" size="invite" />', ['a' => $a]))->toContain('sta-logo sta-logo-invite')
+        ->and(file_get_contents(resource_path('css/filament/sta/theme.css')))->toContain('.sta-logo-invite { width: 54px; height: 34px; }');
+});
