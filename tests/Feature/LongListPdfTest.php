@@ -83,7 +83,7 @@ it('renders the header, columns, declaration, boxes and reference', function () 
         ->toContain('Photo')->toContain('Date of birth')->toContain('Passport scan')->toContain('T-Shirt')->toContain('Function')
         ->toContain('Phone')->toContain('Email')->toContain('Sizes')->toContain('Ali Hasan')->toContain('Men -60kg')->toContain('T-Shirt: M')
         ->toContain('I confirm.')->toContain('Signature')->toContain('Stamp')->toContain('BJF-G001-P3-R1')
-        ->toContain('Athletes: 1 (1 male, 0 female)')->toContain('Team officials: 1');
+        ->toContain('Athletes Male <strong>1</strong>')->toContain('Athletes Female <strong>0</strong>')->toContain('Team officials <strong>1</strong>');
 });
 
 it('passes a summary of athletes by gender and team officials', function () {

@@ -78,7 +78,7 @@ it('prints the title and the justification', function () {
         'title' => 'Short List', 'justification' => 'Two medal chances', 'summary' => ['male' => 3, 'female' => 2, 'officials' => 1],
     ])->render();
 
-    expect($html)->toContain('Short List')->toContain('Justification')->toContain('Two medal chances')->toContain('Athletes: 5 (3 male, 2 female)')->not->toContain('Long List');
+    expect($html)->toContain('Short List')->toContain('Justification')->toContain('Two medal chances')->toContain('Athletes Male <strong>3</strong>')->toContain('Athletes Female <strong>2</strong>')->toContain('Athletes Total <strong>5</strong>')->not->toContain('Long List');
 });
 
 it('is dispatched when a Short List is finalised', function () {

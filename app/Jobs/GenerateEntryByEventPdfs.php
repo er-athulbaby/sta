@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Setting;
 use App\Models\Submission;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -30,10 +30,11 @@ class GenerateEntryByEventPdfs implements ShouldQueue
         $paths = [];
         $counts = $s->numbers()->pluck('count', 'game_event_id');
         $sportTotals = $s->sportTotals()->get()->keyBy('game_sport_id');
+        $context = PdfContext::for($s);
         foreach ($s->game->phase2SportsFor($s->association) as $gs) {
             $order = ['men' => 0, 'women' => 1, 'mixed' => 2];
             $rows = $gs->gameEvents->map(fn ($ge) => [
-                'event' => $ge->event->name, 'gender' => $ge->event->gender->value, 'count' => (int) ($counts[$ge->id] ?? 0),
+                'event' => $ge->event->name, 'gender' => $ge->event->gender->value, 'count' => (int) ($counts[$ge->id] ?? 0), 'max' => $ge->p2_max_athletes,
             ])->sortBy([fn ($a, $b) => ($order[$a['gender']] ?? 3) <=> ($order[$b['gender']] ?? 3), ['event', 'asc']])->values()->all();
             $totals = ['men' => collect($rows)->where('gender', 'men')->sum('count'), 'women' => collect($rows)->where('gender', 'women')->sum('count'),
                 'total' => collect($rows)->sum('count')];
@@ -44,10 +45,10 @@ class GenerateEntryByEventPdfs implements ShouldQueue
                 'participants' => ['male' => $t?->male, 'female' => $t?->female],
                 'medals' => ['gold' => $t?->gold, 'silver' => $t?->silver, 'bronze' => $t?->bronze],
                 'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
-                'nocLogo' => self::dataUri(Setting::get(Setting::NOC_LOGO)), 'gameLogo' => self::dataUri($s->game->logo_path),
+                ...$context,
             ])->render();
             $path = 'submissions/'.$s->reference_no.'/'.$gs->id.'-'.Str::slug($gs->sport->name).'.pdf';
-            $disk->put($path, Pdf::loadHTML($html)->setPaper('a4')->output());
+            $disk->put($path, PdfContext::pdf($html));
             $paths[$gs->id] = $path;
         }
         $s->forceFill(['pdf_paths' => $paths])->saveQuietly();

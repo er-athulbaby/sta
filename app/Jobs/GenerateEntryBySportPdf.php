@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Setting;
 use App\Models\Submission;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,19 +25,20 @@ class GenerateEntryBySportPdf implements ShouldQueue
     public function handle(): void
     {
         $s = $this->submission->fresh(['game', 'association']);
-        $answers = $s->answers()->pluck('answer', 'game_sport_id');
+        $answers = $s->answers()->get()->keyBy('game_sport_id');
         $rows = $s->game->sportsFor($s->association)->map(fn ($gs) => [
             'sport' => $gs->sport->name,
-            'answer' => isset($answers[$gs->id]) ? $answers[$gs->id]->label() : 'No response',
+            'answer' => $answers->get($gs->id)?->answer->label() ?? 'No response',
+            'value' => $answers->get($gs->id)?->answer->value,
+            'note' => $answers->get($gs->id)?->note,
         ])->all();
         $html = view('pdf.entry-by-sport', [
             'game' => $s->game, 'association' => $s->association, 'rows' => $rows, 'referenceNo' => $s->reference_no,
             'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
-            'nocLogo' => GenerateEntryByEventPdfs::dataUri(Setting::get(Setting::NOC_LOGO)),
-            'gameLogo' => GenerateEntryByEventPdfs::dataUri($s->game->logo_path),
+            ...PdfContext::for($s),
         ])->render();
         $path = 'submissions/'.$s->reference_no.'/entry-by-sport.pdf';
-        Storage::disk(config('filesystems.private'))->put($path, Pdf::loadHTML($html)->setPaper('a4')->output());
+        Storage::disk(config('filesystems.private'))->put($path, PdfContext::pdf($html));
         $s->forceFill(['pdf_paths' => ['entry_by_sport' => $path]])->saveQuietly();
     }
 }

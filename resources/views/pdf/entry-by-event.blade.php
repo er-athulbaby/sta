@@ -1,81 +1,82 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
+<head><meta charset="utf-8">@include('pdf.partials.styles')
 <style>
-    body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; }
-    table { width: 100%; border-collapse: collapse; }
-    .grid td, .grid th { border: 1px solid #000; padding: 4px 6px; }
-    .shade { background: #d9d9d9; }
-    .c { text-align: center; }
+    .events th, .events td { padding: 8px 12px; }
+    .events .head th, .events .total th, .events .total td { padding: 9px 12px; }
+    .events tbody th { text-align: left; font-weight: normal; }
+    .events .total th { font-weight: bold; }
+    .events .num { text-align: center; font-weight: bold; }
+    .events .off { background: #D9DEE5; }
+    .events .first th, .events .first td { border-top: 2px solid #0F172A; }
+    .small th, .small td { padding: 8px 10px; }
+    .small td { text-align: center; font-weight: bold; }
+    .pbox { border: 1px solid #94A3B8; padding: 10px 12px; vertical-align: top; }
+    .note { font-size: 12px; color: #475569; }
 </style>
 </head>
 <body>
-<table>
-    <tr>
-        <td style="width:20%">@if($nocLogo)<img src="{{ $nocLogo }}" style="max-width:100%;max-height:60px">@endif</td>
-        <td class="c">
-            <div style="font-size:14px;font-weight:bold">{{ $game->name }}</div>
-            <div style="font-size:13px">Entry by Event</div>
-            <div style="font-size:13px;font-weight:bold">{{ $sportName }}</div>
-        </td>
-        <td style="width:20%;text-align:right">@if($gameLogo)<img src="{{ $gameLogo }}" style="max-width:100%;max-height:60px">@endif</td>
-    </tr>
-</table>
-<p>
-    {{ $association->name }}
-    @if($game->start_date) &middot; {{ $game->start_date->format('d M Y') }}@if($game->end_date) - {{ $game->end_date->format('d M Y') }}@endif @endif
-    &middot; Reference: {{ $referenceNo }}
-</p>
-@if($gameSport->entry_policy)
-<div style="border:1px solid #000;padding:6px;margin-bottom:6px"><strong>Entry policy:</strong> {{ $gameSport->entry_policy }}</div>
-@endif
-@if($gameSport->dob_from || $gameSport->dob_to)
-<p><strong>Age eligibility:</strong> born
-    @if($gameSport->dob_from && $gameSport->dob_to) between {{ $gameSport->dob_from->format('d M Y') }} and {{ $gameSport->dob_to->format('d M Y') }}
-    @elseif($gameSport->dob_from) on or after {{ $gameSport->dob_from->format('d M Y') }}
-    @else on or before {{ $gameSport->dob_to->format('d M Y') }} @endif
-</p>
-@endif
-<table class="grid">
-    <tr><th style="text-align:left">Event</th><th style="width:15%">Male</th><th style="width:15%">Female</th></tr>
-    @foreach($rows as $r)
-    <tr>
-        <td>{{ $r['event'] }}</td>
-        @if($r['gender'] === 'mixed')
-            <td class="c" colspan="2">{{ $r['count'] }} (mixed)</td>
-        @else
-            <td class="c {{ $r['gender'] === 'men' ? '' : 'shade' }}">{{ $r['gender'] === 'men' ? $r['count'] : '' }}</td>
-            <td class="c {{ $r['gender'] === 'women' ? '' : 'shade' }}">{{ $r['gender'] === 'women' ? $r['count'] : '' }}</td>
-        @endif
-    </tr>
-    @endforeach
-    <tr>
-        <td><strong>Totals</strong></td>
-        <td class="c"><strong>{{ $totals['men'] }}</strong></td>
-        <td class="c"><strong>{{ $totals['women'] }}</strong></td>
-    </tr>
-    <tr>
-        <td><strong>All events (incl. mixed)</strong></td>
-        <td class="c" colspan="2"><strong>{{ $totals['total'] }}</strong></td>
-    </tr>
-</table>
-<table class="grid" style="margin-top:8px">
-    <tr><th style="text-align:left">Total number of participants</th><th style="width:15%">Male</th><th style="width:15%">Female</th></tr>
-    <tr><td>Athletes (each counted once)</td><td class="c">{{ $participants['male'] ?? '–' }}</td><td class="c">{{ $participants['female'] ?? '–' }}</td></tr>
-</table>
-<table class="grid" style="margin-top:8px">
-    <tr><th style="text-align:left">Expected medals</th><th style="width:15%">Gold</th><th style="width:15%">Silver</th><th style="width:15%">Bronze</th></tr>
-    <tr><td></td><td class="c">{{ $medals['gold'] ?? '–' }}</td><td class="c">{{ $medals['silver'] ?? '–' }}</td><td class="c">{{ $medals['bronze'] ?? '–' }}</td></tr>
-</table>
-<p style="margin-top:14px">{{ $declaration }}</p>
-<table class="grid" style="margin-top:10px">
-    <tr>
-        @foreach(['Name', 'Position', 'Date', 'Stamp'] as $label)
-        <td style="height:60px;width:25%;vertical-align:top">{{ $label }}</td>
+@include('pdf.partials.footer')
+@include('pdf.partials.header', ['phase' => $phase ?? 2, 'title' => 'Entry by Event — '.$sportName])
+<table class="grid events" style="margin-top: 16px">
+    <thead>
+        <tr class="head">
+            <th scope="col" style="text-align: left">Event</th>
+            <th scope="col" class="c" style="width: 86px">Allowed</th>
+            <th scope="col" class="c" style="width: 96px">Male</th>
+            <th scope="col" class="c" style="width: 96px">Female</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($rows as $r)
+        <tr>
+            <th scope="row">{{ $r['event'] }}</th>
+            <td class="c" style="color: #334155">{{ ($r['max'] ?? null) !== null ? 'Up to '.$r['max'] : '–' }}</td>
+            @if($r['gender'] === 'mixed')
+                <td class="num" colspan="2">{{ $r['count'] }} (mixed)</td>
+            @else
+                <td class="num {{ $r['gender'] === 'men' ? '' : 'off' }}">{{ $r['gender'] === 'men' ? $r['count'] : '' }}</td>
+                <td class="num {{ $r['gender'] === 'women' ? '' : 'off' }}">{{ $r['gender'] === 'women' ? $r['count'] : '' }}</td>
+            @endif
+        </tr>
         @endforeach
-    </tr>
+        <tr class="total first"><th scope="row" colspan="2">Event entries</th><td class="num">{{ $totals['men'] }}</td><td class="num">{{ $totals['women'] }}</td></tr>
+        <tr class="total"><th scope="row" colspan="2">All events (incl. mixed)</th><td class="num" colspan="2">{{ $totals['total'] }} {{ $totals['total'] === 1 ? 'entry' : 'entries' }}</td></tr>
+    </tbody>
 </table>
-<p style="margin-top:14px;font-size:9px">Reference {{ $referenceNo }} &middot; generated {{ now()->timezone('Asia/Bahrain')->format('d M Y H:i') }}</p>
+<div class="note" style="margin-top: 16px">Grey cells: event not open to that gender.</div>
+@php
+    $male = $participants['male'] ?? null;
+    $female = $participants['female'] ?? null;
+@endphp
+<table style="width: 100%; margin-top: 16px"><tr>
+    <td style="width: 343px; padding: 0 12px 0 0; vertical-align: top">
+        <div class="cap">Total number of participants</div>
+        <table class="grid small">
+            <thead><tr class="head"><th scope="col">Male</th><th scope="col">Female</th><th scope="col">Total</th></tr></thead>
+            <tbody><tr><td>{{ $male ?? '–' }}</td><td>{{ $female ?? '–' }}</td><td>{{ $male === null && $female === null ? '–' : (int) $male + (int) $female }}</td></tr></tbody>
+        </table>
+    </td>
+    <td style="padding: 0; vertical-align: top">
+        <div class="cap">Expected medals</div>
+        <table class="grid small">
+            <thead><tr class="head"><th scope="col">Gold</th><th scope="col">Silver</th><th scope="col">Bronze</th></tr></thead>
+            <tbody><tr><td>{{ $medals['gold'] ?? '–' }}</td><td>{{ $medals['silver'] ?? '–' }}</td><td>{{ $medals['bronze'] ?? '–' }}</td></tr></tbody>
+        </table>
+    </td>
+</tr></table>
+<div class="note" style="margin-top: 16px">Participants are different athletes (one athlete can enter several events); the sport limits apply to these totals. Medals are not linked to an athlete or event.</div>
+<table style="width: 100%; margin-top: 16px"><tr>
+    <td class="pbox">
+        <div class="cap" style="padding-bottom: 4px">Entry policy</div>
+        <div style="font-size: 12px; line-height: 1.5em">{{ $gameSport->entry_policy ?: 'Each event allows the number of athletes shown above.' }}</div>
+    </td>
+    <td style="width: 12px; padding: 0"></td>
+    <td class="pbox" style="width: 194px">
+        <div class="cap" style="padding-bottom: 4px">Age eligibility</div>
+        <div style="font-size: 12px; line-height: 1.5em">Born from: {{ $gameSport->dob_from?->format('j M Y') ?? 'no lower limit' }}<br>Born to: {{ $gameSport->dob_to?->format('j M Y') ?? 'no upper limit' }}</div>
+    </td>
+</tr></table>
+@include('pdf.partials.signoff', ['boxHeight' => 40])
 </body>
 </html>

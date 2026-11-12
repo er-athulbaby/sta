@@ -1,44 +1,49 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
+<head><meta charset="utf-8">@include('pdf.partials.styles')
 <style>
-    body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; }
-    table { width: 100%; border-collapse: collapse; }
-    .grid td, .grid th { border: 1px solid #000; padding: 4px 6px; }
-    .c { text-align: center; }
+    .sports th, .sports td { padding: 12px; }
+    .sports .head th, .sports .total th, .sports .total td { padding: 10px 12px; }
+    .x { text-align: center; font-weight: bold; font-size: 15px; }
 </style>
 </head>
 <body>
-<table>
-    <tr>
-        <td style="width:20%">@if($nocLogo)<img src="{{ $nocLogo }}" style="max-width:100%;max-height:60px">@endif</td>
-        <td class="c">
-            <div style="font-size:14px;font-weight:bold">{{ $game->name }}</div>
-            <div style="font-size:13px">Entry by Sport</div>
-        </td>
-        <td style="width:20%;text-align:right">@if($gameLogo)<img src="{{ $gameLogo }}" style="max-width:100%;max-height:60px">@endif</td>
-    </tr>
-</table>
-<p>
-    {{ $association->name }} ({{ $association->code }})
-    @if($game->start_date) &middot; {{ $game->start_date->format('d M Y') }}@if($game->end_date) - {{ $game->end_date->format('d M Y') }}@endif @endif
-    &middot; Reference: {{ $referenceNo }}
-</p>
-<table class="grid">
-    <tr><th style="text-align:left">Sport</th><th style="width:25%">Answer</th></tr>
-    @foreach($rows as $r)
-    <tr><td>{{ $r['sport'] }}</td><td class="c">{{ $r['answer'] }}</td></tr>
-    @endforeach
-</table>
-<p style="margin-top:14px">{{ $declaration }}</p>
-<table class="grid" style="margin-top:10px">
-    <tr>
-        @foreach(['Name', 'Position', 'Signature', 'Date', 'Stamp'] as $label)
-        <td style="height:60px;width:20%;vertical-align:top">{{ $label }}</td>
+@include('pdf.partials.footer')
+@include('pdf.partials.header', ['phase' => 1, 'title' => 'Entry by Sport'])
+<p style="margin: 18px 0 0; font-size: 13px; line-height: 1.55em; color: #334155">For each sport you were invited to, tell STA whether you plan to take part. This is not yet an entry: numbers per event are given in Phase 2 (Entry by Event).</p>
+<table class="grid sports" style="margin-top: 18px">
+    <thead>
+        <tr class="head">
+            <th scope="col" style="text-align: left">Sport</th>
+            <th scope="col" class="c" style="width: 46px">Yes</th>
+            <th scope="col" class="c" style="width: 46px">No</th>
+            <th scope="col" class="c" style="width: 46px">Maybe</th>
+            <th scope="col" style="text-align: left">Note</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($rows as $r)
+        <tr>
+            <th scope="row" style="text-align: left">{{ $r['sport'] }}</th>
+            @foreach(['yes', 'no', 'maybe'] as $v)<td class="x">{{ ($r['value'] ?? null) === $v ? 'X' : '' }}</td>@endforeach
+            <td style="color: #334155">{{ $r['note'] ?? (($r['value'] ?? null) === null ? $r['answer'] : '') }}</td>
+        </tr>
         @endforeach
-    </tr>
+        @php $tally = collect($rows)->countBy(fn ($r) => $r['value'] ?? 'none'); @endphp
+        <tr class="total">
+            <th scope="row" style="text-align: left">Total</th>
+            <td class="c" style="font-weight: bold">{{ $tally['yes'] ?? 0 }}</td>
+            <td class="c" style="font-weight: bold">{{ $tally['no'] ?? 0 }}</td>
+            <td class="c" style="font-weight: bold">{{ $tally['maybe'] ?? 0 }}</td>
+            <td style="color: #334155">{{ count($rows) }} {{ count($rows) === 1 ? 'sport' : 'sports' }} invited</td>
+        </tr>
+    </tbody>
 </table>
-<p style="margin-top:14px;font-size:9px">Reference {{ $referenceNo }} &middot; generated {{ now()->format('d M Y H:i') }}</p>
+<table style="margin-top: 18px; font-size: 13px">
+    <tr><td class="muted" style="width: 150px; padding: 0 12px 6px 0">Prepared by</td><td style="padding: 0 0 6px">{{ $preparedBy ?? '–' }}</td></tr>
+    <tr><td class="muted" style="padding: 0 12px 6px 0">Approved by</td><td style="padding: 0 0 6px">{{ $approvedBy ?? '–' }}</td></tr>
+    <tr><td class="muted" style="padding: 0 12px 0 0">Phase 1 deadline</td><td>{{ $deadline ?? '–' }}</td></tr>
+</table>
+@include('pdf.partials.signoff', ['boxHeight' => 44])
 </body>
 </html>

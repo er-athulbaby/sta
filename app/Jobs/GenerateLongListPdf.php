@@ -7,7 +7,7 @@ use App\Enums\PersonType;
 use App\Models\Person;
 use App\Models\Setting;
 use App\Models\Submission;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -101,11 +101,16 @@ class GenerateLongListPdf implements ShouldQueue
             'game' => $s->game, 'association' => $s->association, 'athletes' => $athletes, 'officials' => $officials,
             'athleteItems' => $athleteItems->pluck('name')->all(), 'referenceNo' => $s->reference_no,
             'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
-            'nocLogo' => GenerateEntryByEventPdfs::dataUri(Setting::get(Setting::NOC_LOGO)),
-            'gameLogo' => GenerateEntryByEventPdfs::dataUri($s->game->logo_path),
-            'title' => static::TITLE, 'justification' => $s->justification,
+            ...PdfContext::for($s),
+            'title' => static::TITLE, 'justification' => $s->justification, 'overLimits' => $this->overLimits($s),
         ])->render();
 
-        return Pdf::loadHTML($html)->setPaper('a4', 'landscape')->output();
+        return PdfContext::pdf($html, 'landscape');
+    }
+
+    /** @return list<string> the limits the list exceeds, for the justification box (Short List only). */
+    protected function overLimits(Submission $s): array
+    {
+        return [];
     }
 }
