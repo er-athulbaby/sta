@@ -29,7 +29,7 @@
 
     <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
 
-        <aside aria-label="Report settings" class="sta-builder-settings" style="flex: 1 1 320px; max-width: 100%; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; display: flex; flex-direction: column">
+        <aside aria-label="Report settings" class="sta-builder-settings" style="flex: 1 1 320px; min-width: 0; max-width: 100%; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; display: flex; flex-direction: column">
             <div style="padding: 16px 18px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0); display: flex; flex-direction: column; gap: 6px">
                 <label for="rb-subject" style="{{ $label }}">Subject</label>
                 <select id="rb-subject" wire:model.live="def.subject" style="{{ $select }}; min-height: 44px; padding: 0 12px">

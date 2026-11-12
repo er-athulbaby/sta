@@ -64,7 +64,7 @@
     </section>
 
     @if ($sel)
-        <aside aria-labelledby="detail-title" wire:key="assoc-aside-{{ $sel->id }}" style="flex: 1 1 400px; display: flex; flex-direction: column; gap: 16px">
+        <aside aria-labelledby="detail-title" wire:key="assoc-aside-{{ $sel->id }}" style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
             <section style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
                 <div style="display: flex; align-items: center; gap: 14px">
                     @if ($url = $logoUrl($sel))
@@ -87,8 +87,8 @@
                 <h3 id="users-title" style="margin: 0; padding: 14px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0); font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Users</h3>
                 <ul style="list-style: none; margin: 0; padding: 0">
                     @foreach ($sel->users as $u)
-                        <li wire:key="assoc-user-{{ $u->id }}" style="display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-top: 1px solid var(--sta-bd-row, #EEF2F6)">
-                            <span style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+                        <li wire:key="assoc-user-{{ $u->id }}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 20px; border-top: 1px solid var(--sta-bd-row, #EEF2F6)">
+                            <span style="display: flex; flex-direction: column; flex: 1 1 150px; min-width: 0">
                                 <span style="font-weight: 600">{{ $u->name }}</span>
                                 <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $roleLabel($u->role) }} · {{ $u->email }}</span>
                             </span>

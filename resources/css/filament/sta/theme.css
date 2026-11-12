@@ -280,6 +280,15 @@
 .fi-body { background: var(--sta-bg); color: var(--sta-text); font-size: 14px; }
 .fi-body a:not(.fi-btn):not(.fi-sidebar-item-btn):not(.sta-btn):not(.sta-phase-card) { color: var(--sta-primary); }
 .fi-main { padding: 32px 40px 48px; }
+.fi-main, .fi-main .fi-sc { line-height: normal; } /* canvas text uses the font's normal line height (Filament schemas set 20px) */
+.fi-main a:not([class]) { text-decoration: underline; } /* canvas links without an explicit text-decoration are underlined */
+/* Canvas checkboxes and radios keep the browser's default margin (the Tailwind reset removes it). */
+.fi-main input[type="checkbox"][style] { margin: 3px 3px 3px 4px; }
+.fi-main input[type="radio"][style] { margin: 3px 3px 0 5px; }
+/* Canvas markup is laid out with the browser's content-box sizing (the Tailwind reset makes everything border-box), so a
+   flex basis or min-height plus padding and border comes out the same size as drawn. Buttons, selects, tables, checkboxes
+   and radios are border-box in the browser too. */
+.fi-main [style]:not([class*="fi-"]):not(button):not(select):not(table):not([type="checkbox"]):not([type="radio"]) { box-sizing: content-box; }
 @media (max-width: 640px) { .fi-main { padding: 16px; } }
 
 /* Menu = canvas <nav> (Main.dc.html, Phase2.dc.html): navy, padding 24px 16px, 24px between brand, items and user block. */
@@ -290,6 +299,8 @@
 .fi-sidebar-header-logo-ctn > a { display: block; border-radius: var(--sta-radius-ctl); }
 .fi-sidebar-header-logo-ctn > a:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
 .fi-sidebar .sta-brand { padding: 0 8px; }
+.fi-sidebar .sta-brand-org { max-width: 130px; } /* wraps to two lines as drawn (the canvas font is a hair wider) */
+.fi-sidebar .fi-logo { height: auto !important; margin: 0; width: 100%; } /* brand starts at the menu edge and grows with its three lines, as drawn */
 .fi-sidebar-nav { padding: 0; gap: 4px; scrollbar-gutter: auto; }
 .fi-sidebar-nav-groups { margin: 0; gap: 4px; }
 .fi-sidebar-group-label { color: var(--sta-nav-muted); }
@@ -302,7 +313,7 @@
 .fi-sidebar-item.fi-active .fi-sidebar-item-label { color: #FFFFFF; font-weight: 600; }
 
 /* Portal association block (canvas: #1A3358, radius 12, padding 10px 12px, 64x40 white logo box). */
-.sta-assoc-block { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--sta-radius-tile); background: var(--sta-nav-hover); }
+.sta-assoc-block { line-height: normal; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--sta-radius-tile); background: var(--sta-nav-hover); }
 .sta-assoc-block-logo { display: inline-flex; width: 64px; height: 40px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: #FFFFFF; border: 1px solid var(--sta-border); align-items: center; justify-content: center; }
 .sta-assoc-block-logo img { width: 100%; height: 100%; object-fit: contain; }
 .sta-assoc-block-initials { font-weight: 600; font-size: 13px; letter-spacing: .02em; }
@@ -335,7 +346,7 @@
 .sta-brand-logo { width: 40px; height: 56px; padding: 4px; box-sizing: border-box; border-radius: var(--sta-radius-ctl); background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .sta-brand-logo img { width: 100%; height: 100%; object-fit: contain; }
 .sta-brand-text { display: flex; flex-direction: column; line-height: normal; }
-.sta-brand-org, .sta-brand-panel { font-size: 12px; color: var(--sta-nav-muted); }
+.sta-brand-org, .sta-brand-panel { font-size: 12px; font-weight: 400; color: var(--sta-nav-muted); }
 .sta-brand-app { font-family: var(--sta-font-heading); font-weight: 600; font-size: 16px; color: #FFFFFF; }
 .fi-simple-layout .sta-brand-org, .fi-simple-layout .sta-brand-panel { color: var(--sta-text-2); }
 .fi-simple-layout .sta-brand-app { color: var(--sta-text); }
@@ -421,7 +432,7 @@
 .sta-grid-phase { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .sta-kpi { background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-border); border-radius: var(--sta-radius-tile); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 .sta-kpi-label { font-size: 13px; color: var(--sta-text-2); }
-.sta-kpi-value { font-family: var(--sta-font-heading); font-size: 30px; font-weight: 700; line-height: 1.1; }
+.sta-kpi-value { font-family: var(--sta-font-heading); font-size: 30px; font-weight: 700; line-height: normal; }
 .sta-kpi-hint { font-size: 12px; color: var(--sta-text-2); }
 .sta-tone-submitted { color: var(--sta-fg-green-800, #166534); }
 .sta-tone-awaiting { color: var(--sta-fg-amber-800, #92400E); }
@@ -551,6 +562,7 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 
 /* Task 8b-3: person forms (canvas PlayerForm.dc.html / OfficialForm.dc.html) on Filament fields */
 .sta-upload:focus-within, .sta-upload:focus-visible { outline: 2px solid var(--sta-primary); outline-offset: 2px; }
+.sta-band.sta-form-band { background: transparent; border: 0; } /* the inner section draws the single 1px band border */
 .sta-form-band > .fi-section { background: var(--band-body); border: 1px solid var(--band-border); border-radius: var(--sta-radius-card); box-shadow: none; }
 .sta-form-band > .fi-section > .fi-section-header { background: var(--band-head); border-bottom: 1px solid var(--band-border); border-radius: 13px 13px 0 0; padding: 18px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; }
 .sta-form-band .fi-section-header-heading { margin: 0; display: flex; align-items: center; gap: 10px; font-family: var(--sta-font-heading); font-size: 19px; font-weight: 600; color: var(--band-text); }
@@ -570,13 +582,14 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-person-page .fi-fo-field-label-ctn { justify-content: flex-start; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 .sta-person-page .fi-fo-field-label-ctn > .fi-sc { flex: none; width: auto; }
 .sta-person-page .fi-fo-field-label-content, .sta-person-page .fi-in-entry-label { font-size: 13px; font-weight: 600; color: var(--sta-text); }
-.sta-person-page .fi-fo-field-label-required-mark { vertical-align: baseline; font-size: inherit; font-weight: 600; color: var(--sta-warn); margin-left: 4px; }
+.sta-person-page .fi-fo-field-label-required-mark { vertical-align: baseline; position: static; font-size: inherit; font-weight: 600; color: var(--sta-warn); margin-left: 8px; }
 .sta-need { font-size: 12px; font-weight: 500; color: var(--sta-text-2); }
 .sta-need.is-missing { font-weight: 600; color: var(--sta-warn); }
 .sta-person-page .fi-input-wrp { min-height: var(--sta-target); border-radius: var(--sta-radius-ctl); background: var(--sta-bg-surface, #FFFFFF); box-shadow: inset 0 0 0 1px var(--sta-border-strong); }
 .sta-person-page .fi-input-wrp:focus-within { box-shadow: inset 0 0 0 2px var(--sta-primary); }
 .sta-person-page .fi-fo-field.is-missing .fi-input-wrp { box-shadow: inset 0 0 0 1px var(--sta-bd-orange-600, #EA580C); }
 .sta-person-page .fi-input, .sta-person-page .fi-select-input { font-size: 14px; color: var(--sta-text); }
+.sta-person-page .fi-input-wrp .fi-input:not(textarea), .sta-person-page .fi-input-wrp .fi-select-input { min-height: var(--sta-target); } /* text sits in the middle of the 44px field as drawn */
 .sta-person-page .fi-input { padding-inline: 12px; }
 .sta-person-page .fi-select-input { padding-inline: 10px; }
 .sta-person-page textarea.fi-input { min-height: 80px; padding-block: 10px; }

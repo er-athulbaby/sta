@@ -19,7 +19,7 @@
              style="display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 52px; padding: 6px 12px; border-radius: 10px; text-decoration: none; color: var(--sta-fg-text, #0F172A); {{ $s->id === $sportId ? 'background: var(--sta-bg-selected, #E8EEF6)' : '' }}">
             <span style="display: flex; flex-direction: column; gap: 2px">
               <span style="font-weight: 600">{{ $s->sport->name }}</span>
-              <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sta-fg-muted, #475569)"><x-sta.assoc-avatar :association="$s->sport->association" size="sm" />{{ $s->sport->association?->name }}</span>
+              <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sta-fg-muted, #475569)"><x-sta.assoc-avatar :association="$s->sport->association" size="sm" />{{ preg_replace('/^Bahrain\s+/u', '', (string) $s->sport->association?->name) }}</span>
             </span>
             <x-sta.pill :status="$stateKey" style="height: 24px; padding: 0 9px">{{ $stateLabel }}</x-sta.pill>
           </a>

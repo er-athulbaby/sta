@@ -55,7 +55,7 @@
                                     @elseif ($a)
                                         <span aria-hidden="true" style="width: 24px; height: 24px; border-radius: 50%; background: {{ \App\Support\Sta::avatarColour($a->code ?? $a->name) }}; color: var(--sta-fg-on-brand, #FFFFFF); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 9px; flex-shrink: 0">{{ $a->code ?? \App\Support\Sta::initials($a->name) }}</span>
                                     @endif
-                                    {{ $a?->name }}
+                                    {{ preg_replace('/^Bahrain\s+/u', '', (string) $a?->name) }}
                                 </span>
                             </td>
                             <td style="padding: 8px 12px; color: var(--sta-fg-strong, #334155)">{{ $typeLabel($p) }}</td>

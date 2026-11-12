@@ -4,8 +4,8 @@
     $total = $records instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator ? $records->total() : $records->count();
     $person = $this->panelPerson();
     $soon = now()->addMonths(6);
-    $pillDone = 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--sta-bg-green-100, #DCFCE7); color: var(--sta-fg-green-800, #166534); font-size: 12px; font-weight: 600';
-    $pillGap = 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412); font-size: 12px; font-weight: 600';
+    $pillDone = 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--sta-bg-green-100, #DCFCE7); color: var(--sta-fg-green-800, #166534); font-size: 12px; font-weight: 600; white-space: nowrap';
+    $pillGap = 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412); font-size: 12px; font-weight: 600; white-space: nowrap';
     $input = 'min-height: 44px; padding: 0 12px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; font: 14px Inter, sans-serif; font-weight: 400; background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); box-sizing: border-box; width: 100%';
     $photo = fn ($p) => $p->photo_path ? \App\Filament\Shared\AttachmentActions::url($p->photo_path) : null;
 @endphp

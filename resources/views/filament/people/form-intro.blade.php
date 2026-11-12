@@ -15,7 +15,7 @@
         }
     }
 @endphp
-<p style="margin: 0; font-size: 13px; color: var(--sta-fg-muted, #475569); line-height: 1.5"><span aria-hidden="true" style="color: var(--sta-fg-orange-800, #9A3412); font-weight: 700">*</span> Required to save. Fields marked “needed for Long List” can stay empty for now, but the {{ $type === \App\Enums\PersonType::Official ? 'official' : 'athlete' }} stays Incomplete and can’t be entered in a Long List until they’re filled. Uploaded files open through a secure link valid for 5 minutes.</p>
+<p style="margin: 0 0 20px; font-size: 13px; color: var(--sta-fg-muted, #475569); line-height: 1.5"><span aria-hidden="true" style="color: var(--sta-fg-orange-800, #9A3412); font-weight: 700">*</span> Required to save. Fields marked “needed for Long List” can stay empty for now, but the {{ $type === \App\Enums\PersonType::Official ? 'official' : 'athlete' }} stays Incomplete and can’t be entered in a Long List until they’re filled. Uploaded files open through a secure link valid for 5 minutes.</p>
 
 <nav aria-label="Form sections" style="display: flex; flex-wrap: wrap; gap: 8px">
     @foreach ($keys as $i => $key)

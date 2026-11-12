@@ -15,7 +15,7 @@
         $pdfNames = [1 => 'Entry by Sport', 2 => 'Entry by Event', 3 => 'Long List', 4 => 'Short List'];
         $link = 'display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600';
         $linkBtn = $link.'; padding: 0; border: 0; background: transparent; color: var(--sta-fg-brand, #1F3A5F); cursor: pointer; font-family: Inter, sans-serif';
-        $th = 'padding: 12px 12px; font-weight: 600';
+        $th = 'padding: 12px 12px; font-weight: 600; white-space: nowrap';
         $footerScope = ['all' => '', 'pending' => ' pending', 'submitted' => ' submitted'][$show] ?? '';
     @endphp
 
@@ -62,7 +62,7 @@
             <table style="width: 100%; min-width: 760px; border-collapse: collapse">
                 <thead>
                     <tr style="text-align: left; font-size: 12px; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em">
-                        <th scope="col" style="padding: 12px 20px; font-weight: 600">Association</th>
+                        <th scope="col" style="padding: 12px 20px; font-weight: 600; min-width: 240px">Association</th>
                         @foreach ($phases as $p)
                             <th scope="col" style="{{ $th }}"><x-sta.phase-chip :phase="$p->phase" /></th>
                         @endforeach
@@ -102,7 +102,7 @@
                                     $pdfs = $c['status'] === 'submitted' ? $this->pdfLinks($s) : [];
                                 @endphp
                                 <td wire:key="cell-{{ $a->id }}-{{ $p->phase }}" style="padding: 14px 12px">
-                                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px">
+                                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; white-space: nowrap">
                                         <x-sta.pill :status="Sta::cellPill($c['status'])" :title="$c['status'] === 'submitted' ? $s->reference_no : null">{{ $c['label'] }}</x-sta.pill>
                                         @foreach ($pdfs as $pdf)
                                             <a href="{{ $pdf['url'] }}" target="_blank" rel="noopener" aria-label="View {{ $pdfNames[$p->phase] }} PDF{{ count($pdfs) > 1 ? ' ('.$pdf['name'].')' : '' }}" style="{{ $link }}">View PDF</a>
@@ -128,7 +128,7 @@
                             <td style="padding: 14px 12px; font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $last ? Sta::when($last) : '—' }}</td>
                             <td style="padding: 14px 20px; text-align: right">
                                 @if ($remindable)
-                                    <button type="button" wire:click="mountAction('remindOne', { association: {{ $a->id }} })" aria-label="Remind {{ $a->name }}" style="{{ $linkBtn }}; font-size: 14px">Remind</button>
+                                    <button type="button" wire:click="mountAction('remindOne', { association: {{ $a->id }} })" aria-label="Remind {{ $a->name }}" style="{{ $linkBtn }}; font-size: 14px; text-decoration: underline">Remind</button>
                                 @elseif ($focusSub)
                                     <a href="{{ GameResource::getUrl('submission', ['record' => $record, 'submission' => $focusSub]) }}" aria-label="Open {{ $a->name }} Phase {{ $focus->phase }}" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">Open</a>
                                 @endif

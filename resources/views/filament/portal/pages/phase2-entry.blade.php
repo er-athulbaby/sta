@@ -50,7 +50,7 @@
                     <span style="font-size: 13px; color: var(--sta-fg-strong, #334155)">Total <strong>{{ $pm + $pf }}</strong></span>
                 </fieldset>
 
-                <div style="overflow-x: auto">
+                <div style="overflow-x: auto; position: relative">
                     <table style="width: 100%; min-width: 520px; border-collapse: collapse">
                         <thead>
                             <tr style="text-align: left; font-size: 12px; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em">

@@ -64,7 +64,7 @@
             <th scope="row" style="padding: 10px 20px; text-align: left">
               <span style="display: flex; flex-direction: column; gap: 2px">
                 <span style="font-weight: 600">{{ $gs->sport->name }}</span>
-                <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 400; color: var(--sta-fg-muted, #475569)"><x-sta.assoc-avatar :association="$gs->sport->association" size="sm" />{{ $gs->sport->association?->name }}</span>
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 400; color: var(--sta-fg-muted, #475569)"><x-sta.assoc-avatar :association="$gs->sport->association" size="sm" />{{ preg_replace('/^Bahrain\s+/u', '', (string) $gs->sport->association?->name) }}</span>
               </span>
             </th>
             @foreach (['men', 'women', 'officials'] as $k)
