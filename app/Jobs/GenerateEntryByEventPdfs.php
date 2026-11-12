@@ -44,7 +44,7 @@ class GenerateEntryByEventPdfs implements ShouldQueue
                 'rows' => $rows, 'totals' => $totals, 'referenceNo' => $s->reference_no,
                 'participants' => ['male' => $t?->male, 'female' => $t?->female],
                 'medals' => ['gold' => $t?->gold, 'silver' => $t?->silver, 'bronze' => $t?->bronze],
-                'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
+                'declaration' => Setting::declaration($s->phase),
                 ...$context,
             ])->render();
             $path = 'submissions/'.$s->reference_no.'/'.$gs->id.'-'.Str::slug($gs->sport->name).'.pdf';

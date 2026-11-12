@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Enums\StaPermission;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Shared\AttachmentActions;
+use App\Models\GamePhase;
 use App\Models\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -35,6 +36,8 @@ class Settings extends Page
         $this->form->fill([
             'noc_logo_path' => $logo ? [$logo] : [],
             'pdf_declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
+            // Each phase starts from the current single text; an emptied phase falls back to it on the PDF.
+            'phase_declarations' => collect(GamePhase::NAMES)->mapWithKeys(fn ($name, $n) => [$n => Setting::declaration($n)])->all(),
         ]);
     }
 
@@ -45,7 +48,10 @@ class Settings extends Page
                 ->disk(config('filesystems.private'))->directory('settings')->visibility('private')
                 // No record backs this page, so allow exactly the currently stored logo path.
                 ->preventFilePathTampering(allowFilePathUsing: fn (string $file) => $file === Setting::get(Setting::NOC_LOGO))),
-            Textarea::make('pdf_declaration')->label('Declaration printed above signatures')->required()->rows(4),
+            Textarea::make('pdf_declaration')->label('Declaration printed above signatures')->required()->rows(4)
+                ->helperText('Used on a phase PDF whose own declaration below is empty.'),
+            ...collect(GamePhase::NAMES)->map(fn (string $name, int $n) => Textarea::make("phase_declarations.$n")
+                ->label("Phase {$n} declaration ({$name} PDF)")->rows(3)->maxLength(2000))->values()->all(),
         ])->statePath('data');
     }
 
@@ -65,6 +71,10 @@ class Settings extends Page
         $logo = $state['noc_logo_path'] ?? null;
         Setting::put(Setting::NOC_LOGO, is_array($logo) ? (array_values($logo)[0] ?? null) : $logo);
         Setting::put(Setting::DECLARATION, $state['pdf_declaration']);
+        foreach (array_keys(GamePhase::NAMES) as $n) {
+            $text = trim((string) ($state['phase_declarations'][$n] ?? ''));
+            Setting::put(Setting::phaseDeclarationKey($n), $text === '' ? null : $text);
+        }
         Notification::make()->success()->title('Settings saved')->send();
     }
 }

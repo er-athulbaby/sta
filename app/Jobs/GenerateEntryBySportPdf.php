@@ -34,7 +34,7 @@ class GenerateEntryBySportPdf implements ShouldQueue
         ])->all();
         $html = view('pdf.entry-by-sport', [
             'game' => $s->game, 'association' => $s->association, 'rows' => $rows, 'referenceNo' => $s->reference_no,
-            'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
+            'declaration' => Setting::declaration($s->phase),
             ...PdfContext::for($s),
         ])->render();
         $path = 'submissions/'.$s->reference_no.'/entry-by-sport.pdf';

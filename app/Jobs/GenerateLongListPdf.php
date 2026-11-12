@@ -100,7 +100,7 @@ class GenerateLongListPdf implements ShouldQueue
             'summary' => $summary,
             'game' => $s->game, 'association' => $s->association, 'athletes' => $athletes, 'officials' => $officials,
             'athleteItems' => $athleteItems->pluck('name')->all(), 'officialItems' => $officialItems->pluck('name')->all(), 'referenceNo' => $s->reference_no,
-            'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
+            'declaration' => Setting::declaration($s->phase),
             ...PdfContext::for($s),
             'title' => static::TITLE, 'justification' => $s->justification, 'overLimits' => $this->overLimits($s),
         ])->render();
