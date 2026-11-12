@@ -76,18 +76,21 @@ class Reports extends Page
     }
 
     /** @return Collection<int, SavedReport> */
+    #[Unexposed]
     public function mine(): Collection
     {
         return SavedReport::visibleTo(auth()->user())->mine(auth()->user())->orderBy('name')->get();
     }
 
     /** @return Collection<int, SavedReport> */
+    #[Unexposed]
     public function shared(): Collection
     {
         return SavedReport::visibleTo(auth()->user())->shared()->with('creator')->orderBy('name')->get();
     }
 
     /** @return Collection<int, string> id => name of the games this user may report on */
+    #[Unexposed]
     public function games(): Collection
     {
         return $this->gameList ??= ReportDefinition::selectableGames(auth()->user());

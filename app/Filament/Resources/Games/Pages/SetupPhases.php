@@ -18,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Validation\ValidationException;
@@ -52,6 +53,7 @@ class SetupPhases extends Page
     }
 
     /** @return Collection<int, GamePhase> */
+    #[Unexposed]
     public function phases(): Collection
     {
         return $this->record->phases()->orderBy('phase')->get();
@@ -176,6 +178,7 @@ class SetupPhases extends Page
     }
 
     /** Submissions whose deadline differs from the phase's, for the extensions table. */
+    #[Unexposed]
     public function extensions(): Collection
     {
         return Submission::withoutGlobalScopes()->where('game_id', $this->record->id)->whereNotNull('deadline_override')

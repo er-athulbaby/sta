@@ -36,8 +36,8 @@ class Settings extends Page
         $this->form->fill([
             'noc_logo_path' => $logo ? [$logo] : [],
             'pdf_declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
-            // Each phase starts from the current single text; an emptied phase falls back to it on the PDF.
-            'phase_declarations' => collect(GamePhase::NAMES)->mapWithKeys(fn ($name, $n) => [$n => Setting::declaration($n)])->all(),
+            // Only a phase's own stored text: an empty phase keeps following the single declaration (shown as the placeholder).
+            'phase_declarations' => collect(GamePhase::NAMES)->mapWithKeys(fn ($name, $n) => [$n => Setting::get(Setting::phaseDeclarationKey($n))])->all(),
         ]);
     }
 
@@ -51,7 +51,8 @@ class Settings extends Page
             Textarea::make('pdf_declaration')->label('Declaration printed above signatures')->required()->rows(4)
                 ->helperText('Used on a phase PDF whose own declaration below is empty.'),
             ...collect(GamePhase::NAMES)->map(fn (string $name, int $n) => Textarea::make("phase_declarations.$n")
-                ->label("Phase {$n} declaration ({$name} PDF)")->rows(3)->maxLength(2000))->values()->all(),
+                ->label("Phase {$n} declaration ({$name} PDF)")->rows(3)->maxLength(2000)
+                ->placeholder(fn () => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION)))->values()->all(),
         ])->statePath('data');
     }
 

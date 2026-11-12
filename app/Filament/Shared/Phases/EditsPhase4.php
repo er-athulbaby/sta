@@ -8,6 +8,7 @@ use App\Models\Person;
 use App\Services\Phases\LongListChecks;
 use App\Services\Phases\ShortListChecks;
 use Filament\Notifications\Notification;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,7 @@ trait EditsPhase4
     }
 
     /** @return Collection<int, Person> people on the Long List keyed by id, for the tick labels */
+    #[Unexposed]
     public function longListPeople(): Collection
     {
         [$athletes, $officials] = $this->longListSlots();
@@ -55,6 +57,7 @@ trait EditsPhase4
     }
 
     /** @return Collection<int, GameSport> */
+    #[Unexposed]
     public function visibleSports(): Collection
     {
         return $this->gameModel->phase2SportsFor($this->association());
@@ -75,6 +78,7 @@ trait EditsPhase4
         return app(ShortListChecks::class)->overLimits($this->submission, [$this->athletes, $this->officials]);
     }
 
+    #[Unexposed]
     public function listRows(): Collection
     {
         return app(LongListChecks::class)->rows($this->submission, $this->athletes, $this->officials);

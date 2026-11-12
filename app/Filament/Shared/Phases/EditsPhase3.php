@@ -17,6 +17,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -39,12 +40,14 @@ trait EditsPhase3
     }
 
     /** @return Collection<int, GameSport> */
+    #[Unexposed]
     public function visibleSports(): Collection
     {
         return $this->gameModel->phase2SportsFor($this->association());
     }
 
     /** @return Collection<int, Person> active people of this association and type, for the pickers */
+    #[Unexposed]
     public function candidates(PersonType $type): Collection
     {
         return Person::withoutGlobalScopes()->where('association_id', $this->association()->getKey())
@@ -57,6 +60,7 @@ trait EditsPhase3
         return app(LongListChecks::class)->phase2Numbers($this->submission);
     }
 
+    #[Unexposed]
     public function listRows(): Collection
     {
         return app(LongListChecks::class)->rows($this->submission, $this->athletes, $this->officials);
@@ -73,6 +77,7 @@ trait EditsPhase3
     }
 
     /** Chip labels: only people of this submission's association (never another association's). */
+    #[Unexposed]
     public function chipPeople(): Collection
     {
         $ids = collect([...$this->athletes, ...$this->officials])->flatten()->map(fn ($i) => (int) $i)->unique()->all();

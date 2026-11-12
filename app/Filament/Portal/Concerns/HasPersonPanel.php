@@ -9,6 +9,7 @@ use App\Models\GameSport;
 use App\Models\Person;
 use App\Services\Phases\LongListChecks;
 use Filament\Notifications\Notification;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -88,6 +89,7 @@ trait HasPersonPanel
     }
 
     /** @return Collection<int, GameSport> the panel's sport, or every visible sport when the page has several and none was given */
+    #[Unexposed]
     public function panelSports(): Collection
     {
         $sports = $this->visibleSports();
@@ -96,6 +98,7 @@ trait HasPersonPanel
     }
 
     /** Registry people for "Pick from your registry": active, this type, not on the list yet; athletes need an event of the panel's sports. */
+    #[Unexposed]
     public function panelCandidates(): Collection
     {
         $type = $this->panelType();

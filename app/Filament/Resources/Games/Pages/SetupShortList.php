@@ -9,6 +9,7 @@ use App\Filament\Resources\Games\Pages\Concerns\SetupPage;
 use App\Models\ClothingItem;
 use App\Models\GameSport;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -37,12 +38,14 @@ class SetupShortList extends Page
     }
 
     /** @return Collection<int, GameSport> */
+    #[Unexposed]
     public function gameSports(): Collection
     {
         return $this->record->gameSports()->with('sport.association')->get()->sortBy('sport.name')->values();
     }
 
     /** @return Collection<int, ClothingItem> active items, plus ticked ones that were deactivated since */
+    #[Unexposed]
     public function clothingItems(): Collection
     {
         return ClothingItem::query()->where(fn ($q) => $q->where('is_active', true)->orWhereIn('id', $this->items))->orderBy('name')->get();

@@ -11,6 +11,7 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -73,6 +74,7 @@ class ListPeople extends ListRecords
     }
 
     /** @return Collection<int, string> the association select's options */
+    #[Unexposed]
     public function associationOptions(): Collection
     {
         return Association::query()->orderBy('name')->pluck('name', 'id');
@@ -83,6 +85,7 @@ class ListPeople extends ListRecords
         $this->selected = $id;
     }
 
+    #[Unexposed]
     public function panelPerson(): ?Person
     {
         $person = $this->selected ? Person::query()->with(['association', 'sizes.clothingItem'])->find($this->selected) : null;

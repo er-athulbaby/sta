@@ -14,6 +14,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +47,7 @@ class SetupLimits extends Page
     public array $events = [];
 
     /** @return Collection<int, GameSport> */
+    #[Unexposed]
     public function gameSports(): Collection
     {
         return $this->record->gameSports()->with('sport.association')->get()->sortBy('sport.name')->values();
@@ -65,6 +67,7 @@ class SetupLimits extends Page
         $this->fillSport();
     }
 
+    #[Unexposed]
     public function current(): ?GameSport
     {
         return $this->sportId ? $this->record->gameSports()->with('sport.association')->find($this->sportId) : null;

@@ -17,6 +17,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Spatie\Activitylog\Models\Activity;
@@ -97,6 +98,7 @@ class SubmissionView extends Page
         return app(ShortListChecks::class)->submitErrors($this->submission);
     }
 
+    #[Unexposed]
     public function longListRows(): Collection
     {
         $checks = app(LongListChecks::class);
@@ -105,6 +107,7 @@ class SubmissionView extends Page
     }
 
     /** @return Collection<int, Activity> */
+    #[Unexposed]
     public function auditTrail(): Collection
     {
         return Activity::where('log_name', 'submission-'.$this->submission->id)->with('causer')->latest('id')->limit(200)->get();

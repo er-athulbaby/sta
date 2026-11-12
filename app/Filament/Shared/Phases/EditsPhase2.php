@@ -8,6 +8,7 @@ use App\Models\NumberEntry;
 use App\Models\Phase2SportTotal;
 use App\Services\Phases\Phase2Limits;
 use Filament\Notifications\Notification;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,7 @@ trait EditsPhase2
     }
 
     /** @return Collection<int, GameSport> */
+    #[Unexposed]
     public function visibleSports(): Collection
     {
         return $this->gameModel->phase2SportsFor($this->association());

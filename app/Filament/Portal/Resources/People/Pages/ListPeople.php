@@ -14,6 +14,7 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -89,6 +90,7 @@ class ListPeople extends ListRecords
     }
 
     /** The aside's person: the chosen one when it is still in this association, else the first row of the page. */
+    #[Unexposed]
     public function panelPerson(): ?Person
     {
         $person = $this->selected ? PersonResource::getEloquentQuery()->with('sizes')->find($this->selected) : null;

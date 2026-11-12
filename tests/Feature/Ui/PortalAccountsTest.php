@@ -67,6 +67,15 @@ it('lets the association admin deactivate, reactivate and reset the password of 
     expect($this->editor->fresh()->is_active)->toBeTrue();
 });
 
+it('never lets an association admin act on another admin of its own association', function () {
+    $second = User::factory()->assocAdmin($this->assoc)->create(['name' => 'Second Admin']);
+    actingInPortal($this->admin);
+
+    livewire(ListMembers::class)->assertCanSeeTableRecords([$second])
+        ->assertActionHidden(TestAction::make('deactivate')->table($second))
+        ->assertActionHidden(TestAction::make('sendPasswordReset')->table($second));
+});
+
 it('never lets an association admin act on another association\'s user or an editor use the Team page', function () {
     $foreign = User::factory()->assocEditor(Association::factory()->create())->create();
     actingInPortal($this->admin);

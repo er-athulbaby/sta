@@ -10,6 +10,7 @@ use Filament\Resources\Pages\CreateRecord;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\DB;
 
@@ -64,6 +65,7 @@ trait PersonPageChrome
     }
 
     /** The saved person on Edit pages, null on Create. */
+    #[Unexposed]
     public function personRecord(): ?Person
     {
         $record = $this->record ?? null;
