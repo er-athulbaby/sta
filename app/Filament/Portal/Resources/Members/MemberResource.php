@@ -42,7 +42,10 @@ class MemberResource extends Resource
                 TextColumn::make('role')->formatStateUsing(fn (Role $state) => $state->label()),
                 IconColumn::make('is_active')->boolean(),
             ])
-            ->recordActions([InvitationActions::setActive(false), InvitationActions::setActive(true)]);
+            // The association admin manages its editors only (never itself or another admin); the table is tenant-scoped,
+            // and Filament refuses to run a hidden action, so these rules hold server-side too.
+            ->recordActions(collect([InvitationActions::setActive(false), InvitationActions::setActive(true), InvitationActions::sendPasswordReset()])
+                ->map(fn ($action) => $action->hidden(fn (User $record) => $record->role !== Role::AssocEditor))->all());
     }
 
     public static function getPages(): array

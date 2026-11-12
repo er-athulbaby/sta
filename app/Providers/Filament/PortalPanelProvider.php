@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Enums\Role;
+use App\Filament\Portal\Auth\EditMyProfile;
 use App\Filament\Portal\Pages\EditAssociationProfile;
 use App\Models\Association;
 use App\Support\InitialsAvatarProvider;
@@ -38,6 +39,7 @@ class PortalPanelProvider extends PanelProvider
             ->tenantProfile(EditAssociationProfile::class)
             ->tenantMenu(false) // one association per user: the canvas association block replaces the switcher
             ->passwordReset()
+            ->profile(EditMyProfile::class)
             ->brandName('BOC Sports Entry')
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('3.5rem')

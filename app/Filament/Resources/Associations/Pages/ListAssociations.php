@@ -80,6 +80,11 @@ class ListAssociations extends ListRecords
         return InvitationActions::setActive(true)->name('activateUser')->label('Activate')->record(fn (array $arguments) => $this->associationUser($arguments));
     }
 
+    public function resetUserPasswordAction(): Action
+    {
+        return InvitationActions::sendPasswordReset()->name('resetUserPassword')->record(fn (array $arguments) => $this->associationUser($arguments));
+    }
+
     public function resendInviteAction(): Action
     {
         return InvitationActions::resend()->name('resendInvite')->label('Resend email')

@@ -10,8 +10,11 @@ use App\Services\AssociationMembership;
 use App\Services\InvitationService;
 use Closure;
 use Filament\Actions\Action;
+use Filament\Auth\Notifications\ResetPassword as ResetPasswordNotification;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -56,6 +59,30 @@ final class InvitationActions
             ->requiresConfirmation()
             ->visible(fn (User $record) => $record->is_active !== $active && $record->id !== auth()->id())
             ->action(fn (User $record) => self::guard(fn () => app(AssociationMembership::class)->setActive($record, $active)));
+    }
+
+    /**
+     * Emails an association user a portal password-reset link (Laravel's password broker, Filament's reset notification).
+     * Nobody ever sees or sets the password; the throttle of the broker applies.
+     */
+    public static function sendPasswordReset(): Action
+    {
+        return Action::make('sendPasswordReset')->label('Send password reset link')
+            ->requiresConfirmation()
+            ->modalDescription(fn (User $record) => "{$record->email} gets an email with a link to choose a new password.")
+            ->visible(fn (User $record) => $record->is_active && $record->id !== auth()->id() && $record->role->isAssociationRole())
+            ->action(function (User $record) {
+                $portal = Filament::getPanel('portal');
+                $status = Password::broker($portal->getAuthPasswordBroker())->sendResetLink(['email' => $record->email],
+                    function (User $user, #[\SensitiveParameter] string $token) use ($portal) {
+                        $notification = app(ResetPasswordNotification::class, ['token' => $token]);
+                        $notification->url = $portal->getResetPasswordUrl($token, $user);
+                        $user->notify($notification);
+                    });
+                $status === Password::RESET_LINK_SENT
+                    ? Notification::make()->success()->title("Password reset link sent to {$record->email}")->send()
+                    : Notification::make()->danger()->title(__($status))->send();
+            });
     }
 
     private static function guard(Closure $callback): void

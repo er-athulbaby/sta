@@ -94,6 +94,9 @@
                             </span>
                             <span style="{{ $u->is_active ? $pills['active'] : $pills['off'] }}">{{ $u->is_active ? 'Active' : 'Deactivated' }}</span>
                             @if ($u->id !== auth()->id())
+                                @if ($u->is_active)
+                                    <button type="button" wire:click="mountAction('resetUserPassword', { id: {{ $u->id }} })" aria-label="Send {{ $u->name }} a password reset link" style="{{ $small }}; color: var(--sta-fg-strong, #334155)">Reset password</button>
+                                @endif
                                 <button type="button" wire:click="mountAction('{{ $u->is_active ? 'deactivateUser' : 'activateUser' }}', { id: {{ $u->id }} })" aria-label="{{ ($u->is_active ? 'Deactivate ' : 'Activate ').$u->name }}" style="{{ $small }}; color: var(--sta-fg-strong, #334155)">{{ $u->is_active ? 'Deactivate' : 'Activate' }}</button>
                             @endif
                         </li>

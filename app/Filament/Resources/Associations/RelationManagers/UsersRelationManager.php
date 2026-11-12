@@ -21,6 +21,6 @@ class UsersRelationManager extends RelationManager
                 TextColumn::make('role')->formatStateUsing(fn ($state) => $state->label()),
                 IconColumn::make('is_active')->boolean(),
             ])
-            ->recordActions([InvitationActions::setActive(false), InvitationActions::setActive(true)]);
+            ->recordActions([InvitationActions::setActive(false), InvitationActions::setActive(true), InvitationActions::sendPasswordReset()]);
     }
 }
