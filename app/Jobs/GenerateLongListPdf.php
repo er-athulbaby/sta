@@ -84,7 +84,7 @@ class GenerateLongListPdf implements ShouldQueue
                     'dob' => $p->dob->format('d M Y'),
                     'phone' => filled($p->phone) ? $p->phone_cc.' '.$p->phone : '',
                     'email' => $p->email ?? '',
-                    'sizes' => $officialItems->filter(fn ($i) => filled($sizes->get($i->id)))->map(fn ($i) => $i->name.': '.$sizes->get($i->id))->implode(', '),
+                    'sizes' => $officialItems->map(fn ($i) => $sizes->get($i->id, ''))->all(),
                     'passport' => filled($p->passport_scan_path),
                 ];
             })->sortBy('name')->values()->all();
@@ -99,7 +99,7 @@ class GenerateLongListPdf implements ShouldQueue
         $html = view('pdf.long-list', [
             'summary' => $summary,
             'game' => $s->game, 'association' => $s->association, 'athletes' => $athletes, 'officials' => $officials,
-            'athleteItems' => $athleteItems->pluck('name')->all(), 'referenceNo' => $s->reference_no,
+            'athleteItems' => $athleteItems->pluck('name')->all(), 'officialItems' => $officialItems->pluck('name')->all(), 'referenceNo' => $s->reference_no,
             'declaration' => Setting::get(Setting::DECLARATION, Setting::DEFAULT_DECLARATION),
             ...PdfContext::for($s),
             'title' => static::TITLE, 'justification' => $s->justification, 'overLimits' => $this->overLimits($s),

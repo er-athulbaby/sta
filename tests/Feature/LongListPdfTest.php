@@ -65,7 +65,7 @@ it('passes athlete and official rows with the spec columns to the view', functio
         ])
         ->and(Arr::except($captured['officials'][0], 'photo'))->toBe([
             'name' => 'Coach Karim', 'function' => 'Head Coach', 'dob' => '10 Mar 2005', 'phone' => '+973 33000000',
-            'email' => 'coach@example.com', 'sizes' => '', 'passport' => false,
+            'email' => 'coach@example.com', 'sizes' => [''], 'passport' => false,
         ]);
 });
 
@@ -74,16 +74,17 @@ it('renders the header, columns, declaration, boxes and reference', function () 
         'game' => $this->game, 'association' => $this->assoc, 'athleteItems' => ['T-Shirt'],
         'athletes' => [['photo' => null, 'name' => 'Ali Hasan', 'sport' => 'Judo', 'events' => 'Men -60kg', 'dob' => '10 Mar 2005', 'sizes' => ['L'], 'passport' => true]],
         'officials' => [['photo' => null, 'name' => 'Coach Karim', 'function' => 'Head Coach', 'dob' => '10 Mar 2005', 'phone' => '+973 33000000',
-            'email' => 'coach@example.com', 'sizes' => 'T-Shirt: M', 'passport' => false]],
+            'email' => 'coach@example.com', 'sizes' => ['M'], 'passport' => false]], 'officialItems' => ['T-Shirt'],
         'referenceNo' => 'BJF-G001-P3-R1', 'declaration' => 'I confirm.', 'nocLogo' => 'data:image/png;base64,AA==', 'gameLogo' => null,
         'summary' => ['male' => 1, 'female' => 0, 'officials' => 1],
     ])->render();
 
     expect($html)->toContain('Long List')->toContain('Bahrain Judo Federation')->toContain('Asian Indoor Games')
         ->toContain('Photo')->toContain('Date of birth')->toContain('Passport scan')->toContain('T-Shirt')->toContain('Function')
-        ->toContain('Phone')->toContain('Email')->toContain('Sizes')->toContain('Ali Hasan')->toContain('Men -60kg')->toContain('T-Shirt: M')
+        ->toContain('Phone')->toContain('Email')->toContain('Ali Hasan')->toContain('Men -60kg')->toContain('<td class="c">M</td>')
         ->toContain('I confirm.')->toContain('Signature')->toContain('Stamp')->toContain('BJF-G001-P3-R1')
-        ->toContain('Athletes Male <strong>1</strong>')->toContain('Athletes Female <strong>0</strong>')->toContain('Team officials <strong>1</strong>');
+        ->toContain('Athletes Male <strong>1</strong>')->toContain('Athletes Female <strong>0</strong>')->toContain('Team officials <strong>1</strong>')
+        ->and(substr_count($html, '<th class="c">T-Shirt</th>'))->toBe(2);
 });
 
 it('passes a summary of athletes by gender and team officials', function () {
@@ -102,7 +103,7 @@ it('numbers the athlete and team official rows from 1 in each table', function (
     $html = view('pdf.long-list', [
         'game' => $this->game, 'association' => $this->assoc, 'athleteItems' => [],
         'athletes' => [$athlete('Ali Hasan'), $athlete('Omar Saleh')],
-        'officials' => [['photo' => null, 'name' => 'Coach Karim', 'function' => 'Head Coach', 'dob' => '10 Mar 2005', 'phone' => '', 'email' => '', 'sizes' => '', 'passport' => false]],
+        'officials' => [['photo' => null, 'name' => 'Coach Karim', 'function' => 'Head Coach', 'dob' => '10 Mar 2005', 'phone' => '', 'email' => '', 'sizes' => [], 'passport' => false]],
         'referenceNo' => 'R', 'declaration' => '', 'nocLogo' => null, 'gameLogo' => null, 'summary' => ['male' => 2, 'female' => 0, 'officials' => 1],
     ])->render();
     // S.No cell, then the (empty) photo cell, then the name.

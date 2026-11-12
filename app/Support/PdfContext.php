@@ -52,7 +52,7 @@ final class PdfContext
     {
         // DejaVu's glyph box is ~1.16em and dompdf scales line-height by it (x1.1 by default), so a ratio of 0.86
         // makes CSS line-height mean what it means in the browser, as on the samples.
-        $pdf = Pdf::setOption('fontHeightRatio', 0.86)->loadHTML($html)->setPaper('a4', $orientation);
+        $pdf = Pdf::setOption('fontHeightRatio', 0.86)->setOption('isFontSubsettingEnabled', true)->loadHTML($html)->setPaper('a4', $orientation);
         $pdf->render();
         // Footer baseline and right edge in pt, measured from the rendered footer (48px / 40px page margins).
         [$right, $baseline] = $orientation === 'landscape' ? [30, 32.0] : [36, 38.0];

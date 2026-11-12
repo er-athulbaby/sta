@@ -73,7 +73,7 @@ it('keeps the Long List PDF titled Long List', function () {
 
 it('prints the title and the justification', function () {
     $html = view('pdf.long-list', [
-        'game' => $this->game, 'association' => $this->assoc, 'athleteItems' => [], 'athletes' => [], 'officials' => [],
+        'game' => $this->game, 'association' => $this->assoc, 'athleteItems' => [], 'athletes' => [], 'officials' => [], 'officialItems' => [],
         'referenceNo' => 'BJF-G001-P4-R1', 'declaration' => 'I confirm.', 'nocLogo' => null, 'gameLogo' => null,
         'title' => 'Short List', 'justification' => 'Two medal chances', 'summary' => ['male' => 3, 'female' => 2, 'officials' => 1],
     ])->render();

@@ -16,7 +16,7 @@
     .chip-3 { background: #FEF3C7; color: #92400E; } .chip-3 .dot { background: #B45309; }
     .chip-4 { background: #EDE9FE; color: #5B21B6; } .chip-4 .dot { background: #6D28D9; }
     h1 { margin: 6px 0 0; font-size: 30px; font-weight: bold; }
-    .alogo { display: inline-block; width: 64px; height: 40px; padding: 3px; border: 1px solid #E2E8F0; border-radius: 8px; text-align: center; }
+    .alogo { display: inline-block; width: 56px; height: 32px; padding: 3px; border: 1px solid #E2E8F0; border-radius: 8px; text-align: center; }
     .grid { width: 100%; border-collapse: collapse; }
     .grid th, .grid td { border: 1px solid #94A3B8; }
     .grid .head { background: #F1F5F9; }

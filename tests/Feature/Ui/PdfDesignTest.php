@@ -69,7 +69,7 @@ it('prints the one-row header, boxed summary, S.No tables, justification and sig
         'game' => Game::factory()->make(['name' => 'Asian Indoor Games']), 'association' => Association::factory()->make(['name' => 'Bahrain Judo Federation', 'code' => 'BJF']),
         'athleteItems' => ['Suit', 'T-Shirt'],
         'athletes' => [['photo' => null, 'name' => 'Ali Hasan', 'sport' => 'Judo', 'events' => '-60kg', 'dob' => '10 Mar 2005', 'sizes' => ['', 'L'], 'passport' => true]],
-        'officials' => [], 'summary' => ['male' => 1, 'female' => 0, 'officials' => 0],
+        'officials' => [], 'officialItems' => ['T-Shirt'], 'summary' => ['male' => 1, 'female' => 0, 'officials' => 0],
         'referenceNo' => 'BJF-G001-P4-R1', 'declaration' => 'I confirm.', 'nocLogo' => PdfContext::bocLogo(), 'gameLogo' => null, 'assocLogo' => null,
         'title' => 'Short List', 'justification' => 'Two medal chances', 'overLimits' => ['Judo — Male: 4 of max 3'],
         'submittedLine' => 'Submitted 5 Nov 2026 by Mariam Khalil, Association Editor',
@@ -81,7 +81,7 @@ it('prints the one-row header, boxed summary, S.No tables, justification and sig
 
     expect(pdfOrder($html, $order))->not->toContain(false)
         ->and(pdfOrder($html, $order))->toBe(collect(pdfOrder($html, $order))->sort()->values()->all())
-        ->and($html)->toContain('<td class="c">—</td>')->toContain('No team officials.');
+        ->and($html)->toContain('<td class="c">—</td>')->toContain('colspan="9">No team officials.')->toContain('<th class="c">T-Shirt</th>');
 });
 
 it('builds the PDF context from the submission', function () {
@@ -132,4 +132,38 @@ it('passes the exceeded limits to the Short List PDF', function () {
     (new GenerateShortListPdf($p4))->handle();
 
     expect($captured['overLimits'])->toBe(['Judo — Male: 1 of max 0'])->and($captured['phase'])->toBe(4);
+});
+
+it('escapes names, notes and the justification', function () {
+    $x = '<b>x</b>';
+    $sport = view('pdf.entry-by-sport', [
+        'game' => Game::factory()->make(), 'association' => Association::factory()->make(['name' => $x]),
+        'rows' => [['sport' => 'Judo', 'answer' => 'Yes', 'value' => 'yes', 'note' => $x]],
+        'referenceNo' => 'R', 'declaration' => 'I confirm.', 'nocLogo' => null, 'gameLogo' => null, 'assocLogo' => null,
+    ])->render();
+    $list = view('pdf.long-list', [
+        'game' => Game::factory()->make(), 'association' => Association::factory()->make(['name' => $x]), 'athleteItems' => [], 'officialItems' => [],
+        'athletes' => [['photo' => null, 'name' => $x, 'sport' => 'Judo', 'events' => '-60kg', 'dob' => '10 Mar 2005', 'sizes' => [], 'passport' => true]],
+        'officials' => [], 'summary' => ['male' => 1, 'female' => 0, 'officials' => 0], 'referenceNo' => 'R', 'declaration' => 'I confirm.',
+        'nocLogo' => null, 'gameLogo' => null, 'title' => 'Short List', 'justification' => $x,
+    ])->render();
+
+    foreach ([$sport, $list] as $html) {
+        expect($html)->toContain('&lt;b&gt;x&lt;/b&gt;')->not->toContain($x);
+    }
+    expect(substr_count($sport, '&lt;b&gt;x&lt;/b&gt;'))->toBe(2)->and(substr_count($list, '&lt;b&gt;x&lt;/b&gt;'))->toBe(3);
+});
+
+it('renders multi-page PDFs with an embedded font subset', function () {
+    $html = view('pdf.entry-by-sport', [
+        'game' => Game::factory()->make(), 'association' => Association::factory()->make(),
+        'rows' => array_map(fn ($n) => ['sport' => "Sport {$n}", 'answer' => 'Yes', 'value' => 'yes', 'note' => null], range(1, 40)),
+        'referenceNo' => 'R', 'declaration' => 'I confirm.', 'nocLogo' => PdfContext::bocLogo(), 'gameLogo' => null, 'assocLogo' => null,
+    ])->render();
+
+    $pdf = PdfContext::pdf($html);
+
+    expect($pdf)->toStartWith('%PDF')
+        ->and(preg_match_all('#/Type\s*/Page[^s]#', $pdf))->toBeGreaterThanOrEqual(2)
+        ->and(strlen($pdf))->toBeLessThan(300_000);
 });

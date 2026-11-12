@@ -94,7 +94,9 @@
 <table class="grid people">
     <thead>
         <tr class="head">
-            <th style="width:30px">S.No</th><th style="width: 36px">Photo</th><th>Name</th><th>Function</th><th>Date of birth</th><th>Phone</th><th>Email</th><th>Sizes</th><th class="c">Passport scan</th>
+            <th style="width:30px">S.No</th><th style="width: 36px">Photo</th><th>Name</th><th>Function</th><th>Date of birth</th><th>Phone</th><th>Email</th>
+            @foreach($officialItems ?? [] as $item)<th class="c">{{ $item }}</th>@endforeach
+            <th class="c">Passport scan</th>
         </tr>
     </thead>
     <tbody>
@@ -107,11 +109,11 @@
         <td>{{ $r['dob'] }}</td>
         <td>{{ $r['phone'] }}</td>
         <td>{{ $r['email'] }}</td>
-        <td style="font-weight: normal">{{ filled($r['sizes']) ? $r['sizes'] : '—' }}</td>
+        @foreach($r['sizes'] as $size)<td class="c">{{ filled($size) ? $size : '—' }}</td>@endforeach
         <td class="c">{{ $r['passport'] ? 'Yes' : 'No' }}</td>
     </tr>
     @empty
-    <tr><td class="empty" colspan="9">No team officials.</td></tr>
+    <tr><td class="empty" colspan="{{ 8 + count($officialItems ?? []) }}">No team officials.</td></tr>
     @endforelse
     </tbody>
 </table>
