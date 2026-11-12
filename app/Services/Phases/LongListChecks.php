@@ -179,7 +179,8 @@ final class LongListChecks
         if (blank($p->passport_scan_path)) {
             $w[] = 'Passport scan missing.';
         }
-        if (blank($p->cpr_front_path)) {
+        // Team officials from outside Bahrain may have no CPR: only athletes are warned about a missing CPR scan.
+        if ($p->type === PersonType::Athlete && blank($p->cpr_front_path)) {
             $w[] = 'CPR scan missing.';
         }
         if ($p->type === PersonType::Athlete) {

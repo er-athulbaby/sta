@@ -119,7 +119,7 @@ trait HasPersonPanel
         $own = $this->shortFormPerson()->missingFields();
         $sizes = PersonForm::sizeItems($type)->filter(fn ($item) => blank($this->newPerson['sizes'][$item->id] ?? null))->map(fn ($item) => $item->name.' size');
 
-        return [...array_values(array_intersect($own, Arr::only($labels, self::SHORT_FORM_GAPS))), ...($this->newPersonCprScan ? [] : ['CPR scan']), ...$sizes];
+        return [...array_values(array_intersect($own, Arr::only($labels, self::SHORT_FORM_GAPS))), ...($this->newPersonCprScan || $type === PersonType::Official ? [] : ['CPR scan']), ...$sizes];
     }
 
     /** True when the person would still miss something only the full registry form has (e.g. full name, issue date, extra fields). */

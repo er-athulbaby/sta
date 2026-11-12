@@ -10,8 +10,10 @@ use App\Filament\Resources\People\Pages\EditPerson as AdminEditPerson;
 use App\Filament\Resources\People\Pages\ListPeople as AdminListPeople;
 use App\Models\Association;
 use App\Models\ClothingItem;
+use App\Models\Game;
 use App\Models\Person;
 use App\Models\User;
+use App\Services\Phases\LongListChecks;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -248,4 +250,17 @@ it('names the registry photo column for assistive technology', function () {
     $column = livewire(PortalListPeople::class)->instance()->getTable()->getColumn('photo_path');
     expect($column->getLabel())->toBe('Photo')
         ->and($column->record($p)->getExtraImgAttributes())->toBe(['alt' => 'Photo of Hamad Buali']);
+});
+
+it('treats an official\'s CPR as optional: no "needed for Long List", no CPR warning, no CPR scan gap', function () {
+    actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
+    $html = livewire(PortalCreatePerson::class)->fillForm(['type' => 'official'])->html();
+    expect($html)->toMatch('#CPR number.{0,2500}?<span class="sta-need">optional</span>.{0,4000}?CPR expiry#s')
+        ->not->toMatch('#CPR number.{0,2500}?needed for Long List.{0,4000}?CPR expiry#s');
+    $athlete = livewire(PortalCreatePerson::class)->fillForm(['type' => 'athlete'])->html();
+    expect($athlete)->toMatch('#CPR number.{0,2500}?needed for Long List.{0,4000}?CPR expiry#s');
+
+    $official = Person::factory()->official()->create(['association_id' => $this->assoc->id, 'cpr_no' => null, 'cpr_front_path' => null]);
+    expect($official->missingFields())->not->toContain('CPR number')
+        ->and(app(LongListChecks::class)->warnings(Game::factory()->create(), $official, []))->not->toContain('CPR scan missing.');
 });

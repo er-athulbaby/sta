@@ -288,9 +288,12 @@ final class PersonForm
     {
         $applies = fn (Get $get) => array_key_exists($column, Person::REQUIRED_FOR_COMPLETE[$get('type') === PersonType::Official->value ? 'official' : 'athlete']);
         $missing = fn (Get $get, ?Model $record) => $record?->exists && blank($get($column));
-        $hint = fn (Get $get, ?Model $record) => $applies($get)
-            ? new HtmlString($missing($get, $record) ? '<span class="sta-need is-missing">Missing · needed for Long List</span>' : '<span class="sta-need">needed for Long List</span>')
-            : null;
+        $hint = fn (Get $get, ?Model $record) => match (true) {
+            $applies($get) => new HtmlString($missing($get, $record) ? '<span class="sta-need is-missing">Missing · needed for Long List</span>' : '<span class="sta-need">needed for Long List</span>'),
+            // Team officials from outside Bahrain may have no CPR.
+            $column === 'cpr_no' => new HtmlString('<span class="sta-need">optional</span>'),
+            default => null,
+        };
         $class = fn (Get $get, ?Model $record) => $applies($get) && $missing($get, $record) ? ['class' => 'is-missing'] : [];
 
         return $field->hint($hint)->extraFieldWrapperAttributes($class, merge: true);
