@@ -70,7 +70,7 @@
                     <tr style="text-align: left; font-size: 12px; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em">
                         <th scope="col" style="padding: 12px 20px; font-weight: 600; min-width: 240px">Association</th>
                         @foreach ($phases as $p)
-                            <th scope="col" style="{{ $th }}"><x-sta.phase-chip :phase="$p->phase" /></th>
+                            <th scope="col" style="padding: 12px 8px; font-weight: 600; white-space: nowrap"><x-sta.phase-chip :phase="$p->phase" /></th>
                         @endforeach
                         <th scope="col" style="{{ $th }}">Flags</th>
                         <th scope="col" style="{{ $th }}">Last activity</th>
@@ -108,19 +108,16 @@
                                     $menu = collect($this->cellMenu($a, $p))->chunkWhile(fn ($item) => ! ($item['divider'] ?? false));
                                     $note = $this->cellNote($a, $p);
                                 @endphp
-                                <td wire:key="cell-{{ $a->id }}-{{ $p->phase }}" style="padding: 6px 12px">
+                                <td wire:key="cell-{{ $a->id }}-{{ $p->phase }}" style="padding: 4px 8px">
                                     <div class="sta-cell">
-                                        @if ($s)
-                                            <a href="{{ GameResource::getUrl('submission', ['record' => $record, 'submission' => $s]) }}" class="sta-cell-pill" aria-label="{{ $c['label'] }}: view {{ $a->name }} Phase {{ $p->phase }}"><x-sta.pill :status="Sta::cellPill($c['status'])" :title="$c['status'] === 'submitted' ? $s->reference_no : null">{{ $c['label'] }}</x-sta.pill></a>
+                                        @if ($menu->isEmpty())
+                                            <x-sta.pill :status="Sta::cellPill($c['status'])" :title="$c['status'] === 'submitted' ? $s?->reference_no : null">{{ $c['label'] }}</x-sta.pill>
                                         @else
-                                            <span class="sta-cell-pill"><x-sta.pill :status="Sta::cellPill($c['status'])">{{ $c['label'] }}</x-sta.pill></span>
-                                        @endif
-                                        @if ($menu->isNotEmpty())
-                                            {{-- width= is also the teleported panel's class (44px items). --}}
-                                            <x-filament::dropdown placement="bottom-end" teleport width="sta-cell-dropdown" wire:key="menu-{{ $a->id }}-{{ $p->phase }}">
+                                            {{-- The pill is the menu trigger; width= is also the teleported panel's class (44px items). --}}
+                                            <x-filament::dropdown placement="bottom-start" teleport width="sta-cell-dropdown" wire:key="menu-{{ $a->id }}-{{ $p->phase }}">
                                                 <x-slot name="trigger">
-                                                    <button type="button" class="sta-cell-menu" aria-label="Actions for {{ $a->name }} Phase {{ $p->phase }}">
-                                                        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                                                    <button type="button" class="sta-cell-trigger" aria-haspopup="menu" aria-label="Actions for {{ $a->name }} Phase {{ $p->phase }}: {{ $c['label'] }}">
+                                                        <x-sta.pill :status="Sta::cellPill($c['status'])" :title="$c['status'] === 'submitted' ? $s?->reference_no : null">{{ $c['label'] }}<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px"><path d="m6 9 6 6 6-6"/></svg></x-sta.pill>
                                                     </button>
                                                 </x-slot>
                                                 @foreach ($menu as $group)
@@ -138,7 +135,7 @@
                                         @endif
                                     </div>
                                     @if ($note)
-                                        <div style="font-size: 12px; line-height: 16px; padding-bottom: 4px; color: var(--sta-fg-muted, #475569); white-space: nowrap">{{ $note }}</div>
+                                        <div style="font-size: 12px; line-height: 16px; padding-bottom: 4px; color: var(--sta-fg-muted, #475569); max-width: 160px">{{ $note }}</div>
                                     @endif
                                 </td>
                             @endforeach

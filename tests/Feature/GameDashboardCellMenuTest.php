@@ -32,16 +32,16 @@ function cellMenuDashboard(Game $game)
     return livewire(GameDashboard::class, ['record' => $game->getRouteKey()]);
 }
 
-it('renders the status pill and one Actions button in every phase cell, the pill linking to an existing entry', function () {
+it('makes the status pill the Actions menu trigger in every phase cell', function () {
     $page = cellMenuDashboard($this->game);
-    foreach (['Done Fed', 'Late Fed'] as $name) {
-        foreach ([2, 3] as $p) {
-            $page->assertSeeHtml('aria-label="Actions for '.$name.' Phase '.$p.'"');
+    foreach (['Done Fed' => [2 => 'Submitted', 3 => 'Not started'], 'Late Fed' => [2 => 'Overdue', 3 => 'Not started']] as $name => $labels) {
+        foreach ($labels as $p => $label) {
+            $page->assertSeeHtml('class="sta-cell-trigger" aria-haspopup="menu" aria-label="Actions for '.$name.' Phase '.$p.': '.$label.'"');
         }
     }
-    $page->assertSeeHtml('href="'.e(GameResource::getUrl('submission', ['record' => $this->game, 'submission' => $this->done2])).'" class="sta-cell-pill" aria-label="Submitted: view Done Fed Phase 2"')
-        ->assertDontSeeHtml('aria-label="Not started: view Late Fed Phase 3"')
-        // The old inline links are gone.
+    // View entry is a menu item now, not a direct pill link; no separate "⋯" button; the old inline links are gone.
+    $page->assertSeeHtml('href="'.e(GameResource::getUrl('submission', ['record' => $this->game, 'submission' => $this->done2])).'"')
+        ->assertDontSeeHtml('sta-cell-menu')->assertDontSeeHtml('sta-cell-pill')
         ->assertDontSeeHtml('aria-label="Extend Late Fed Phase 3"')->assertDontSeeHtml('aria-label="Re-open Done Fed Phase 2"');
 });
 
@@ -68,8 +68,9 @@ it('hides Edit as STA and Send remark without edit_submissions, and Re-open / Ex
     $page = cellMenuDashboard($this->game);
     expect(cellMenuLabels($page, $this->done, 2))->toBe(['View entry'])
         ->and(cellMenuLabels($page, $this->late, 3))->toBe([]);
-    // A cell with nothing to do shows no Actions button.
-    $page->assertSeeHtml('aria-label="Actions for Done Fed Phase 2"')->assertDontSeeHtml('aria-label="Actions for Late Fed Phase 3"')
+    // A cell with nothing to do shows the plain pill: no button, no chevron.
+    $page->assertSeeHtml('aria-label="Actions for Done Fed Phase 2: Submitted"')->assertDontSeeHtml('aria-label="Actions for Late Fed Phase 3')
+        ->assertSeeHtml('<span class="sta-pill sta-pill-none">Not started</span>')
         ->assertDontSee('Edit as STA')->assertDontSee('Send remark');
 
     $viewer->givePermissionTo(StaPermission::EditSubmissions->value);

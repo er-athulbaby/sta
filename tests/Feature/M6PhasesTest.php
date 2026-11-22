@@ -17,6 +17,7 @@ use App\Notifications\DeadlineChanged;
 use App\Notifications\PhaseReminder;
 use App\Services\Phases\PhaseGate;
 use App\Services\Phases\SubmissionWorkflow;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
@@ -74,7 +75,7 @@ it('shows every open phase on the admin home and an attention item for each', fu
 
 it('re-opens a closed phase for one association that never started it, while other phases are open', function () {
     $deadline = now()->addDays(5)->format('Y-m-d H:i');
-    $page = m6Dashboard($this->game)->assertSeeHtml('aria-label="Actions for Late Fed Phase 2"');
+    $page = m6Dashboard($this->game)->assertSeeHtml('aria-label="Actions for Late Fed Phase 2: Overdue"');
     expect(cellMenuLabels($page, $this->late, 2))->toContain('Re-open')->not->toContain('Extend deadline');
     $page->call('reopen', $this->late->id, 2, $deadline, 'Late registration');
 
@@ -86,7 +87,7 @@ it('re-opens a closed phase for one association that never started it, while oth
         ->and(app(PhaseGate::class)->denialReason(Submission::for($this->game, $this->done, 2)))->toBe('This phase is closed.');
     Notification::assertSentTo($this->lateAdmin, DeadlineChanged::class);
 
-    $page = m6Dashboard($this->game)->assertSee('Re-opened · until '.now()->addDays(5)->format('j M Y H:i'));
+    $page = m6Dashboard($this->game)->assertSee('Re-opened · until '.Carbon::createFromFormat('Y-m-d H:i', $deadline)->format('j M Y H:i'));
     expect(cellMenuLabels($page, $this->late, 2))->toContain('Extend deadline')->not->toContain('Re-open');
 
     // The association sees the phase open (only for them) and can edit it.

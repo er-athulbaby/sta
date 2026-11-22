@@ -417,13 +417,11 @@
 .sta-pill-female { background: var(--sta-bg-pink-100, #FCE7F3); color: var(--sta-fg-pink-800, #9D174D); }
 .sta-pill-mixed { background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-text-3); }
 
-/* Game dashboard phase cell: the status pill (a link to the entry when there is one) and the "⋯" Actions menu. */
-.sta-cell { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-width: 152px; white-space: nowrap; }
-.sta-cell-pill { display: inline-flex; align-items: center; min-height: var(--sta-target); text-decoration: none; border-radius: 999px; }
-a.sta-cell-pill:hover .sta-pill { text-decoration: underline; }
-.sta-cell-menu { display: inline-flex; align-items: center; justify-content: center; width: var(--sta-target); height: var(--sta-target); border: 0; border-radius: var(--sta-radius-ctl); background: transparent; color: var(--sta-text-3); cursor: pointer; }
-.sta-cell-menu:hover, .sta-cell-menu[aria-expanded="true"] { background: var(--sta-bg-subtle, #F1F5F9); }
-a.sta-cell-pill:focus-visible, .sta-cell-menu:focus-visible { outline: 2px solid var(--sta-primary); outline-offset: 2px; }
+/* Game dashboard phase cell: the status pill is the Actions menu trigger (pill + chevron, 44px hit area). */
+.sta-cell { display: flex; align-items: center; min-height: var(--sta-target); white-space: nowrap; }
+.sta-cell-trigger { display: inline-flex; align-items: center; min-height: var(--sta-target); padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; font: inherit; }
+.sta-cell-trigger:hover .sta-pill, .sta-cell-trigger[aria-expanded="true"] .sta-pill { filter: brightness(0.95); box-shadow: inset 0 0 0 1px currentColor; }
+.sta-cell-trigger:focus-visible { outline: 2px solid var(--sta-primary); outline-offset: 2px; }
 .sta-cell-dropdown { min-width: 12rem; }
 .sta-cell-dropdown .fi-dropdown-list-item { min-height: var(--sta-target); }
 
