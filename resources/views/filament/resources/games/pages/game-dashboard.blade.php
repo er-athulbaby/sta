@@ -11,6 +11,7 @@
         $rows = $this->rows();
         $tally = $this->tally();
         $canManage = $this->canManage();
+        $canEditSubs = $this->canEditSubmissions();
         $canRemind = $this->canRemind() && $focus?->status === \App\Enums\PhaseStatus::Open;
         $pdfNames = [1 => 'Entry by Sport', 2 => 'Entry by Event', 3 => 'Long List', 4 => 'Short List'];
         $link = 'display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600';
@@ -46,6 +47,14 @@
                 @endif
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+                @if ($phases->count() > 1)
+                    {{-- Several phases can be open at once (M6): the KPIs, flags and Action column follow the picked phase. --}}
+                    <div role="group" aria-label="Phase shown in the KPIs, flags and Action column" class="sta-seg">
+                        @foreach ($phases as $p)
+                            <button type="button" wire:click="$set('focus', {{ $p->phase }})" aria-pressed="{{ $focus?->is($p) ? 'true' : 'false' }}">Phase {{ $p->phase }}</button>
+                        @endforeach
+                    </div>
+                @endif
                 <div role="group" aria-label="Filter" class="sta-seg">
                     @foreach (['all' => 'All', 'pending' => 'Pending', 'submitted' => 'Submitted'] as $key => $label)
                         <button type="button" wire:click="$set('show', '{{ $key }}')" aria-pressed="{{ $show === $key ? 'true' : 'false' }}">{{ $label }} {{ $tally[$key] }}</button>
@@ -100,6 +109,8 @@
                                     $c = $this->cell($a, $p->phase);
                                     $s = $c['submission'];
                                     $pdfs = $c['status'] === 'submitted' ? $this->pdfLinks($s) : [];
+                                    $reopenedForThem = $p->isReopenedFor($s);
+                                    $closed = $p->status === \App\Enums\PhaseStatus::Closed;
                                 @endphp
                                 <td wire:key="cell-{{ $a->id }}-{{ $p->phase }}" style="padding: 14px 12px">
                                     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; white-space: nowrap">
@@ -111,16 +122,24 @@
                                             <a href="{{ GameResource::getUrl('submission', ['record' => $record, 'submission' => $s]) }}" aria-label="View {{ $a->name }} Phase {{ $p->phase }}" style="{{ $link }}">View</a>
                                         @endif
                                         @if ($canManage)
-                                            @if ($c['status'] !== 'submitted')
+                                            @if ($c['status'] !== 'submitted' && (! $closed || $reopenedForThem))
                                                 <button type="button" wire:click="mountAction('extend', { association: {{ $a->id }}, phase: {{ $p->phase }} })" aria-label="Extend {{ $a->name }} Phase {{ $p->phase }}" style="{{ $linkBtn }}">Extend</button>
                                             @endif
-                                            @if (in_array($c['status'], ['submitted', 'awaiting'], true))
+                                            {{-- A closed phase re-opens for this one association, even one that never started it (M6). --}}
+                                            @if (in_array($c['status'], ['submitted', 'awaiting'], true) || ($closed && ! $reopenedForThem))
                                                 <button type="button" wire:click="mountAction('reopen', { association: {{ $a->id }}, phase: {{ $p->phase }} })" aria-label="Re-open {{ $a->name }} Phase {{ $p->phase }}" style="{{ $linkBtn }}; color: var(--sta-fg-red-800, #991B1B)">Re-open</button>
+                                            @endif
+                                        @endif
+                                        @if ($canEditSubs)
+                                            @if ($s)
+                                                <a href="{{ GameResource::getUrl('submission-edit-'.$p->phase, ['record' => $record, 'submission' => $s]) }}" aria-label="Edit as STA {{ $a->name }} Phase {{ $p->phase }}" style="{{ $link }}">Edit as STA</a>
+                                            @else
+                                                <button type="button" wire:click="editAsSta({{ $a->id }}, {{ $p->phase }})" aria-label="Edit as STA {{ $a->name }} Phase {{ $p->phase }}" style="{{ $linkBtn }}">Edit as STA</button>
                                             @endif
                                         @endif
                                     </div>
                                     @if ($s?->deadline_override)
-                                        <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">Deadline {{ $s->deadline_override->timezone('Asia/Bahrain')->format('j M Y H:i') }}</span>
+                                        <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $reopenedForThem ? 'Re-opened for them · deadline' : 'Deadline' }} {{ $s->deadline_override->timezone('Asia/Bahrain')->format('j M Y H:i') }}</span>
                                     @endif
                                 </td>
                             @endforeach
@@ -128,7 +147,7 @@
                             <td style="padding: 14px 12px; font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $last ? Sta::when($last) : '—' }}</td>
                             <td style="padding: 14px 20px; text-align: right">
                                 @if ($remindable)
-                                    <button type="button" wire:click="mountAction('remindOne', { association: {{ $a->id }} })" aria-label="Remind {{ $a->name }}" style="{{ $linkBtn }}; font-size: 14px; text-decoration: underline">Remind</button>
+                                    <button type="button" wire:click="mountAction('remindOne', { association: {{ $a->id }}, phase: {{ $focus->phase }} })" aria-label="Remind {{ $a->name }}" style="{{ $linkBtn }}; font-size: 14px; text-decoration: underline">Remind</button>
                                 @elseif ($focusSub)
                                     <a href="{{ GameResource::getUrl('submission', ['record' => $record, 'submission' => $focusSub]) }}" aria-label="Open {{ $a->name }} Phase {{ $focus->phase }}" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">Open</a>
                                 @endif

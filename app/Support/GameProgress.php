@@ -146,9 +146,10 @@ final class GameProgress
         return $this->game->phases->where('enabled', true)->where('status', PhaseStatus::Open)->sortBy('phase')->values();
     }
 
+    /** The latest open phase: several phases may be open at once (M6); the newest one leads the cards and focus. */
     public function openPhase(): ?GamePhase
     {
-        return $this->openPhases()->first();
+        return $this->openPhases()->last();
     }
 
     public function lastActivity(Association $a): ?CarbonInterface

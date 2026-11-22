@@ -53,14 +53,14 @@ it('emails the invited associations when a phase opens', function () {
     Notification::assertSentTo($admin, PhaseOpened::class);
 });
 
-it('opens only one phase at a time, even a phase that is open but switched off', function () {
+it('opens a phase while another phase is open (M6: several phases open at once)', function () {
     $game = Game::factory()->create();
-    $game->phase(1)->update(['enabled' => false, 'status' => PhaseStatus::Open]);
+    $game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
     $game->phase(2)->update(['enabled' => true, 'deadline' => now()->addWeek()]);
 
-    phasesPage($game)->callAction('openPhase', arguments: ['phase' => 2]);
+    phasesPage($game)->assertDontSee('Another phase is open')->callAction('openPhase', arguments: ['phase' => 2]);
 
-    expect($game->phase(2)->fresh()->status)->toBe(PhaseStatus::Draft);
+    expect($game->phase(2)->fresh()->status)->toBe(PhaseStatus::Open)->and($game->phase(1)->fresh()->status)->toBe(PhaseStatus::Open);
 });
 
 it('extends a deadline with a note and tells the association', function () {

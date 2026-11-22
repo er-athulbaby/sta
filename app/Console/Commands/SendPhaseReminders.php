@@ -21,12 +21,13 @@ class SendPhaseReminders extends Command
     {
         $today = now()->startOfDay(); // app time zone is Asia/Bahrain
         $sent = 0;
-        GamePhase::query()->where('enabled', true)->where('status', PhaseStatus::Open)->whereNotNull('deadline')
+        GamePhase::query()->where('enabled', true)->whereIn('status', [PhaseStatus::Open, PhaseStatus::Closed])->whereNotNull('deadline')
             ->whereHas('game', fn ($q) => $q->whereNotNull('published_at'))
             ->with('game.associations')->each(function (GamePhase $phase) use ($today, &$sent) {
                 foreach ($phase->game->associations as $association) {
                     $s = Submission::withoutGlobalScopes()->where(['game_id' => $phase->game_id, 'association_id' => $association->id, 'phase' => $phase->phase])->first();
-                    if ($s?->status === SubmissionStatus::Submitted) {
+                    // A closed phase only reminds an association it was re-opened for (M6).
+                    if ($s?->status === SubmissionStatus::Submitted || ! $phase->isOpenFor($s)) {
                         continue;
                     }
                     $deadlineDay = $phase->effectiveDeadline($s)->copy()->startOfDay();

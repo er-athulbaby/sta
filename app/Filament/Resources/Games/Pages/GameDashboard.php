@@ -46,6 +46,9 @@ class GameDashboard extends Page
 
     public string $search = '';
 
+    /** The phase picked in the table's phase selector; null = the default (the latest open phase). */
+    public ?int $focus = null;
+
     protected ?GameProgress $progress = null;
 
     /** @var array{all: int, pending: int, submitted: int}|null */
@@ -164,11 +167,36 @@ class GameDashboard extends Page
         return ['status' => $status, 'label' => Sta::CELL_LABELS[$status], 'submission' => $this->progress()->submission($a, $phase)];
     }
 
-    /** The phase the KPIs, flags and Action column follow: the first open phase, else the last opened one. */
+    /** The phase the KPIs, flags and Action column follow: the one picked in the selector, else the latest open phase, else the last opened one. */
     #[Unexposed]
     public function focusPhase(): ?GamePhase
     {
-        return $this->progress()->openPhase() ?? $this->tablePhases()->last() ?? $this->phases()->first();
+        return $this->tablePhases()->firstWhere('phase', $this->focus) ?? $this->progress()->openPhase() ?? $this->tablePhases()->last() ?? $this->phases()->first();
+    }
+
+    /** Remind pending's default phase: the focus phase when it is open, else the latest open phase. */
+    #[Unexposed]
+    public function remindPhase(): ?GamePhase
+    {
+        $focus = $this->focusPhase();
+
+        return $focus?->status === PhaseStatus::Open ? $focus : $this->progress()->openPhase();
+    }
+
+    #[Unexposed]
+    public function canEditSubmissions(): bool
+    {
+        return (bool) auth()->user()->can(StaPermission::EditSubmissions->value);
+    }
+
+    /** "Edit as STA" from a phase cell: opens the STA edit page, creating the association's submission when it has none yet. */
+    public function editAsSta(int $associationId, int $phase): void
+    {
+        abort_unless($this->canEditSubmissions(), 403);
+        abort_unless($this->tablePhases()->contains('phase', $phase), 404);
+        $a = $this->record->associations()->find($associationId);
+        abort_unless($a, 404);
+        $this->redirect(GameResource::getUrl('submission-edit-'.$phase, ['record' => $this->record, 'submission' => Submission::for($this->record, $a, $phase)]));
     }
 
     /** The phase card meta line (canvas Main). */
@@ -317,7 +345,7 @@ class GameDashboard extends Page
                 $arguments['association'], $arguments['phase'], Carbon::parse($data['deadline'])->format('Y-m-d H:i'), $data['note'] ?? null));
     }
 
-    /** The row's "Remind" (canvas Action column): the Remind pending reminder for one association and the focus phase. */
+    /** The row's "Remind" (canvas Action column): the Remind pending reminder for one association and the focus phase (an open phase). */
     public function remindOneAction(): Action
     {
         return Action::make('remindOne')
@@ -327,7 +355,7 @@ class GameDashboard extends Page
             ->modalSubmitActionLabel('Send reminder')
             ->action(function (array $arguments) {
                 abort_unless($this->canRemind(), 403);
-                $phase = $this->progress()->openPhase();
+                $phase = $this->progress()->openPhases()->firstWhere('phase', (int) ($arguments['phase'] ?? $this->focusPhase()?->phase));
                 $a = $this->record->associations()->find($arguments['association'] ?? 0);
                 abort_unless($phase && $a, 404);
                 $n = $this->remind($phase, collect([$a]));
@@ -385,9 +413,9 @@ class GameDashboard extends Page
                 ->url(fn () => GameResource::getUrl('reports', ['record' => $this->record]))
                 ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value)),
             Action::make('remindPending')
-                // N = who the modal's default phase (the first open one) would remind.
+                // N = who the modal's default phase (the focus phase when open, else the latest open one) would remind.
                 ->label(function () {
-                    $p = $this->progress()->openPhase();
+                    $p = $this->remindPhase();
                     $c = $p ? $this->progress()->counts($p->phase) : ['total' => 0, 'submitted' => 0];
 
                     return 'Remind pending ('.($c['total'] - $c['submitted']).')';
@@ -395,7 +423,7 @@ class GameDashboard extends Page
                 // No open phase = nothing to remind about (the phase select would be empty).
                 ->visible(fn () => $this->canRemind() && $this->progress()->openPhase() !== null)
                 ->schema([Select::make('phase')->required()
-                    ->default(fn () => $this->progress()->openPhase()?->phase)
+                    ->default(fn () => $this->remindPhase()?->phase)
                     ->options(fn () => $this->progress()->openPhases()
                         ->mapWithKeys(fn ($p) => [$p->phase => "Phase {$p->phase} - ".GamePhase::NAMES[$p->phase]])->all())])
                 ->action(function (array $data) {

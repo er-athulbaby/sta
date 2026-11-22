@@ -74,17 +74,21 @@ final class SubmissionWorkflow
         return $s;
     }
 
-    /** $note is the optional STA note shown with the new deadline (submissions.deadline_note). */
+    /**
+     * $note is the optional STA note shown with the new deadline (submissions.deadline_note). A submitted entry re-opens in any
+     * phase; in a closed phase any entry re-opens, even one never started (M6: the phase opens for this association only).
+     */
     public function reopen(Submission $s, User $by, ?CarbonInterface $newDeadline = null, ?string $note = null): Submission
     {
-        if (! in_array($s->status, [SubmissionStatus::Submitted, SubmissionStatus::AwaitingAssocAdmin], true)) {
+        $closed = $s->gamePhase()->status === PhaseStatus::Closed;
+        if (! $closed && ! in_array($s->status, [SubmissionStatus::Submitted, SubmissionStatus::AwaitingAssocAdmin], true)) {
             $this->fail('This entry is not submitted, so there is nothing to re-open.');
         }
         $effective = $newDeadline ?? $s->deadline_override ?? $s->gamePhase()->deadline;
         if ($effective === null || $effective->isPast()) {
             $this->fail('Give a new deadline in the future to re-open this entry.');
         }
-        $this->change($s, ['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override,
+        $this->change($s, ['status' => SubmissionStatus::Draft, 'deadline_override' => $newDeadline ?? $s->deadline_override ?? ($closed ? $effective : null),
             'deadline_change' => 'reopened', 'deadline_note' => filled($note) ? $note : null]);
         $this->notifyDeadline($s, new DeadlineChanged($s, reopened: true));
 
@@ -96,7 +100,7 @@ final class SubmissionWorkflow
         if ($s->status === SubmissionStatus::Submitted) {
             $this->fail('This entry is already submitted — re-open it to change the deadline.');
         }
-        $this->change($s, ['deadline_override' => $deadline, 'deadline_change' => 'extended', 'deadline_note' => filled($note) ? $note : null]);
+        $this->change($s, ['deadline_override' => $deadline, 'deadline_change' => $s->gamePhase()->isReopenedFor($s) ? 'reopened' : 'extended', 'deadline_note' => filled($note) ? $note : null]);
         $this->notifyDeadline($s, new DeadlineChanged($s, reopened: false));
 
         return $s;
@@ -155,7 +159,7 @@ final class SubmissionWorkflow
         if (! $phase->enabled) {
             $this->fail('This phase is not used for this game.');
         }
-        if ($phase->status !== PhaseStatus::Open) {
+        if (! $phase->isOpenFor($s)) {
             $this->fail('This phase is closed.');
         }
     }

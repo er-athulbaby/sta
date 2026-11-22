@@ -271,8 +271,9 @@ it('hides and refuses the row Remind on an unpublished game or without send_remi
     Notification::assertNothingSent();
 });
 
-it('counts Remind pending for the default (first open) phase only', function () {
+it('counts Remind pending for the default (latest open, or picked) phase only', function () {
     $this->game->phase(3)->update(['enabled' => true, 'status' => PhaseStatus::Open, 'deadline' => now()->addWeek()]);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
-        ->assertSee('Pending 2')->assertSee('Remind pending (1)');
+        ->assertSee('Pending 2')->assertSee('Remind pending (2)')
+        ->set('focus', 2)->assertSee('Remind pending (1)');
 });

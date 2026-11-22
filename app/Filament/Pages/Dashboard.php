@@ -36,7 +36,7 @@ class Dashboard extends BaseDashboard
 {
     protected string $view = 'filament.pages.dashboard';
 
-    /** @var Collection<int, array{game: Game, progress: GameProgress, phase: ?GamePhase, closed: ?GamePhase, counts: ?array}>|null */
+    /** @var Collection<int, array{game: Game, progress: GameProgress, phase: ?GamePhase, closed: ?GamePhase, counts: ?array, open: Collection<int, GamePhase>}>|null */
     protected ?Collection $games = null;
 
     protected ?array $registry = null;
@@ -78,7 +78,7 @@ class Dashboard extends BaseDashboard
                     ->when($phase, fn ($c) => $c->where('phase', '<', $phase->phase))->sortBy('phase')->last();
 
                 return ['game' => $progress->game, 'progress' => $progress, 'phase' => $phase, 'closed' => $closed,
-                    'counts' => $phase ? $progress->counts($phase->phase) : null];
+                    'counts' => $phase ? $progress->counts($phase->phase) : null, 'open' => $progress->openPhases()];
             });
     }
 
@@ -102,6 +102,8 @@ class Dashboard extends BaseDashboard
         $prefix = fn (array $g) => $many ? $g['game']->name.' · ' : '';
         $dashboard = fn (Game $game) => GameResource::getUrl('dashboard', ['record' => $game]);
         $items = [];
+        // One row per open phase of each game: several phases may be open at once (M6).
+        $games = $games->flatMap(fn ($g) => $g['open']->map(fn (GamePhase $p) => ['phase' => $p, 'counts' => $g['progress']->counts($p->phase)] + $g));
 
         $soon = $games->filter(fn ($g) => $g['phase']?->deadline?->between(now(), now()->addDays(7)))->sortBy(fn ($g) => $g['phase']->deadline);
         if ($soon->isNotEmpty()) {
@@ -127,7 +129,7 @@ class Dashboard extends BaseDashboard
             $items[] = ['icon' => 'mail', 'tone' => 'none',
                 'title' => $pending.' '.str('association')->plural($pending).' '.($pending === 1 ? 'hasn’t' : 'haven’t').' submitted the '.GamePhase::NAMES[$g['phase']->phase],
                 'text' => $prefix($g).$text, 'pill' => null,
-                'url' => $remind ? null : $dashboard($g['game']), 'link' => $remind ? "Remind {$pending}" : 'Open', 'remind' => $remind ? $g['game']->id : null];
+                'url' => $remind ? null : $dashboard($g['game']), 'link' => $remind ? "Remind {$pending}" : 'Open', 'remind' => $remind ? $g['game']->id : null, 'phase' => $g['phase']->phase];
         }
 
         foreach ($games->filter(fn ($g) => in_array($g['phase']?->phase, [3, 4], true)) as $g) {
@@ -173,9 +175,12 @@ class Dashboard extends BaseDashboard
             });
     }
 
+    /** The game of an attention item, with 'phase' set to the item's open phase (default: the latest open one). */
     private function activeGame(array $arguments): ?array
     {
-        return $this->activeGames()->first(fn ($g) => $g['game']->id === (int) ($arguments['game'] ?? 0));
+        $g = $this->activeGames()->first(fn ($g) => $g['game']->id === (int) ($arguments['game'] ?? 0));
+
+        return $g ? ['phase' => $g['open']->firstWhere('phase', (int) ($arguments['phase'] ?? $g['phase']?->phase))] + $g : null;
     }
 
     /**

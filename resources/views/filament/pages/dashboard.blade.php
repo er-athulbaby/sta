@@ -57,7 +57,12 @@
                                 <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $meta }}</span>
                             </div>
                             @if ($phase)
-                                {!! $chip($phase->phase, 'Phase '.$phase->phase.' · '.GamePhase::NAMES[$phase->phase]) !!}
+                                {{-- Every open phase (several may be open, M6); the latest one leads the card. --}}
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+                                    @foreach ($g['open']->reverse() as $open)
+                                        {!! $chip($open->phase, 'Phase '.$open->phase.' · '.GamePhase::NAMES[$open->phase]) !!}
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
                         @if (($phase && $phase->deadline) || $g['closed'])
@@ -131,7 +136,7 @@
                                     <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">@if ($item['pill'])<span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-orange-800, #9A3412); box-shadow: inset 0 0 0 1px var(--sta-bd-orange-300, #FDBA74)">{{ $item['pill'] }}</span> @endif{{ $item['text'] }}</span>
                                 </div>
                                 @if ($item['remind'])
-                                    <button type="button" wire:click="mountAction('remind', { game: {{ $item['remind'] }} })" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; cursor: pointer">{{ $item['link'] }}</button>
+                                    <button type="button" wire:click="mountAction('remind', { game: {{ $item['remind'] }}, phase: {{ $item['phase'] }} })" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; cursor: pointer">{{ $item['link'] }}</button>
                                 @elseif ($item['url'])
                                     <a href="{{ $item['url'] }}" style="{{ $linkStyle }}">{{ $item['link'] }}</a>
                                 @endif

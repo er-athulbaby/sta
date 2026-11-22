@@ -137,7 +137,7 @@ it('renders step 4 as phase cards, reminders and extensions in the canvas order'
         ->assertSee('Associations pick athletes for each event')->assertSee('Turned off for this game');
 });
 
-it('turns phases on, sets dates, opens and closes them one at a time', function () {
+it('turns phases on, sets dates, opens several at once and closes them', function () {
     $game = Game::factory()->create();
     $page = fn () => livewire(SetupPhases::class, ['record' => $game->getRouteKey()]);
 
@@ -153,7 +153,7 @@ it('turns phases on, sets dates, opens and closes them one at a time', function 
 
     $game->phase(3)->update(['enabled' => true, 'deadline' => now()->addWeek()]);
     $page()->callAction('openPhase', arguments: ['phase' => 3]);
-    expect($game->phase(3)->fresh()->status)->toBe(PhaseStatus::Draft);
+    expect($game->phase(3)->fresh()->status)->toBe(PhaseStatus::Open);
 
     $page()->call('setDate', 2, 'deadline', '')->callAction('closePhase', arguments: ['phase' => 2]);
     expect($game->phase(2)->fresh()->status)->toBe(PhaseStatus::Closed)->and($game->phase(2)->fresh()->deadline)->not->toBeNull();

@@ -59,11 +59,6 @@ class SetupPhases extends Page
         return $this->record->phases()->orderBy('phase')->get();
     }
 
-    public function anyOpen(): bool
-    {
-        return $this->record->phases()->where('status', PhaseStatus::Open)->exists();
-    }
-
     /** What the phase card says about the associations' progress. */
     public function progress(GamePhase $p): string
     {
@@ -98,14 +93,13 @@ class SetupPhases extends Page
     /** @return array{label: string, hint: string, disabled: bool, kind: string} the card's main button */
     public function button(GamePhase $p): array
     {
-        $open = $this->anyOpen();
         if ($p->status === PhaseStatus::Open) {
             return ['label' => 'Close phase', 'hint' => 'Associations can no longer edit after closing', 'disabled' => false, 'kind' => 'danger'];
         }
+        // Several phases may be open at once (M6): each phase opens and closes on its own.
         $reason = match (true) {
             ! $this->record->isPublished() => 'Publish the game first',
             $p->deadline === null => 'Set a deadline first',
-            $open => $p->status === PhaseStatus::Closed ? 'Close the open phase first' : 'Another phase is open',
             default => null,
         };
         $closed = $p->status === PhaseStatus::Closed;
@@ -190,7 +184,7 @@ class SetupPhases extends Page
         return Action::make('openPhase')->requiresConfirmation()
             ->action(function (array $arguments) {
                 $r = $this->record->phase((int) $arguments['phase']);
-                if (! $r->enabled || $r->deadline === null || ! $this->record->isPublished() || $this->anyOpen()) {
+                if (! $r->enabled || $r->deadline === null || ! $this->record->isPublished() || $r->status === PhaseStatus::Open) {
                     Notification::make()->danger()->title('This phase cannot be opened now.')->send();
 
                     return;

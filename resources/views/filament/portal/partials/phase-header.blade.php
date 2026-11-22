@@ -1,7 +1,7 @@
 {{-- Canvas Phase2.dc.html header band: breadcrumb, h1 + phase chip, phase stepper. STA edit pages also show their header actions. --}}
 @php
     $p = $this->submission->phase;
-    [$phaseState] = \App\Support\Sta::phaseStatus($this->gameModel->phase($p));
+    [$phaseState] = \App\Support\Sta::phaseStatus($this->gameModel->phase($p), $this->submission);
     $status = $this->submission->status;
     // Phase2.dc.html draws no status pill for a draft; Phase 1 (no canvas) keeps the Long List style "Draft · saved" pill.
     $showPill = $p !== 2 || $status !== \App\Enums\SubmissionStatus::Draft;

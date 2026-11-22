@@ -17,7 +17,7 @@ final class PhaseGate
         return match (true) {
             ! $phase->enabled => 'This phase is not used for this game.',
             $phase->status === PhaseStatus::Draft => 'This phase is not open yet.',
-            $phase->status === PhaseStatus::Closed => 'This phase is closed.',
+            ! $phase->isOpenFor($s) => 'This phase is closed.',
             $deadline !== null && ($now ?? now())->greaterThan($deadline) => 'The deadline has passed.',
             $s->status === SubmissionStatus::AwaitingAssocAdmin => 'This entry has been sent for approval.',
             $s->status === SubmissionStatus::Submitted => 'This entry has been submitted.',

@@ -6,6 +6,7 @@ use App\Enums\PhaseStatus;
 use App\Enums\SubmissionStatus;
 use App\Models\Event;
 use App\Models\GamePhase;
+use App\Models\Submission;
 use Carbon\CarbonInterface;
 
 /** Canvas design tokens and small display helpers shared by Blade views and PDFs (spec 17). */
@@ -44,11 +45,14 @@ final class Sta
         };
     }
 
-    /** @return array{0: string, 1: string} [label, pill key] */
-    public static function phaseStatus(GamePhase $p): array
+    /** @return array{0: string, 1: string} [label, pill key]; with $s, a phase re-opened for that association reads Open */
+    public static function phaseStatus(GamePhase $p, ?Submission $s = null): array
     {
         if (! $p->enabled) {
             return ['Skipped', 'skipped'];
+        }
+        if ($p->isReopenedFor($s)) {
+            return ['Open', 'open'];
         }
 
         return match ($p->status) {

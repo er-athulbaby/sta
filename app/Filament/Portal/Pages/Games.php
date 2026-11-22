@@ -64,7 +64,7 @@ class Games extends Page
                 $deadline = $p->effectiveDeadline($sub);
                 $before = $g->phases->where('enabled', true)->where('phase', '<', $p->phase)->sortBy('phase')->last();
                 // Main.dc.html phase-card meta wording.
-                $meta = match ($p->status) {
+                $meta = match ($p->isOpenFor($sub) ? PhaseStatus::Open : $p->status) {
                     PhaseStatus::Open => $deadline ? 'Deadline '.$deadline->format('j M Y').' · '.Sta::daysLeft($deadline) : 'Open',
                     PhaseStatus::Closed => 'Closed'.($deadline ? ' '.$deadline->format('j M') : ''),
                     PhaseStatus::Draft => $before && $before->status !== PhaseStatus::Closed ? "Opens after Phase {$before->phase} closes" : 'Not opened',
@@ -74,7 +74,7 @@ class Games extends Page
                     'phase' => $p->phase,
                     'meta' => $meta,
                     'name' => GamePhase::NAMES[$p->phase],
-                    'status' => Sta::phaseStatus($p)[0], // Open, Closed or Not opened (canvas wording)
+                    'status' => Sta::phaseStatus($p, $sub)[0], // Open, Closed or Not opened (canvas wording); Open when re-opened for this association
                     'pill' => $sub ? Sta::submissionPill($sub->status) : 'none',
                     'deadline' => $deadline,
                     'submission' => $sub?->status->label() ?? 'No response',
