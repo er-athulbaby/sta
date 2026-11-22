@@ -25,6 +25,7 @@
                         <th scope="col" style="padding: 12px; font-weight: 600">Date of birth</th>
                         <th scope="col" style="padding: 12px; font-weight: 600">Passport expiry</th>
                         <th scope="col" style="padding: 12px 20px; font-weight: 600">Sizes</th>
+                        <th scope="col" style="padding: 12px 20px 12px 0"><span class="sta-sr-only">Actions</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,6 +47,11 @@
                             <td style="padding: 12px; color: var(--sta-fg-strong, #334155)">{{ $p->dob?->format('d M Y') }}</td>
                             <td style="padding: 12px; font-weight: 600; color: {{ $p->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-strong, #334155)' }}">{{ $p->passport_expiry?->format('d M Y') }}</td>
                             <td style="padding: 12px 20px"><span style="{{ $missing ? $pillGap : $pillDone }}">{{ $missing ? $missing.' missing' : 'Complete' }}</span></td>
+                            <td style="padding: 6px 20px 6px 0; text-align: right">
+                                @if (\App\Filament\Portal\Resources\People\PersonResource::canEdit($p))
+                                    <a href="{{ \App\Filament\Portal\Resources\People\PersonResource::getUrl('edit', ['record' => $p]) }}" class="sta-btn" style="padding: 0 14px; font-size: 13px; white-space: nowrap">Edit<span class="sta-sr-only"> {{ $p->fullName() }}</span></a>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

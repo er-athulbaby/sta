@@ -28,7 +28,7 @@ final class ExportSources
         'emergency_name' => ['Emergency contact name', 'text'], 'emergency_relationship' => ['Emergency contact relationship', 'text'],
         'emergency_phone' => ['Emergency phone', 'text'], 'guardian_name' => ['Guardian name', 'text'],
         'guardian_relationship' => ['Guardian relationship', 'text'], 'guardian_phone' => ['Guardian phone', 'text'],
-        'guardian_email' => ['Guardian email', 'text'], 'fit' => ['Clothing fit', 'text'],
+        'guardian_email' => ['Guardian email', 'text'],
         'chest_cm' => ['Chest (cm)', 'number'], 'waist_cm' => ['Waist (cm)', 'number'],
         'consent_data' => ['Consent: store personal data', 'yes_no'], 'consent_media' => ['Consent: photos in media', 'yes_no'],
         'consent_medical' => ['Consent: emergency treatment', 'yes_no'], 'decl_conduct' => ['Declaration: code of conduct', 'yes_no'],

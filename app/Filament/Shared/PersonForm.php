@@ -137,11 +137,11 @@ final class PersonForm
             $section('contact')->schema([
                 $grid([
                     // The label sits on the number input; the code select carries "… country code" for screen readers.
-                    PhoneField::make('phone', fn (Get $get) => $isOfficial($get) ? 'Mobile' : 'Player mobile', fn (TextInput $i) => self::need($i, 'phone'), 'Mobile country code'),
+                    PhoneField::make('phone', fn (Get $get) => $isOfficial($get) ? 'Mobile' : 'Athlete mobile', fn (TextInput $i) => self::need($i, 'phone'), 'Mobile country code'),
                     Toggle::make('whatsapp_same')->label('WhatsApp is the same as mobile')->live()->view('filament.people.switch-field'),
                     PhoneField::make('whatsapp', 'WhatsApp', fn (TextInput $i) => self::need($i, 'whatsapp'), 'WhatsApp country code')->hidden(fn (Get $get) => (bool) $get('whatsapp_same')),
-                    self::need(TextInput::make('email')->label(fn (Get $get) => $isOfficial($get) ? 'Email' : 'Player email')->email()->maxLength(255), 'email'),
-                    TextInput::make('address')->label('Player address')->maxLength(255)->visible($isAthlete)->columnSpanFull(),
+                    self::need(TextInput::make('email')->label(fn (Get $get) => $isOfficial($get) ? 'Email' : 'Athlete email')->email()->maxLength(255), 'email'),
+                    TextInput::make('address')->label('Athlete address')->maxLength(255)->visible($isAthlete)->columnSpanFull(),
                     self::need(TextInput::make('emergency_name')->label('Emergency contact name')->maxLength(200), 'emergency_name'),
                     self::need(TextInput::make('emergency_relationship')->label('Relationship')->maxLength(100), 'emergency_relationship'),
                     PhoneField::make('emergency_phone', 'Emergency phone', fn (TextInput $i) => self::need($i, 'emergency_phone'), 'Emergency phone country code'),
@@ -171,7 +171,6 @@ final class PersonForm
             ]),
             $section('clothing')->schema([
                 Grid::make(1)->extraAttributes(['class' => 'sta-auto-grid', 'style' => '--sta-min: 160px'])->schema(fn (Get $get) => [
-                    Select::make('fit')->options(["Men's" => 'Male', "Women's" => 'Female', 'Youth' => 'Youth'])->placeholder('Select'),
                     TextInput::make('chest_cm')->label('Chest (cm)')->numeric()->minValue(40)->maxValue(200),
                     TextInput::make('waist_cm')->label('Waist (cm)')->numeric()->minValue(40)->maxValue(200),
                     ...self::sizeFields(PersonType::tryFrom((string) $get('type')) ?? PersonType::Athlete),

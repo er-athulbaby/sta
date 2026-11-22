@@ -36,6 +36,7 @@
                         <th scope="col" style="padding: 12px; font-weight: 600">Type</th>
                         <th scope="col" style="padding: 12px; font-weight: 600">Passport expiry</th>
                         <th scope="col" style="padding: 12px 20px; font-weight: 600">Scans</th>
+                        <th scope="col" style="padding: 12px 20px 12px 0"><span class="sta-sr-only">Actions</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,6 +62,11 @@
                             <td style="padding: 8px 12px; color: var(--sta-fg-strong, #334155)">{{ $typeLabel($p) }}</td>
                             <td style="padding: 8px 12px; font-weight: 600; color: {{ $p->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-strong, #334155)' }}">{{ $p->passport_expiry?->format('d M Y') }}</td>
                             <td style="padding: 8px 20px"><span style="{{ $n === 2 ? $pill('var(--sta-bg-green-100, #DCFCE7)', 'var(--sta-fg-green-800, #166534)') : ($n === 1 ? $pill('var(--sta-bg-amber-100, #FEF3C7)', 'var(--sta-fg-amber-800, #92400E)') : $pill('var(--sta-bg-surface, #FFFFFF)', 'var(--sta-fg-orange-800, #9A3412)', 'var(--sta-bd-orange-300, #FDBA74)')) }}">{{ $n === 2 ? 'Both' : ($n === 1 ? '1 of 2' : 'None') }}</span></td>
+                            <td style="padding: 8px 20px 8px 0; text-align: right">
+                                @if (\App\Filament\Resources\People\PersonResource::canEdit($p))
+                                    <a href="{{ \App\Filament\Resources\People\PersonResource::getUrl('edit', ['record' => $p]) }}" class="sta-btn" style="padding: 0 14px; font-size: 13px; white-space: nowrap">Edit<span class="sta-sr-only"> {{ $p->fullName() }}</span></a>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

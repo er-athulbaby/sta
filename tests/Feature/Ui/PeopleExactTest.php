@@ -138,8 +138,8 @@ it('numbers the athlete form sections and jump links as drawn', function () {
             'Date of birth', 'Age', 'Gender', 'Nationality', 'Height (cm)', 'Weight (kg)',
             '2 · Passport', 'Passport scan', 'Passport number', 'Issuing country', 'Missing · needed for Long List', 'Issue date', 'Expiry date',
             '3 · CPR', 'CPR number', 'CPR expiry', 'CPR front', 'CPR back', 'CPR reader copy', 'Upload reader printout',
-            '4 · Contact', 'Player mobile', 'WhatsApp is the same as mobile', 'Player email', 'Player address', 'Emergency contact name', 'Relationship', 'Emergency phone',
-            '5 · Guardian', 'For athletes under 18.', '6 · Clothing', 'Fit', 'Chest (cm)', 'Waist (cm)', 'T-Shirt size',
+            '4 · Contact', 'Athlete mobile', 'WhatsApp is the same as mobile', 'Athlete email', 'Athlete address', 'Emergency contact name', 'Relationship', 'Emergency phone',
+            '5 · Guardian', 'For athletes under 18.', '6 · Clothing', 'Chest (cm)', 'Waist (cm)', 'T-Shirt size',
             '7 · Medical', 'Visible to your association and STA staff with medical permission', 'Blood group', 'Injuries',
             '8 · Consents', 'Consent to store personal data', 'Consent to use photos in media', 'Consent for emergency medical treatment']);
 });

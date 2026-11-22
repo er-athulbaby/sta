@@ -366,6 +366,8 @@
 /* Filament controls */
 .fi-btn { min-height: var(--sta-target); border-radius: var(--sta-radius-ctl); font-weight: 600; }
 .fi-link { min-height: var(--sta-target); display: inline-flex; align-items: center; }
+/* M6: Filament pins .fi-link-label to the baseline; inside the 44px link that lifts the label above the icon (Games row actions). Centre both. */
+.fi-link > .fi-link-label { align-self: center; white-space: nowrap; }
 .fi-input-wrp { min-height: var(--sta-target); border-radius: var(--sta-radius-ctl); }
 .fi-badge { border-radius: 999px; }
 .fi-section:not(.fi-section-not-contained) { border-radius: var(--sta-radius-card); box-shadow: none; border: 1px solid var(--sta-border); }
