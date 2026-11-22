@@ -12,6 +12,7 @@ use App\Filament\Resources\Relationships\Pages\EditRelationship;
 use App\Filament\Resources\Relationships\Pages\ListRelationships;
 use App\Filament\Resources\Relationships\RelationshipResource;
 use App\Models\Association;
+use App\Models\ClothingItem;
 use App\Models\Person;
 use App\Models\Relationship;
 use App\Models\User;
@@ -96,6 +97,52 @@ it('needs the cross-check in the registry aside and resets it after saving', fun
     $page->set('panel.cross_checked', true)->call('savePanel')->assertHasNoErrors()
         ->assertSet('panel.cross_checked', null)->assertSee('Cross-checked by Mona Editor on '.now()->format('j M Y'));
     expect($p->fresh())->passport_no->toBe('NEW55555')->checked_by->toBe($editor->id);
+});
+
+it('saves a sizes-only change in the registry aside without the tick and keeps the cross-check stamp', function () {
+    actingInPortal(User::factory()->assocEditor($this->assoc)->create());
+    $shirt = ClothingItem::factory()->create();
+    $checker = User::factory()->create();
+    $p = Person::factory()->create(['association_id' => $this->assoc->id, 'cpr_no' => '060101123', 'cpr_expiry' => '2030-01-01',
+        'checked_by' => $checker->id, 'checked_at' => '2026-01-05 10:00:00']);
+
+    $page = livewire(ListPeople::class)->call('selectPerson', $p->id)
+        ->set("panel.sizes.{$shirt->id}", 'M')->call('savePanel')->assertHasNoErrors();
+    expect($p->fresh())->sizesMap()->toBe([$shirt->id => 'M'])
+        ->checked_by->toBe($checker->id)->checked_at->toDateTimeString()->toBe('2026-01-05 10:00:00');
+
+    // Any document field change still needs the tick.
+    $page->set("panel.sizes.{$shirt->id}", 'L')->set('panel.cpr_expiry', '2031-01-01')->call('savePanel')
+        ->assertHasErrors(['panel.cross_checked' => 'accepted']);
+    expect($p->fresh())->cpr_expiry->toDateString()->toBe('2030-01-01')->sizesMap()->toBe([$shirt->id => 'M']);
+});
+
+it('imports emergency and guardian relationships from the Relationships list', function () {
+    expect(PeopleTemplateExport::COLUMNS)->toContain('emergency_relationship', 'guardian_relationship');
+
+    $dir = storage_path('app/testing');
+    is_dir($dir) || mkdir($dir, 0777, true);
+    $row = fn (array $o) => [
+        'type' => 'athlete', 'first_name' => 'Sara', 'last_name' => 'Ali', 'date_of_birth' => '2007-04-02', 'gender' => 'female', 'nationality' => 'Bahrain',
+        'passport_no' => 'BH'.random_int(1000000, 9999999), 'passport_expiry' => '2029-01-01', ...$o,
+    ];
+    $import = function (array $rows) use ($dir) {
+        $path = $dir.'/relationship-import-'.uniqid().'.xlsx';
+        (new PeopleTemplateExport($rows))->writeTo($path);
+        $result = app(PeopleImporter::class)->import($path, $this->assoc);
+        @unlink($path);
+
+        return $result;
+    };
+
+    $bad = $import([$row(['emergency_relationship' => 'mother']), $row(['guardian_relationship' => 'Neighbour'])]);
+    expect($bad->ok())->toBeFalse()->and($bad->errors)->toBe([3 => ['Guardian relationship "Neighbour" is not on the Relationships list.']])
+        ->and(Person::count())->toBe(0);
+
+    expect($import([$row(['emergency_relationship' => 'mOTHER', 'guardian_relationship' => 'father']), $row([])])->ok())->toBeTrue();
+    [$a, $b] = Person::orderBy('id')->get()->all();
+    expect($a)->emergency_relationship->toBe('Mother')->guardian_relationship->toBe('Father')->checked_at->toBeNull()
+        ->and($b)->emergency_relationship->toBeNull()->guardian_relationship->toBeNull();
 });
 
 it('imports rows as not cross-checked', function () {

@@ -9,6 +9,7 @@ use App\Filament\Shared\PersonForm;
 use App\Models\Association;
 use App\Models\ExtraField;
 use App\Models\Person;
+use App\Models\Relationship;
 use App\Models\User;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -28,10 +29,14 @@ final class PeopleImporter
     /** @var Collection<int, ExtraField> the extra-field columns read by the current import */
     private Collection $extraFields;
 
+    /** @var array<string, string> lower-cased active Relationships name => the list's spelling */
+    private array $relationships;
+
     /** @param  ?User  $user  sensitive extra-field columns are ignored unless the user may view medical data; null = all */
     public function import(string $absolutePath, Association $association, ?User $user = null): ImportResult
     {
         $this->extraFields = ExtraField::activeFor($user);
+        $this->relationships = collect(Relationship::options())->keyBy(fn (string $name) => mb_strtolower($name))->all();
 
         try {
             $rows = $this->read($absolutePath);
@@ -50,6 +55,12 @@ final class PeopleImporter
         foreach ($rows as $rowNumber => $raw) {
             $row = $this->normalise($raw);
             $messages = $this->validate($row);
+            foreach (['emergency_relationship' => 'Emergency relationship', 'guardian_relationship' => 'Guardian relationship'] as $field => $label) {
+                if (filled($row[$field])) {
+                    $name = $this->relationships[mb_strtolower((string) $row[$field])] ?? null;
+                    $name === null ? $messages[] = "$label \"{$row[$field]}\" is not on the Relationships list." : $row[$field] = $name;
+                }
+            }
 
             foreach (['passport_no' => 'passport_no_hash', 'cpr_no' => 'cpr_no_hash'] as $field => $hashColumn) {
                 if (blank($row[$field])) {
@@ -195,6 +206,7 @@ final class PeopleImporter
             'cpr_no' => $row['cpr_no'] !== null ? (string) $row['cpr_no'] : null, 'cpr_expiry' => $row['cpr_expiry'],
             'function' => $row['function'], 'phone' => $row['mobile'], 'phone_cc' => '+973', 'email' => $row['email'],
             'passport_issuing_country' => $row['passport_issuing_country'], 'passport_issue_date' => $row['passport_issue_date'],
+            'emergency_relationship' => $row['emergency_relationship'], 'guardian_relationship' => $row['guardian_relationship'],
         ];
     }
 }

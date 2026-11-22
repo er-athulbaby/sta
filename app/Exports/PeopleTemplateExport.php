@@ -12,6 +12,7 @@ class PeopleTemplateExport
     public const COLUMNS = [
         'type', 'full_name', 'first_name', 'second_name', 'third_name', 'last_name', 'date_of_birth', 'gender', 'nationality',
         'height_cm', 'weight_kg', 'passport_no', 'passport_issuing_country', 'passport_issue_date', 'passport_expiry', 'cpr_no', 'cpr_expiry', 'function', 'mobile', 'email',
+        'emergency_relationship', 'guardian_relationship',
     ];
 
     /**

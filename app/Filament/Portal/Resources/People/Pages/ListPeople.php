@@ -132,8 +132,14 @@ class ListPeople extends ListRecords
         $rules = collect(PersonForm::shortFormRules($person->type, 'panel.', 'panel', $person))
             ->filter(fn ($r, string $key) => Str::startsWith($key, ['panel.passport_no', 'panel.passport_expiry', 'panel.cpr_', 'panel.sizes.', 'panelPassportScan', 'panelCprScan']))
             ->all();
+        // Sizes only (every document field equals the stored value, no new scan): no cross-check needed, the stamp is kept.
+        $norm = fn ($v) => filled($v) ? (string) $v : null;
+        $stored = ['passport_no' => $person->passport_no, 'passport_expiry' => $person->passport_expiry?->toDateString(),
+            'cpr_no' => $person->cpr_no, 'cpr_expiry' => $person->cpr_expiry?->toDateString()];
+        $sizesOnly = $this->panelPassportScan === null && $this->panelCprScan === null
+            && collect($stored)->every(fn ($v, string $k) => $norm($this->panel[$k] ?? null) === $norm($v));
         Validator::make(['panel' => $this->panel, 'panelPassportScan' => $this->panelPassportScan, 'panelCprScan' => $this->panelCprScan],
-            [...$rules, 'panel.cross_checked' => ['accepted']],
+            [...$rules, ...($sizesOnly ? [] : ['panel.cross_checked' => ['accepted']])],
             ['panel.cross_checked.accepted' => Person::CROSS_CHECK_MESSAGE],
             ['panel.passport_no' => 'passport number', 'panel.passport_expiry' => 'passport expiry', 'panel.cpr_no' => 'CPR number', 'panel.cpr_expiry' => 'CPR expiry'],
         )->validate();
@@ -143,8 +149,8 @@ class ListPeople extends ListRecords
         $files = array_filter(['passport_scan_path' => $store($this->panelPassportScan), 'cpr_front_path' => $store($this->panelCprScan)]);
         $sizes = PersonForm::sizeItems($person->type)->mapWithKeys(fn ($item) => [$item->id => $this->panel['sizes'][$item->id] ?? null])->all();
 
-        DB::transaction(function () use ($person, $data, $files, $sizes) {
-            $person->update([...$data, ...$files, ...Person::crossCheckStamp()]);
+        DB::transaction(function () use ($person, $data, $files, $sizes, $sizesOnly) {
+            $sizesOnly || $person->update([...$data, ...$files, ...Person::crossCheckStamp()]);
             $person->syncSizes($sizes);
         });
         Notification::make()->success()->title('Saved')->send();
