@@ -87,3 +87,11 @@ it('shows the special line only for re-opened or extended entries', function () 
         ->assertSee('Deadline extended to '.now()->addDays(6)->timezone('Asia/Bahrain')->format('j M Y'))
         ->assertSee('Re-opened · until '.now()->addDays(5)->timezone('Asia/Bahrain')->format('j M Y'));
 });
+
+it('says a re-open or extension ended once its own deadline has passed', function () {
+    $this->done2->update(['deadline_override' => now()->subHour(), 'deadline_change' => 'reopened']);
+    cellMenuDashboard($this->game)->assertSee('Re-open ended')->assertDontSee('Re-opened · until');
+
+    $this->done2->update(['deadline_override' => now()->addDay(), 'deadline_change' => 'reopened']);
+    cellMenuDashboard($this->game)->assertSee('Re-opened · until')->assertDontSee('Re-open ended');
+});

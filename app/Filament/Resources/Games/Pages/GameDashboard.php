@@ -221,6 +221,10 @@ class GameDashboard extends Page
         }
         $when = $s->deadline_override->timezone('Asia/Bahrain')->format('j M Y H:i');
 
+        if ($s->deadline_override->isPast()) {
+            return $s->deadline_change === 'reopened' ? "Re-open ended {$when}" : "Extended deadline ended {$when}";
+        }
+
         return $s->deadline_change === 'reopened' ? "Re-opened · until {$when}" : "Deadline extended to {$when}";
     }
 
