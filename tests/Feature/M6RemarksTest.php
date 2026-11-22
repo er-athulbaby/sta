@@ -102,6 +102,44 @@ it('lets an association editor reply on the phase page; STA with edit_submission
         ->and($mail->subject)->toBe('Bahrain Judo Federation replied on Phase 1 for Asian Indoor Games');
 });
 
+it('sends no reply notification to an inactive STA user with edit_submissions', function () {
+    $inactive = User::factory()->sta()->inactive()->create();
+    $inactive->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    Comment::post($this->sub, $this->sta, 'Remark');
+    Notification::fake();
+    Comment::post($this->sub, $this->editor, 'Reply');
+
+    Notification::assertSentTo($this->sta, NewComment::class);
+    Notification::assertNotSentTo($inactive, NewComment::class);
+});
+
+it('refuses a reply when STA has written no remark on the submission', function () {
+    actingInPortal($this->editor);
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('Reply to STA')
+        ->set('replyBody', 'Unsolicited')->call('reply')->assertForbidden();
+    expect(Comment::count())->toBe(0);
+});
+
+it('limits replies to 10 per user per 10 minutes', function () {
+    Comment::post($this->sub, $this->sta, 'Remark');
+    actingInPortal($this->editor);
+    Notification::fake();
+    $page = livewire(Phase1Entry::class, ['game' => $this->game->id]);
+    foreach (range(1, 10) as $i) {
+        $page->set('replyBody', "Reply {$i}")->call('reply')->assertHasNoErrors();
+    }
+    $page->set('replyBody', 'One too many')->call('reply')->assertHasErrors('replyBody')->assertSee('many replies in a short time');
+    expect(Comment::where('from_association', true)->count())->toBe(10);
+});
+
+it('escapes Markdown in the mailed body so a reply cannot become a link', function () {
+    $c = Comment::post($this->sub, $this->editor, 'See [click](https://evil.example) **now** # x');
+    $html = (string) (new NewComment($c))->toMail($this->sta)->render();
+
+    expect($html)->not->toContain('href="https://evil.example"')->not->toContain('<strong>')
+        ->and($html)->toContain('[click](https://evil.example)');
+});
+
 it('requires a reply body', function () {
     Comment::post($this->sub, $this->sta, 'Remark');
     actingInPortal($this->admin);
@@ -116,11 +154,10 @@ it('keeps another association\'s editor away from the remarks and replies', func
     $intruder = User::factory()->assocEditor($otherAssoc)->create();
     actingInPortal($intruder);
 
-    // Their own phase page shows only their own (empty) thread; replying goes to their own submission only.
+    // Their own phase page shows only their own (empty) thread; with no STA remark there, a reply is refused.
     livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('Secret remark for BJF')
-        ->set('replyBody', 'x')->call('reply');
-    expect(Comment::where('submission_id', $this->sub->id)->count())->toBe(1)
-        ->and(Comment::where('user_id', $intruder->id)->sole()->submission->association_id)->toBe($otherAssoc->id);
+        ->set('replyBody', 'x')->call('reply')->assertForbidden();
+    expect(Comment::count())->toBe(1);
     // Home card: nothing from another association.
     livewire(Home::class)->assertDontSee('Remarks from STA')->assertDontSee('Secret remark for BJF');
     // The other association's phase page is out of reach by URL.
@@ -156,6 +193,15 @@ it('counts unread replies under "Needs your attention" on the admin home', funct
 
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub]);
     livewire(Dashboard::class)->assertDontSee('replies from associations');
+});
+
+it('leaves out the replies item when the replies behind the unread bells were deleted', function () {
+    Comment::post($this->sub, $this->sta, 'Remark');
+    Comment::post($this->sub, $this->editor, 'Reply')->delete();
+    actingInAdmin($this->sta);
+    expect($this->sta->unreadNotifications()->count())->toBe(1);
+
+    livewire(Dashboard::class)->assertOk()->assertDontSee('from associations');
 });
 
 it('sends nothing for a draft game', function () {

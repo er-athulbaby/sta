@@ -21,6 +21,7 @@ use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
@@ -67,7 +68,15 @@ trait HandlesSubmission
         // Tenant isolation: only the portal, only this association's own submission.
         abort_unless(filament()->getId() === 'portal' && $this->submission->association_id === Filament::getTenant()?->getKey()
             && auth()->user()->association_id === $this->submission->association_id, 403);
+        // A reply answers STA: there must be an STA remark on this submission.
+        abort_unless($this->submission->comments()->where('from_association', false)->exists(), 403);
         $this->validate(['replyBody' => ['required', 'string', 'max:5000']], [], ['replyBody' => 'reply']);
+        $key = 'remark-reply:'.auth()->id();
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            throw ValidationException::withMessages(['replyBody' => 'You have sent many replies in a short time. Please try again in '
+                .ceil(RateLimiter::availableIn($key) / 60).' minutes.']);
+        }
+        RateLimiter::hit($key, 600); // 10 replies per user per 10 minutes
         Comment::post($this->submission, auth()->user(), trim($this->replyBody));
         $this->replyBody = '';
         Notification::make()->success()->title('Reply sent to STA')->send();

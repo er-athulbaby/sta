@@ -20,6 +20,11 @@ class NewComment extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    /** A remark or reply deleted before the job runs: drop the job instead of failing it. */
+    public bool $deleteWhenMissingModels = true;
+
+    private ?Submission $loadedSubmission = null;
+
     public function __construct(public Comment $comment) {}
 
     public function via(object $notifiable): array
@@ -38,7 +43,7 @@ class NewComment extends Notification implements ShouldQueue
             ->line($this->comment->from_association
                 ? "{$this->comment->user?->name} of {$s->association->name} replied on their {$phase} entry for {$game}:"
                 : "STA left a remark on {$s->association->name}'s {$phase} entry for {$game}:")
-            ->line($this->comment->body)
+            ->line(self::plainText($this->comment->body))
             ->action($this->comment->from_association ? 'Open submission' : 'Open the phase page', $this->url());
     }
 
@@ -59,9 +64,16 @@ class NewComment extends Notification implements ShouldQueue
         $user->unreadNotifications()->where('type', static::class)->where('data->submission_id', $submissionId)->update(['read_at' => now()]);
     }
 
+    /** Mail lines are Markdown: backslash-escape its syntax so a written body never becomes a link, image or heading. */
+    public static function plainText(string $body): string
+    {
+        return preg_replace('/([\\\\`*_\[\]()#>!])/', '\\\\$1', $body);
+    }
+
+    /** Loaded once per job: title(), url() and toMail() share it. */
     private function submission(): Submission
     {
-        return Submission::withoutGlobalScopes()->with(['game', 'association'])->findOrFail($this->comment->submission_id);
+        return $this->loadedSubmission ??= Submission::withoutGlobalScopes()->with(['game', 'association'])->findOrFail($this->comment->submission_id);
     }
 
     private function title(): string

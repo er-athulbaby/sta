@@ -36,14 +36,15 @@ class Home extends Dashboard
     #[Unexposed]
     public function remarks(): Collection
     {
-        $unread = auth()->user()->unreadNotifications()->where('type', NewComment::class)->get()->pluck('data.comment_id')->filter()->all();
-
-        return Comment::query()->where('from_association', false)
+        $comments = Comment::query()->where('from_association', false)
             // Tenant isolation: only this association's submissions (the submission scope adds the same for association users).
             ->whereHas('submission', fn ($q) => $q->where('association_id', Filament::getTenant()->getKey())
                 ->whereHas('game', fn ($g) => $g->whereNotNull('published_at')))
-            ->with('submission.game')->latest('id')->limit(5)->get()
-            ->map(fn (Comment $c) => ['comment' => $c, 'unread' => in_array($c->id, $unread, true),
-                'url' => Games::phasePage($c->submission->phase)::getUrl(['game' => $c->submission->game_id])]);
+            ->with('submission.game')->latest('id')->limit(5)->get();
+        $unread = $comments->isEmpty() ? [] : auth()->user()->unreadNotifications()->where('type', NewComment::class)
+            ->whereIn('data->comment_id', $comments->modelKeys())->get()->map(fn ($n) => (int) $n->data['comment_id'])->all();
+
+        return $comments->map(fn (Comment $c) => ['comment' => $c, 'unread' => in_array($c->id, $unread, true),
+            'url' => Games::phasePage($c->submission->phase)::getUrl(['game' => $c->submission->game_id])]);
     }
 }
