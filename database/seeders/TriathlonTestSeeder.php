@@ -91,6 +91,10 @@ class TriathlonTestSeeder extends Seeder
     private function placeholderFiles(): void
     {
         $disk = Storage::disk(config('filesystems.private'));
+        // The disk does not throw: check the write, so running as a user without storage access is reported.
+        if (! $disk->put('photos/.write-check', '') || ! $disk->delete('photos/.write-check')) {
+            throw new \RuntimeException('Cannot write to storage/app/private: run this seeder as the web server user (sudo -u www-data …).');
+        }
         $disk->put('photos/triathlon-demo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGPo6OgAAAMEAYFL09IQAAAAAElFTkSuQmCC'));
         $disk->put('scans/triathlon-demo.pdf', "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
     }

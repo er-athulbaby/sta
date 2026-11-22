@@ -161,7 +161,7 @@ it('keeps another association\'s editor away from the remarks and replies', func
     // Home card: nothing from another association.
     livewire(Home::class)->assertDontSee('Remarks from STA')->assertDontSee('Secret remark for BJF');
     // The other association's phase page is out of reach by URL.
-    $this->get("/portal/{$this->assoc->id}/games/{$this->game->id}/phase-1")->assertNotFound();
+    $this->get("/portal/{$this->assoc->id}/games/{$this->game->id}/phase-1")->assertRedirect(); // to their own home, never this association's page
 });
 
 it('refuses a reply from the STA edit page (portal only)', function () {

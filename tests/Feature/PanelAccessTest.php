@@ -16,7 +16,7 @@ it('lets association users into their own portal only', function (string $state)
     $this->actingAs($user)->get("/portal/{$assoc->id}")->assertOk();
 
     $other = Association::factory()->create();
-    expect($this->actingAs($user)->get("/portal/{$other->id}")->status())->toBeIn([403, 404]);
+    $this->actingAs($user)->get("/portal/{$other->id}")->assertRedirect("/portal/{$assoc->id}"); // own home, never the other association
 })->with(['assocAdmin', 'assocEditor']);
 
 it('blocks inactive users from every panel', function () {
