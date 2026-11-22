@@ -17,10 +17,11 @@ final class Recipients
             ->when($role, fn ($q) => $q->where('role', $role))->get();
     }
 
-    /** @return Collection<int, User> */
-    public static function sta(): Collection
+    /** @return Collection<int, User> active Super Admins and STA users holding $permission */
+    public static function sta(StaPermission $permission = StaPermission::ViewSubmissions): Collection
     {
-        return User::query()->where('is_active', true)->whereIn('role', [Role::SuperAdmin, Role::Sta])->get()
-            ->filter(fn (User $u) => $u->isSuperAdmin() || $u->can(StaPermission::ViewSubmissions->value))->values();
+        // withoutGlobalScopes: in the portal, Filament's tenant scope (Members resource) would hide every STA user.
+        return User::withoutGlobalScopes()->where('is_active', true)->whereIn('role', [Role::SuperAdmin, Role::Sta])->get()
+            ->filter(fn (User $u) => $u->isSuperAdmin() || $u->can($permission->value))->values();
     }
 }

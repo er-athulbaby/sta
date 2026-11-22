@@ -7,6 +7,7 @@ use App\Filament\Portal\Auth\EditMyProfile;
 use App\Filament\Portal\Pages\EditAssociationProfile;
 use App\Models\Association;
 use App\Support\InitialsAvatarProvider;
+use Filament\Enums\DatabaseNotificationsPosition;
 use Filament\Enums\ThemeMode;
 use Filament\Enums\UserMenuPosition;
 use Filament\FontProviders\LocalFontProvider;
@@ -39,6 +40,8 @@ class PortalPanelProvider extends PanelProvider
             ->tenantMenu(false) // one association per user: the canvas association block replaces the switcher
             ->passwordReset()
             ->profile(EditMyProfile::class)
+            // Bell for STA remarks (M6), in the menu like the admin panel (no top bar on desktop).
+            ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)
             ->brandName('BOC Sports Entry')
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('3.5rem')

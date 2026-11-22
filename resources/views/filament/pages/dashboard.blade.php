@@ -21,6 +21,7 @@
         'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         'mail' => '<path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/>',
         'flag' => '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+        'reply' => '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
         'invite' => '<circle cx="9" cy="8" r="4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M19 8v6"/><path d="M16 11h6"/>',
     ];
     $bandHead = 'margin: 0; font-family: \'Space Grotesk\', sans-serif; font-size: 19px; font-weight: 600; display: flex; align-items: center; gap: 10px';

@@ -345,6 +345,18 @@ class GameDashboard extends Page
                 $arguments['association'], $arguments['phase'], Carbon::parse($data['deadline'])->format('Y-m-d H:i'), $data['note'] ?? null));
     }
 
+    /** "Remark" in a phase cell: the submission view's Add remark for that association × phase (submission created when missing). */
+    public function remarkAction(): Action
+    {
+        return SubmissionView::remarkAction('remark', function (array $arguments) {
+            abort_unless($this->tablePhases()->contains('phase', (int) ($arguments['phase'] ?? 0)), 404);
+            $a = $this->record->associations()->find($arguments['association'] ?? 0);
+            abort_unless($a, 404);
+
+            return Submission::for($this->record, $a, (int) $arguments['phase']);
+        });
+    }
+
     /** The row's "Remind" (canvas Action column): the Remind pending reminder for one association and the focus phase (an open phase). */
     public function remindOneAction(): Action
     {

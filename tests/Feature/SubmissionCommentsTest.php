@@ -45,7 +45,7 @@ it('words the email with the game, phase and comment', function () {
     $c = Comment::create(['submission_id' => $this->sub->id, 'user_id' => $this->sta->id, 'body' => 'Please upload the passport scans.']);
     $mail = (new NewComment($c))->toMail($this->admin);
 
-    expect($mail->subject)->toBe('New STA comment on Phase 1 for Asian Indoor Games')
+    expect($mail->subject)->toBe('New STA remark on Phase 1 for Asian Indoor Games')
         ->and($mail->introLines)->toContain('Please upload the passport scans.');
 });
 
@@ -61,7 +61,7 @@ it('shows comments read-only on the association\'s phase page, escaped', functio
     actingInPortal($this->admin);
 
     livewire(Phase1Entry::class, ['game' => $this->game->id])
-        ->assertSee('Comments from STA')->assertSee('Please upload the passport scans.')->assertSee('Huda STA')->assertDontSee('Add comment')
+        ->assertSee('Remarks')->assertSee('Please upload the passport scans.')->assertSee('Huda STA')->assertDontSee('Add comment')
         ->assertDontSeeHtml('<b>x</b>');
 });
 

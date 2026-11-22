@@ -8,9 +8,11 @@ use App\Filament\Portal\Pages\Games;
 use App\Jobs\GenerateLongListPdf;
 use App\Jobs\GenerateShortListPdf;
 use App\Models\Association;
+use App\Models\Comment;
 use App\Models\Game;
 use App\Models\GamePhase;
 use App\Models\Submission;
+use App\Notifications\NewComment;
 use App\Services\Phases\PhaseGate;
 use App\Services\Phases\StaleSubmission;
 use App\Services\Phases\SubmissionWorkflow;
@@ -54,6 +56,21 @@ trait HandlesSubmission
         $this->submission = Submission::for($this->gameModel, $tenant, $phase);
         $this->loadPhase();
         $this->refreshLoadedAt();
+        NewComment::markRead(auth()->user(), $this->submission->id);
+    }
+
+    /** The Remarks card's reply box (portal only): association admins and editors answer STA's remarks. */
+    public string $replyBody = '';
+
+    public function reply(): void
+    {
+        // Tenant isolation: only the portal, only this association's own submission.
+        abort_unless(filament()->getId() === 'portal' && $this->submission->association_id === Filament::getTenant()?->getKey()
+            && auth()->user()->association_id === $this->submission->association_id, 403);
+        $this->validate(['replyBody' => ['required', 'string', 'max:5000']], [], ['replyBody' => 'reply']);
+        Comment::post($this->submission, auth()->user(), trim($this->replyBody));
+        $this->replyBody = '';
+        Notification::make()->success()->title('Reply sent to STA')->send();
     }
 
     /** Spec 17: phase pages wear their phase colour; sta-canvas-page drops Filament's header and content spacing. */

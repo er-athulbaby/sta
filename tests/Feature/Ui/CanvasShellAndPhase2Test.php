@@ -178,11 +178,11 @@ it('draws the comments card only when STA has commented', function () {
     $editor = User::factory()->assocEditor($this->assoc)->create();
     actingInPortal($editor);
 
-    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('Comments from STA')->assertDontSee('No comments.');
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertDontSee('Reply to STA')->assertDontSee('No comments.');
 
     Comment::create(['submission_id' => Submission::for($this->game, $this->assoc, 1)->id,
         'user_id' => User::factory()->superAdmin()->create()->id, 'body' => 'Check the weights.']);
-    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertSee('Comments from STA')->assertSee('Check the weights.');
+    livewire(Phase1Entry::class, ['game' => $this->game->id])->assertSee('Remarks')->assertSee('Check the weights.');
 });
 
 it('disables − at 0 and clears the over-limit alert when back within limits', function () {

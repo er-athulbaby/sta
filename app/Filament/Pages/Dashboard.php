@@ -10,10 +10,12 @@ use App\Filament\Resources\Associations\AssociationResource;
 use App\Filament\Resources\Associations\Tables\AssociationsTable;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\Association;
+use App\Models\Comment;
 use App\Models\Game;
 use App\Models\GamePhase;
 use App\Models\Invitation;
 use App\Models\User;
+use App\Notifications\NewComment;
 use App\Services\Reports\Builder\Subjects\People;
 use App\Support\GameProgress;
 use App\Support\Sta;
@@ -90,7 +92,7 @@ class Dashboard extends BaseDashboard
 
     /**
      * "Needs your attention": deadlines in the next 7 days, associations that have not submitted, flagged entries and pending
-     * invitations. ("Comments awaiting your reply" is left out: comments go one way, STA to associations.)
+     * invitations, and (M6) unread replies from associations to STA remarks.
      *
      * @return list<array{icon: string, tone: string, title: string, text: string, pill: ?string, url: ?string, link: ?string, remind: ?int}>
      */
@@ -143,6 +145,18 @@ class Dashboard extends BaseDashboard
                 'title' => $n.' '.str('entry')->plural($n).' '.($g['phase']->phase === 3 ? ($n === 1 ? 'differs' : 'differ').' from Phase 2' : 'over the event limit'),
                 'text' => $prefix($g).$flags->map(fn ($f) => $f['code'].' ('.$f['n'].')')->implode(', '),
                 'pill' => 'Allowed but flagged', 'url' => $dashboard($g['game']), 'link' => 'Review', 'remind' => null];
+        }
+
+        // Replies from associations (M6): the user's unread reply bells; opening the submission marks them read.
+        if ($this->allowed(StaPermission::EditSubmissions)
+            && ($replies = auth()->user()->unreadNotifications()->where('type', NewComment::class)->get())->isNotEmpty()) {
+            $n = $replies->count();
+            $latest = Comment::with('submission.association', 'submission.game')->whereIn('id', $replies->pluck('data.comment_id')->filter())->latest('id')->get();
+            $first = $latest->first();
+            $items[] = ['icon' => 'reply', 'tone' => 'none', 'title' => $n.' '.str('reply')->plural($n).' from associations',
+                'text' => $latest->map(fn (Comment $c) => $c->submission->association->name)->unique()->take(3)->implode(' · '),
+                'pill' => null, 'url' => $first ? GameResource::getUrl('submission', ['record' => $first->submission->game_id, 'submission' => $first->submission_id]) : null,
+                'link' => 'Open', 'remind' => null];
         }
 
         if ($this->allowed(StaPermission::ManageAssociations) && ($n = Invitation::pending()->count())) {

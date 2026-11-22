@@ -5,12 +5,12 @@ namespace App\Filament\Resources\Games\Pages;
 use App\Enums\StaPermission;
 use App\Enums\SubmissionStatus;
 use App\Filament\Resources\Games\GameResource;
+use App\Models\Comment;
 use App\Models\GamePhase;
 use App\Models\Phase2SportTotal;
 use App\Models\Submission;
 use App\Notifications\NewComment;
 use App\Services\Phases\LongListChecks;
-use App\Services\Phases\Recipients;
 use App\Services\Phases\ShortListChecks;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -19,7 +19,6 @@ use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Spatie\Activitylog\Models\Activity;
 
 class SubmissionView extends Page
@@ -43,6 +42,7 @@ class SubmissionView extends Page
         $this->record = $this->resolveRecord($record);
         $this->submission = Submission::withoutGlobalScopes()->where('game_id', $this->record->getKey())
             ->findOrFail($submission instanceof Submission ? $submission->getKey() : $submission);
+        NewComment::markRead(auth()->user(), $this->submission->id);
     }
 
     public function getPageClasses(): array
@@ -113,23 +113,33 @@ class SubmissionView extends Page
         return Activity::where('log_name', 'submission-'.$this->submission->id)->with('causer')->latest('id')->limit(200)->get();
     }
 
+    /**
+     * STA "Add remark" (edit_submissions), here and on the game dashboard's phase cells. $submission(array $arguments)
+     * resolves the submission; a published game's association gets a bell and an email.
+     */
+    public static function remarkAction(string $name, \Closure $submission): Action
+    {
+        $allowed = fn () => (bool) auth()->user()->can(StaPermission::EditSubmissions->value);
+
+        return Action::make($name)->label('Add remark')
+            ->visible($allowed)
+            ->schema([Textarea::make('body')->label('Remark (the association is notified by bell and email)')->required()->rows(4)->maxLength(5000)])
+            ->modalSubmitActionLabel('Send remark')
+            ->action(function (array $data, array $arguments) use ($submission, $allowed) {
+                abort_unless($allowed(), 403);
+                $s = $submission($arguments);
+                Comment::post($s, auth()->user(), $data['body']);
+                Notification::make()->success()->title($s->game->isPublished() ? 'Remark sent to the association' : 'Remark saved (not sent: the game is still a draft)')->send();
+            });
+    }
+
     protected function getHeaderActions(): array
     {
         return [
             Action::make('edit')->label('Edit as STA')
                 ->visible(fn () => auth()->user()->can(StaPermission::EditSubmissions->value) && in_array($this->submission->phase, [1, 2, 3, 4], true))
                 ->url(fn () => GameResource::getUrl('submission-edit-'.$this->submission->phase, ['record' => $this->record, 'submission' => $this->submission])),
-            Action::make('comment')->label('Add comment')
-                ->visible(fn () => (bool) auth()->user()->can(StaPermission::EditSubmissions->value))
-                ->schema([Textarea::make('body')->label('Comment (emailed to the association)')->required()->rows(4)->maxLength(5000)])
-                ->action(function (array $data) {
-                    $comment = $this->submission->comments()->create(['user_id' => auth()->id(), 'body' => $data['body']]);
-                    $published = $this->record->isPublished();
-                    if ($published) {
-                        NotificationFacade::send(Recipients::association($this->submission->association), new NewComment($comment));
-                    }
-                    Notification::make()->success()->title($published ? 'Comment added and emailed to the association' : 'Comment added (not emailed: the game is still a draft)')->send();
-                }),
+            self::remarkAction('comment', fn () => $this->submission),
         ];
     }
 }

@@ -136,6 +136,7 @@
                                             @else
                                                 <button type="button" wire:click="editAsSta({{ $a->id }}, {{ $p->phase }})" aria-label="Edit as STA {{ $a->name }} Phase {{ $p->phase }}" style="{{ $linkBtn }}">Edit as STA</button>
                                             @endif
+                                            <button type="button" wire:click="mountAction('remark', { association: {{ $a->id }}, phase: {{ $p->phase }} })" aria-label="Remark to {{ $a->name }} on Phase {{ $p->phase }}" style="{{ $linkBtn }}">Remark</button>
                                         @endif
                                     </div>
                                     @if ($s?->deadline_override)

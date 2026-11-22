@@ -35,6 +35,12 @@ class Games extends Page
         return ['sta-canvas-page'];
     }
 
+    /** @return class-string<Page>|null the portal page of a phase */
+    public static function phasePage(int $phase): ?string
+    {
+        return [1 => Phase1Entry::class, 2 => Phase2Entry::class, 3 => Phase3Entry::class, 4 => Phase4Entry::class][$phase] ?? null;
+    }
+
     /** @return Collection<int, array{game: Game, rows: Collection}> */
     public function getGamesProperty(): Collection
     {
@@ -53,13 +59,7 @@ class Games extends Page
         return $games
             ->map(fn (Game $g) => ['game' => $g, 'rows' => $g->phases->where('enabled', true)->sortBy('phase')->map(function (GamePhase $p) use ($g, $subs) {
                 $sub = $subs->get($g->id.'-'.$p->phase);
-                $page = match ($p->phase) {
-                    1 => Phase1Entry::class,
-                    2 => Phase2Entry::class,
-                    3 => Phase3Entry::class,
-                    4 => Phase4Entry::class,
-                    default => null,
-                };
+                $page = static::phasePage($p->phase);
 
                 $deadline = $p->effectiveDeadline($sub);
                 $before = $g->phases->where('enabled', true)->where('phase', '<', $p->phase)->sortBy('phase')->last();

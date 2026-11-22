@@ -79,7 +79,7 @@ class Submission extends Model
     /** @return Collection<int, Comment> newest first, author loaded */
     public function commentsNewestFirst(): Collection
     {
-        return $this->comments()->with('user')->latest('id')->get();
+        return $this->comments()->with('user.association')->latest('id')->get();
     }
 
     public function gamePhase(): GamePhase

@@ -1,4 +1,22 @@
 <x-filament-panels::page>
+    {{-- Home only (M6): the latest STA remarks, unread ones marked; each opens its phase page (where the association replies). --}}
+    @if ($this instanceof \App\Filament\Portal\Pages\Home && ($remarks = $this->remarks())->isNotEmpty())
+        @php $unread = $remarks->where('unread', true)->count(); @endphp
+        <x-sta.card heading="Remarks from STA" :description="$unread ? $unread.' unread' : 'Latest remarks'">
+            <ul class="sta-list">
+                @foreach ($remarks as $r)
+                    @php $s = $r['comment']->submission; @endphp
+                    <li wire:key="remark-{{ $r['comment']->id }}" class="sta-list-item">
+                        <div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                            <span style="font-weight: 600">{{ $s->game->name }} · Phase {{ $s->phase }} {{ \App\Models\GamePhase::NAMES[$s->phase] }}@if ($r['unread']) <x-sta.pill status="warn">New</x-sta.pill>@endif</span>
+                            <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ \Illuminate\Support\Str::limit($r['comment']->body, 160) }} · {{ $r['comment']->created_at->timezone('Asia/Bahrain')->format('j M Y H:i') }}</span>
+                        </div>
+                        <a href="{{ $r['url'] }}" aria-label="Open remark on {{ $s->game->name }} Phase {{ $s->phase }}" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600">Open</a>
+                    </li>
+                @endforeach
+            </ul>
+        </x-sta.card>
+    @endif
     {{-- No portal canvas screen: one card per game with the Main.dc.html phase cards (chip + status pill, name, meta; the open phase ringed). --}}
     @forelse ($this->games as $item)
         @php
