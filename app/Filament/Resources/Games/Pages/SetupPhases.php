@@ -20,6 +20,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Validation\ValidationException;
 
@@ -43,6 +44,8 @@ class SetupPhases extends Page
     ];
 
     protected string $view = 'filament.resources.games.setup.phases';
+
+    public const CLOSE_HINT = 'Associations can no longer edit after closing, except any re-opened individually (until their own deadline).';
 
     /** Every phase edit is saved at once; there is nothing pending to save. */
     public function save(): void {}
@@ -94,7 +97,7 @@ class SetupPhases extends Page
     public function button(GamePhase $p): array
     {
         if ($p->status === PhaseStatus::Open) {
-            return ['label' => 'Close phase', 'hint' => 'Associations can no longer edit after closing', 'disabled' => false, 'kind' => 'danger'];
+            return ['label' => 'Close phase', 'hint' => self::CLOSE_HINT, 'disabled' => false, 'kind' => 'danger'];
         }
         // Several phases may be open at once (M6): each phase opens and closes on its own.
         $reason = match (true) {
@@ -179,6 +182,14 @@ class SetupPhases extends Page
             ->with('association')->orderBy('phase')->get()->sortBy(fn ($s) => $s->association->name)->values();
     }
 
+    /** @return Collection<int, string> names of the associations a phase is re-opened for individually (still before their own deadline) */
+    #[Unexposed]
+    public function reopenedAssociations(int $phase): Collection
+    {
+        return Submission::withoutGlobalScopes()->where(['game_id' => $this->record->id, 'phase' => $phase, 'deadline_change' => 'reopened'])
+            ->where('deadline_override', '>', now())->with('association')->get()->map(fn ($s) => $s->association->name)->sort()->values();
+    }
+
     public function openPhaseAction(): Action
     {
         return Action::make('openPhase')->requiresConfirmation()
@@ -199,6 +210,11 @@ class SetupPhases extends Page
     public function closePhaseAction(): Action
     {
         return Action::make('closePhase')->requiresConfirmation()->color('danger')
+            ->modalDescription(function (array $arguments) {
+                $names = $this->reopenedAssociations((int) ($arguments['phase'] ?? 0));
+
+                return self::CLOSE_HINT.($names->isEmpty() ? '' : ' Still open for '.$names->count().' re-opened: '.$names->implode(', ').'.');
+            })
             ->action(function (array $arguments) {
                 $r = $this->record->phase((int) $arguments['phase']);
                 if ($r->status === PhaseStatus::Open) {
@@ -223,11 +239,14 @@ class SetupPhases extends Page
                 $a = $this->record->associations()->find($data['association']);
                 abort_unless($a && $this->record->phases()->where('enabled', true)->where('phase', $data['phase'])->exists(), 404);
                 $reopen = $data['type'] === 'reopen';
-                $s = Submission::for($this->record, $a, (int) $data['phase']);
                 $when = Carbon::parse($data['deadline'], self::TZ);
+                $note = $data['note'] ?? null;
                 try {
-                    $note = $data['note'] ?? null;
-                    $reopen ? app(SubmissionWorkflow::class)->reopen($s, auth()->user(), $when, $note) : app(SubmissionWorkflow::class)->extend($s, auth()->user(), $when, $note);
+                    // One transaction: a refused change leaves no empty submission behind.
+                    DB::transaction(function () use ($a, $data, $reopen, $when, $note) {
+                        $s = Submission::for($this->record, $a, (int) $data['phase']);
+                        $reopen ? app(SubmissionWorkflow::class)->reopen($s, auth()->user(), $when, $note) : app(SubmissionWorkflow::class)->extend($s, auth()->user(), $when, $note);
+                    });
                 } catch (ValidationException $e) {
                     Notification::make()->danger()->title(collect($e->errors())->flatten()->first())->send();
                 }

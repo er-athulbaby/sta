@@ -23,6 +23,7 @@ use Filament\Resources\Pages\Page;
 use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use OpenSpout\Writer\XLSX\Writer;
@@ -314,10 +315,11 @@ class GameDashboard extends Page
             Submission::for($this->record, $a, $phase), auth()->user(), $deadline ? Carbon::parse($deadline, 'Asia/Bahrain') : null, $note));
     }
 
+    /** Runs a workflow step in a transaction, so a refused step leaves no empty submission created for it. */
     private function guarded(callable $fn): void
     {
         try {
-            $fn();
+            DB::transaction($fn);
         } catch (ValidationException $e) {
             Notification::make()->danger()->title(collect($e->errors())->flatten()->first())->send();
         }

@@ -21,7 +21,12 @@ class SendPhaseReminders extends Command
     {
         $today = now()->startOfDay(); // app time zone is Asia/Bahrain
         $sent = 0;
-        GamePhase::query()->where('enabled', true)->whereIn('status', [PhaseStatus::Open, PhaseStatus::Closed])->whereNotNull('deadline')
+        GamePhase::query()->where('enabled', true)->whereNotNull('deadline')
+            // Closed phases only when re-opened for an association whose own deadline is still ahead (M6).
+            ->where(fn ($q) => $q->where('status', PhaseStatus::Open)->orWhere(fn ($q) => $q->where('status', PhaseStatus::Closed)
+                ->whereExists(fn ($e) => $e->from('submissions')->whereColumn('submissions.game_id', 'game_phases.game_id')
+                    ->whereColumn('submissions.phase', 'game_phases.phase')->where('submissions.deadline_change', 'reopened')
+                    ->where('submissions.deadline_override', '>', now()))))
             ->whereHas('game', fn ($q) => $q->whereNotNull('published_at'))
             ->with('game.associations')->each(function (GamePhase $phase) use ($today, &$sent) {
                 foreach ($phase->game->associations as $association) {

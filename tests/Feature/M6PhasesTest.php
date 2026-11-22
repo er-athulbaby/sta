@@ -8,6 +8,7 @@ use App\Filament\Portal\Pages\Games;
 use App\Filament\Portal\Pages\Phase2Entry;
 use App\Filament\Resources\Games\GameResource;
 use App\Filament\Resources\Games\Pages\GameDashboard;
+use App\Filament\Resources\Games\Pages\SetupPhases;
 use App\Models\Association;
 use App\Models\Game;
 use App\Models\Submission;
@@ -15,7 +16,9 @@ use App\Models\User;
 use App\Notifications\DeadlineChanged;
 use App\Notifications\PhaseReminder;
 use App\Services\Phases\PhaseGate;
+use App\Services\Phases\SubmissionWorkflow;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 
 use function Pest\Livewire\livewire;
 
@@ -117,6 +120,7 @@ it('re-opens a submitted entry of a closed phase while other phases are open', f
 it('still refuses to re-open a draft in an open phase (extend it instead)', function () {
     m6Dashboard($this->game)->call('reopen', $this->late->id, 3, now()->addDays(5)->format('Y-m-d H:i'))
         ->assertNotified('This entry is not submitted, so there is nothing to re-open.');
+    expect(Submission::withoutGlobalScopes()->where(['association_id' => $this->late->id, 'phase' => 3])->exists())->toBeFalse();
 });
 
 it('sends reminders for a closed phase only to the association it was re-opened for', function () {
@@ -165,4 +169,58 @@ it('refuses Edit as STA for a phase that is off or not opened, and for an uninvi
     $other = Association::factory()->create();
     m6Dashboard($this->game)->call('editAsSta', $this->late->id, 1)->assertNotFound();
     m6Dashboard($this->game)->call('editAsSta', $other->id, 3)->assertNotFound();
+});
+
+// Fix round 1.
+it('keeps a re-opened entry editable when STA closes the phase, and says so', function () {
+    m6Dashboard($this->game)->call('reopen', $this->done->id, 4, now()->addDays(6)->format('Y-m-d H:i'));
+    $s = Submission::withoutGlobalScopes()->where(['association_id' => $this->done->id, 'phase' => 4])->sole();
+
+    $page = livewire(SetupPhases::class, ['record' => $this->game->getRouteKey()])->assertSee(SetupPhases::CLOSE_HINT);
+    expect($page->instance()->reopenedAssociations(4)->all())->toBe(['Done Fed']);
+    $page->mountAction('closePhase', ['phase' => 4])->assertMountedActionModalSee('Still open for 1 re-opened: Done Fed.')->callMountedAction();
+
+    expect($this->game->phase(4)->fresh()->status)->toBe(PhaseStatus::Closed)
+        ->and(app(PhaseGate::class)->canEdit($s->fresh()))->toBeTrue()
+        ->and(app(PhaseGate::class)->denialReason(Submission::for($this->game, $this->late, 4)))->toBe('This phase is closed.');
+});
+
+it('refuses to extend an entry in a closed phase that was not re-opened, leaving no row', function () {
+    m6Dashboard($this->game)->call('extend', $this->late->id, 2, now()->addDays(5)->format('Y-m-d H:i'))
+        ->assertNotified('This phase is closed: re-open it for this association instead.');
+    expect(Submission::withoutGlobalScopes()->where(['association_id' => $this->late->id, 'phase' => 2])->exists())->toBeFalse();
+});
+
+it('keeps an extended re-open a re-open, also after the phase closes', function () {
+    m6Dashboard($this->game)->call('reopen', $this->done->id, 4, now()->addDays(2)->format('Y-m-d H:i'))
+        ->call('extend', $this->done->id, 4, now()->addDays(4)->format('Y-m-d H:i'));
+    $s = Submission::withoutGlobalScopes()->where(['association_id' => $this->done->id, 'phase' => 4])->sole();
+    expect($s->deadline_change)->toBe('reopened');
+    $this->game->phase(4)->update(['status' => PhaseStatus::Closed]);
+    expect(app(PhaseGate::class)->canEdit($s->fresh()))->toBeTrue();
+});
+
+it('lets the association admin approve or return an awaiting entry in a phase re-opened for them', function () {
+    $editor = User::factory()->assocEditor($this->late)->create();
+    m6Dashboard($this->game)->call('reopen', $this->late->id, 2, now()->addDays(5)->format('Y-m-d H:i'));
+    $s = Submission::withoutGlobalScopes()->where(['association_id' => $this->late->id, 'phase' => 2])->sole();
+    $s->update(['status' => SubmissionStatus::AwaitingAssocAdmin, 'submitted_by' => $editor->id]);
+
+    app(SubmissionWorkflow::class)->returnToDraft($s->fresh(), $this->lateAdmin);
+    expect($s->fresh()->status)->toBe(SubmissionStatus::Draft);
+
+    $s->refresh()->update(['status' => SubmissionStatus::AwaitingAssocAdmin]);
+    app(SubmissionWorkflow::class)->approve($s->fresh(), $this->lateAdmin);
+    expect($s->fresh()->status)->toBe(SubmissionStatus::Submitted);
+
+    // Another association's awaiting entry in the same closed phase is refused.
+    $other = Submission::for($this->game, $this->done, 2);
+    $other->update(['status' => SubmissionStatus::AwaitingAssocAdmin]);
+    expect(fn () => app(SubmissionWorkflow::class)->approve($other->fresh(), $this->doneAdmin))->toThrow(ValidationException::class, 'This phase is closed.');
+});
+
+it('refuses Edit as STA for an enabled phase that was never opened', function () {
+    $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Draft, 'deadline' => now()->addDays(9)]);
+    m6Dashboard($this->game)->assertDontSeeHtml('aria-label="Edit as STA Late Fed Phase 1"')->call('editAsSta', $this->late->id, 1)->assertNotFound();
+    expect(Submission::withoutGlobalScopes()->where(['association_id' => $this->late->id, 'phase' => 1])->exists())->toBeFalse();
 });

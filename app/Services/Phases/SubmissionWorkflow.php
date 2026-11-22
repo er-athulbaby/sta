@@ -100,7 +100,12 @@ final class SubmissionWorkflow
         if ($s->status === SubmissionStatus::Submitted) {
             $this->fail('This entry is already submitted — re-open it to change the deadline.');
         }
-        $this->change($s, ['deadline_override' => $deadline, 'deadline_change' => $s->gamePhase()->isReopenedFor($s) ? 'reopened' : 'extended', 'deadline_note' => filled($note) ? $note : null]);
+        if ($s->gamePhase()->status === PhaseStatus::Closed && ! $s->gamePhase()->isReopenedFor($s)) {
+            $this->fail('This phase is closed: re-open it for this association instead.');
+        }
+        // An extended re-open stays a re-open, so closing the phase treats it like any other re-open.
+        $this->change($s, ['deadline_override' => $deadline, 'deadline_change' => $s->deadline_change === 'reopened' ? 'reopened' : 'extended',
+            'deadline_note' => filled($note) ? $note : null]);
         $this->notifyDeadline($s, new DeadlineChanged($s, reopened: false));
 
         return $s;
