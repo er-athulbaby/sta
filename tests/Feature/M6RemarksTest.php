@@ -36,7 +36,7 @@ beforeEach(function () {
 it('sends an STA remark from the game dashboard cell to the association by bell and email', function () {
     actingInAdmin($this->sta);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
-        ->assertSee('Remark to Bahrain Judo Federation on Phase 1')
+        ->assertSee('Send remark')->assertSee("mountAction('remark', { association: {$this->assoc->id}, phase: 1 })")
         ->callAction('remark', ['body' => 'Please check <b>weights</b>.'], ['association' => $this->assoc->id, 'phase' => 1])
         ->assertHasNoActionErrors();
 
@@ -77,7 +77,7 @@ it('creates the submission when a remark is sent to an association that has not 
 it('hides the dashboard Remark without edit_submissions', function () {
     actingInAdmin($this->viewer);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
-        ->assertDontSee('Remark to Bahrain Judo Federation')->assertActionHidden('remark');
+        ->assertDontSee('Send remark')->assertActionHidden('remark');
 });
 
 it('lets an association editor reply on the phase page; STA with edit_submissions and Super Admins get bell + email', function () {

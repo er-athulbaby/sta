@@ -417,6 +417,16 @@
 .sta-pill-female { background: var(--sta-bg-pink-100, #FCE7F3); color: var(--sta-fg-pink-800, #9D174D); }
 .sta-pill-mixed { background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-text-3); }
 
+/* Game dashboard phase cell: the status pill (a link to the entry when there is one) and the "⋯" Actions menu. */
+.sta-cell { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-width: 152px; white-space: nowrap; }
+.sta-cell-pill { display: inline-flex; align-items: center; min-height: var(--sta-target); text-decoration: none; border-radius: 999px; }
+a.sta-cell-pill:hover .sta-pill { text-decoration: underline; }
+.sta-cell-menu { display: inline-flex; align-items: center; justify-content: center; width: var(--sta-target); height: var(--sta-target); border: 0; border-radius: var(--sta-radius-ctl); background: transparent; color: var(--sta-text-3); cursor: pointer; }
+.sta-cell-menu:hover, .sta-cell-menu[aria-expanded="true"] { background: var(--sta-bg-subtle, #F1F5F9); }
+a.sta-cell-pill:focus-visible, .sta-cell-menu:focus-visible { outline: 2px solid var(--sta-primary); outline-offset: 2px; }
+.sta-cell-dropdown { min-width: 12rem; }
+.sta-cell-dropdown .fi-dropdown-list-item { min-height: var(--sta-target); }
+
 .sta-ph-1 { --ph-bg: var(--sta-bg-sky-100, #E0F2FE); --ph-fg: var(--sta-fg-sky-800, #075985); --ph-dot: var(--sta-bg-sky-700, #0369A1); --ph-tint: var(--sta-bg-sky-50, #F0F9FF); --ph-border: var(--sta-bd-sky-200, #BAE6FD); }
 .sta-ph-2 { --ph-bg: var(--sta-bg-teal-100, #CCFBF1); --ph-fg: var(--sta-fg-teal-800, #115E59); --ph-dot: var(--sta-bg-teal-700, #0F766E); --ph-tint: var(--sta-bg-teal-50, #F0FDFA); --ph-border: var(--sta-bd-teal-200, #99F6E4); }
 .sta-ph-3 { --ph-bg: var(--sta-bg-amber-100, #FEF3C7); --ph-fg: var(--sta-fg-amber-800, #92400E); --ph-dot: var(--sta-bg-amber-700, #B45309); --ph-tint: var(--sta-bg-amber-50, #FFFBEB); --ph-border: var(--sta-bd-amber-200, #FDE68A); }

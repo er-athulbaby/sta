@@ -74,8 +74,9 @@ it('shows every open phase on the admin home and an attention item for each', fu
 
 it('re-opens a closed phase for one association that never started it, while other phases are open', function () {
     $deadline = now()->addDays(5)->format('Y-m-d H:i');
-    m6Dashboard($this->game)->assertSeeHtml('aria-label="Re-open Late Fed Phase 2"')
-        ->call('reopen', $this->late->id, 2, $deadline, 'Late registration');
+    $page = m6Dashboard($this->game)->assertSeeHtml('aria-label="Actions for Late Fed Phase 2"');
+    expect(cellMenuLabels($page, $this->late, 2))->toContain('Re-open')->not->toContain('Extend deadline');
+    $page->call('reopen', $this->late->id, 2, $deadline, 'Late registration');
 
     $s = Submission::withoutGlobalScopes()->where(['association_id' => $this->late->id, 'phase' => 2])->sole();
     expect($s->status)->toBe(SubmissionStatus::Draft)->and($s->deadline_change)->toBe('reopened')
@@ -85,7 +86,8 @@ it('re-opens a closed phase for one association that never started it, while oth
         ->and(app(PhaseGate::class)->denialReason(Submission::for($this->game, $this->done, 2)))->toBe('This phase is closed.');
     Notification::assertSentTo($this->lateAdmin, DeadlineChanged::class);
 
-    m6Dashboard($this->game)->assertSee('Re-opened for them · deadline')->assertSeeHtml('aria-label="Extend Late Fed Phase 2"');
+    $page = m6Dashboard($this->game)->assertSee('Re-opened · until '.now()->addDays(5)->format('j M Y H:i'));
+    expect(cellMenuLabels($page, $this->late, 2))->toContain('Extend deadline')->not->toContain('Re-open');
 
     // The association sees the phase open (only for them) and can edit it.
     actingInPortal($this->lateAdmin);
@@ -111,8 +113,9 @@ it('closes the re-opened phase again for that association at its own deadline', 
 });
 
 it('re-opens a submitted entry of a closed phase while other phases are open', function () {
-    m6Dashboard($this->game)->assertSeeHtml('aria-label="Re-open Done Fed Phase 2"')
-        ->call('reopen', $this->done->id, 2, now()->addDays(5)->format('Y-m-d H:i'));
+    $page = m6Dashboard($this->game);
+    expect(cellMenuLabels($page, $this->done, 2))->toContain('Re-open');
+    $page->call('reopen', $this->done->id, 2, now()->addDays(5)->format('Y-m-d H:i'));
     $s = Submission::withoutGlobalScopes()->where(['association_id' => $this->done->id, 'phase' => 2])->sole();
     expect($s->status)->toBe(SubmissionStatus::Draft)->and(app(PhaseGate::class)->canEdit($s))->toBeTrue();
 });
@@ -139,8 +142,9 @@ it('shows Edit as STA in every phase cell, linking existing submissions and crea
     $done2 = Submission::for($this->game, $this->done, 2);
     $page = m6Dashboard($this->game);
     foreach ([2, 3, 4] as $p) {
-        $page->assertSeeHtml('aria-label="Edit as STA Late Fed Phase '.$p.'"')->assertSeeHtml('aria-label="Edit as STA Done Fed Phase '.$p.'"');
+        expect(cellMenuLabels($page, $this->late, $p))->toContain('Edit as STA')->and(cellMenuLabels($page, $this->done, $p))->toContain('Edit as STA');
     }
+    $page->assertSeeHtml('wire:click="editAsSta('.$this->late->id.', 3)"');
     $page->assertSeeHtml(e(GameResource::getUrl('submission-edit-2', ['record' => $this->game, 'submission' => $done2])));
 
     foreach ([2, 3, 4] as $p) {
@@ -155,7 +159,7 @@ it('shows Edit as STA in every phase cell, linking existing submissions and crea
 
 it('works for Phase 1 too and hides Edit as STA without edit_submissions', function () {
     $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->subDays(9)]);
-    m6Dashboard($this->game)->assertSeeHtml('aria-label="Edit as STA Late Fed Phase 1"')->call('editAsSta', $this->late->id, 1)
+    m6Dashboard($this->game)->assertSeeHtml('wire:click="editAsSta('.$this->late->id.', 1)"')->call('editAsSta', $this->late->id, 1)
         ->assertRedirect(GameResource::getUrl('submission-edit-1', ['record' => $this->game, 'submission' => Submission::for($this->game, $this->late, 1)]));
 
     $viewer = User::factory()->sta()->create();
@@ -221,6 +225,6 @@ it('lets the association admin approve or return an awaiting entry in a phase re
 
 it('refuses Edit as STA for an enabled phase that was never opened', function () {
     $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Draft, 'deadline' => now()->addDays(9)]);
-    m6Dashboard($this->game)->assertDontSeeHtml('aria-label="Edit as STA Late Fed Phase 1"')->call('editAsSta', $this->late->id, 1)->assertNotFound();
+    m6Dashboard($this->game)->assertDontSeeHtml('wire:click="editAsSta('.$this->late->id.', 1)"')->call('editAsSta', $this->late->id, 1)->assertNotFound();
     expect(Submission::withoutGlobalScopes()->where(['association_id' => $this->late->id, 'phase' => 1])->exists())->toBeFalse();
 });

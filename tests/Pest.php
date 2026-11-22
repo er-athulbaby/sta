@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Association;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Filament\Facades\Filament;
@@ -69,4 +70,12 @@ function actingInPortal(User $user): User
     Filament::bootCurrentPanel();
 
     return $user;
+}
+
+/** The labels of a game dashboard phase cell's "⋯" Actions menu, in order. */
+function cellMenuLabels($page, Association $a, int $phase): array
+{
+    $dashboard = $page->instance();
+
+    return array_column($dashboard->cellMenu($a, $dashboard->getRecord()->phase($phase)), 'label');
 }

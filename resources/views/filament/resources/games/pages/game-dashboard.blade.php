@@ -10,10 +10,7 @@
         $counts = $focus ? $progress->counts($focus->phase) : null;
         $rows = $this->rows();
         $tally = $this->tally();
-        $canManage = $this->canManage();
-        $canEditSubs = $this->canEditSubmissions();
         $canRemind = $this->canRemind() && $focus?->status === \App\Enums\PhaseStatus::Open;
-        $pdfNames = [1 => 'Entry by Sport', 2 => 'Entry by Event', 3 => 'Long List', 4 => 'Short List'];
         $link = 'display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600';
         $linkBtn = $link.'; padding: 0; border: 0; background: transparent; color: var(--sta-fg-brand, #1F3A5F); cursor: pointer; font-family: Inter, sans-serif';
         $th = 'padding: 12px 12px; font-weight: 600; white-space: nowrap';
@@ -91,7 +88,7 @@
                             $remindable = $canRemind && ! in_array($focusStatus, ['submitted', 'awaiting'], true) && ! $progress->started($a, $focus->phase);
                         @endphp
                         <tr wire:key="row-{{ $a->id }}" style="border-top: 1px solid var(--sta-bd-row, #EEF2F6)">
-                            <td style="padding: 14px 20px">
+                            <td style="padding: 8px 20px">
                                 <div style="display: flex; align-items: center; gap: 12px">
                                     @if ($a->logo_path)
                                         <span style="display: inline-flex; width: 54px; height: 34px; flex-shrink: 0; box-sizing: border-box; padding: 3px; border-radius: 8px; background: var(--sta-bg-logo, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); align-items: center; justify-content: center"><img src="{{ \App\Filament\Shared\AttachmentActions::url($a->logo_path) }}" alt="{{ $a->name }} logo" loading="lazy" style="width: 100%; height: 100%; object-fit: contain" /></span>
@@ -108,45 +105,46 @@
                                 @php
                                     $c = $this->cell($a, $p->phase);
                                     $s = $c['submission'];
-                                    $pdfs = $c['status'] === 'submitted' ? $this->pdfLinks($s) : [];
-                                    $reopenedForThem = $p->isReopenedFor($s);
-                                    $closed = $p->status === \App\Enums\PhaseStatus::Closed;
+                                    $menu = collect($this->cellMenu($a, $p))->chunkWhile(fn ($item) => ! ($item['divider'] ?? false));
+                                    $note = $this->cellNote($a, $p);
                                 @endphp
-                                <td wire:key="cell-{{ $a->id }}-{{ $p->phase }}" style="padding: 14px 12px">
-                                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; white-space: nowrap">
-                                        <x-sta.pill :status="Sta::cellPill($c['status'])" :title="$c['status'] === 'submitted' ? $s->reference_no : null">{{ $c['label'] }}</x-sta.pill>
-                                        @foreach ($pdfs as $pdf)
-                                            <a href="{{ $pdf['url'] }}" target="_blank" rel="noopener" aria-label="View {{ $pdfNames[$p->phase] }} PDF{{ count($pdfs) > 1 ? ' ('.$pdf['name'].')' : '' }}" style="{{ $link }}">View PDF</a>
-                                        @endforeach
-                                        @if ($s && ! $focus?->is($p))
-                                            <a href="{{ GameResource::getUrl('submission', ['record' => $record, 'submission' => $s]) }}" aria-label="View {{ $a->name }} Phase {{ $p->phase }}" style="{{ $link }}">View</a>
+                                <td wire:key="cell-{{ $a->id }}-{{ $p->phase }}" style="padding: 6px 12px">
+                                    <div class="sta-cell">
+                                        @if ($s)
+                                            <a href="{{ GameResource::getUrl('submission', ['record' => $record, 'submission' => $s]) }}" class="sta-cell-pill" aria-label="{{ $c['label'] }}: view {{ $a->name }} Phase {{ $p->phase }}"><x-sta.pill :status="Sta::cellPill($c['status'])" :title="$c['status'] === 'submitted' ? $s->reference_no : null">{{ $c['label'] }}</x-sta.pill></a>
+                                        @else
+                                            <span class="sta-cell-pill"><x-sta.pill :status="Sta::cellPill($c['status'])">{{ $c['label'] }}</x-sta.pill></span>
                                         @endif
-                                        @if ($canManage)
-                                            @if ($c['status'] !== 'submitted' && (! $closed || $reopenedForThem))
-                                                <button type="button" wire:click="mountAction('extend', { association: {{ $a->id }}, phase: {{ $p->phase }} })" aria-label="Extend {{ $a->name }} Phase {{ $p->phase }}" style="{{ $linkBtn }}">Extend</button>
-                                            @endif
-                                            {{-- A closed phase re-opens for this one association, even one that never started it (M6). --}}
-                                            @if (in_array($c['status'], ['submitted', 'awaiting'], true) || ($closed && ! $reopenedForThem))
-                                                <button type="button" wire:click="mountAction('reopen', { association: {{ $a->id }}, phase: {{ $p->phase }} })" aria-label="Re-open {{ $a->name }} Phase {{ $p->phase }}" style="{{ $linkBtn }}; color: var(--sta-fg-red-800, #991B1B)">Re-open</button>
-                                            @endif
-                                        @endif
-                                        @if ($canEditSubs)
-                                            @if ($s)
-                                                <a href="{{ GameResource::getUrl('submission-edit-'.$p->phase, ['record' => $record, 'submission' => $s]) }}" aria-label="Edit as STA {{ $a->name }} Phase {{ $p->phase }}" style="{{ $link }}">Edit as STA</a>
-                                            @else
-                                                <button type="button" wire:click="editAsSta({{ $a->id }}, {{ $p->phase }})" aria-label="Edit as STA {{ $a->name }} Phase {{ $p->phase }}" style="{{ $linkBtn }}">Edit as STA</button>
-                                            @endif
-                                            <button type="button" wire:click="mountAction('remark', { association: {{ $a->id }}, phase: {{ $p->phase }} })" aria-label="Remark to {{ $a->name }} on Phase {{ $p->phase }}" style="{{ $linkBtn }}">Remark</button>
+                                        @if ($menu->isNotEmpty())
+                                            {{-- width= is also the teleported panel's class (44px items). --}}
+                                            <x-filament::dropdown placement="bottom-end" teleport width="sta-cell-dropdown" wire:key="menu-{{ $a->id }}-{{ $p->phase }}">
+                                                <x-slot name="trigger">
+                                                    <button type="button" class="sta-cell-menu" aria-label="Actions for {{ $a->name }} Phase {{ $p->phase }}">
+                                                        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                                                    </button>
+                                                </x-slot>
+                                                @foreach ($menu as $group)
+                                                    <x-filament::dropdown.list>
+                                                        @foreach ($group as $item)
+                                                            @if (isset($item['href']))
+                                                                <x-filament::dropdown.list.item tag="a" :href="$item['href']" :target="($item['blank'] ?? false) ? '_blank' : null">{{ $item['label'] }}</x-filament::dropdown.list.item>
+                                                            @else
+                                                                <x-filament::dropdown.list.item wire:click="{{ $item['click'] }}">{{ $item['label'] }}</x-filament::dropdown.list.item>
+                                                            @endif
+                                                        @endforeach
+                                                    </x-filament::dropdown.list>
+                                                @endforeach
+                                            </x-filament::dropdown>
                                         @endif
                                     </div>
-                                    @if ($s?->deadline_override)
-                                        <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $reopenedForThem ? 'Re-opened for them · deadline' : 'Deadline' }} {{ $s->deadline_override->timezone('Asia/Bahrain')->format('j M Y H:i') }}</span>
+                                    @if ($note)
+                                        <div style="font-size: 12px; line-height: 16px; padding-bottom: 4px; color: var(--sta-fg-muted, #475569); white-space: nowrap">{{ $note }}</div>
                                     @endif
                                 </td>
                             @endforeach
-                            <td style="padding: 14px 12px; font-size: 13px; color: {{ $flags ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-muted, #475569)' }}">{{ $flags ?? 'None' }}</td>
-                            <td style="padding: 14px 12px; font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $last ? Sta::when($last) : '—' }}</td>
-                            <td style="padding: 14px 20px; text-align: right">
+                            <td style="padding: 8px 12px; font-size: 13px; color: {{ $flags ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-muted, #475569)' }}">{{ $flags ?? 'None' }}</td>
+                            <td style="padding: 8px 12px; font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $last ? Sta::when($last) : '—' }}</td>
+                            <td style="padding: 8px 20px; text-align: right">
                                 @if ($remindable)
                                     <button type="button" wire:click="mountAction('remindOne', { association: {{ $a->id }}, phase: {{ $focus->phase }} })" aria-label="Remind {{ $a->name }}" style="{{ $linkBtn }}; font-size: 14px; text-decoration: underline">Remind</button>
                                 @elseif ($focusSub)

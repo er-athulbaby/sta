@@ -168,6 +168,62 @@ class GameDashboard extends Page
         return ['status' => $status, 'label' => Sta::CELL_LABELS[$status], 'submission' => $this->progress()->submission($a, $phase)];
     }
 
+    /**
+     * A phase cell's "⋯" Actions menu, in order: View entry, View PDF, Edit as STA, Send remark, then (after a
+     * divider) Re-open / Extend deadline. Each item keeps the visibility rule its inline link had; the actions
+     * and methods it calls keep their own checks.
+     *
+     * @return list<array{label: string, href?: string, blank?: bool, click?: string, divider?: bool}>
+     */
+    #[Unexposed]
+    public function cellMenu(Association $a, GamePhase $p): array
+    {
+        ['status' => $status, 'submission' => $s] = $this->cell($a, $p->phase);
+        $args = "{ association: {$a->id}, phase: {$p->phase} }";
+        $items = [];
+        if ($s) {
+            $items[] = ['label' => 'View entry', 'href' => GameResource::getUrl('submission', ['record' => $this->record, 'submission' => $s])];
+            $pdfs = $status === 'submitted' ? static::pdfLinks($s) : [];
+            foreach ($pdfs as $pdf) {
+                $items[] = ['label' => 'View PDF'.(count($pdfs) > 1 ? ' ('.$pdf['name'].')' : ''), 'href' => $pdf['url'], 'blank' => true];
+            }
+        }
+        if ($this->canEditSubmissions()) {
+            $items[] = $s
+                ? ['label' => 'Edit as STA', 'href' => GameResource::getUrl('submission-edit-'.$p->phase, ['record' => $this->record, 'submission' => $s])]
+                : ['label' => 'Edit as STA', 'click' => "editAsSta({$a->id}, {$p->phase})"];
+            $items[] = ['label' => 'Send remark', 'click' => "mountAction('remark', {$args})"];
+        }
+        if ($this->canManage()) {
+            $closed = $p->status === PhaseStatus::Closed;
+            $reopened = $p->isReopenedFor($s);
+            $divider = $items !== [];
+            // A closed phase re-opens for this one association, even one that never started it (M6).
+            if (in_array($status, ['submitted', 'awaiting'], true) || ($closed && ! $reopened)) {
+                $items[] = ['label' => 'Re-open', 'click' => "mountAction('reopen', {$args})", 'divider' => $divider];
+                $divider = false;
+            }
+            if ($status !== 'submitted' && (! $closed || $reopened)) {
+                $items[] = ['label' => 'Extend deadline', 'click' => "mountAction('extend', {$args})", 'divider' => $divider];
+            }
+        }
+
+        return $items;
+    }
+
+    /** The cell's one muted line, only for a re-opened or extended entry. */
+    #[Unexposed]
+    public function cellNote(Association $a, GamePhase $p): ?string
+    {
+        $s = $this->progress()->submission($a, $p->phase);
+        if (! $s?->deadline_override) {
+            return null;
+        }
+        $when = $s->deadline_override->timezone('Asia/Bahrain')->format('j M Y H:i');
+
+        return $s->deadline_change === 'reopened' ? "Re-opened · until {$when}" : "Deadline extended to {$when}";
+    }
+
     /** The phase the KPIs, flags and Action column follow: the one picked in the selector, else the latest open phase, else the last opened one. */
     #[Unexposed]
     public function focusPhase(): ?GamePhase
