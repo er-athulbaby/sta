@@ -190,6 +190,7 @@
                     @if ($m = $err($prop))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 @endforeach
             </div>
+            @include('filament.people.cross-check-tick', ['model' => 'newPerson.cross_checked'])
             @php $sizeItems = \App\Filament\Shared\PersonForm::sizeItems($isOfficial ? \App\Enums\PersonType::Official : \App\Enums\PersonType::Athlete); @endphp
             @if ($sizeItems->isNotEmpty())
                 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">

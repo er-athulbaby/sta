@@ -10,8 +10,10 @@ use App\Models\ExtraField;
 use App\Models\Person;
 use App\Models\PersonInjury;
 use App\Models\PersonVisa;
+use App\Models\Relationship;
 use Closure;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\FileUpload;
@@ -119,6 +121,9 @@ final class PersonForm
                         DatePicker::make('passport_expiry')->label('Expiry date')->required(),
                     ])->grow(),
                 ])->from('md'),
+                // Required on every save and never filled (not a column): SavesPersonSizes stamps checked_by / checked_at.
+                Checkbox::make('cross_checked')->label(Person::CROSS_CHECK_LABEL)->accepted()->markAsRequired()->dehydrated(false)
+                    ->validationMessages(['accepted' => Person::CROSS_CHECK_MESSAGE])->extraFieldWrapperAttributes(['class' => 'sta-cross-check']),
             ]),
             $section('cpr')->schema([
                 $grid([
@@ -143,14 +148,14 @@ final class PersonForm
                     self::need(TextInput::make('email')->label(fn (Get $get) => $isOfficial($get) ? 'Email' : 'Athlete email')->email()->maxLength(255), 'email'),
                     TextInput::make('address')->label('Athlete address')->maxLength(255)->visible($isAthlete)->columnSpanFull(),
                     self::need(TextInput::make('emergency_name')->label('Emergency contact name')->maxLength(200), 'emergency_name'),
-                    self::need(TextInput::make('emergency_relationship')->label('Relationship')->maxLength(100), 'emergency_relationship'),
+                    self::need(self::relationshipSelect('emergency_relationship'), 'emergency_relationship'),
                     PhoneField::make('emergency_phone', 'Emergency phone', fn (TextInput $i) => self::need($i, 'emergency_phone'), 'Emergency phone country code'),
                 ], 260),
             ]),
             $section('guardian')->visible($isAthlete)->description(fn (Get $get) => self::guardianNote($get))->schema([
                 $grid([
                     TextInput::make('guardian_name')->maxLength(200),
-                    Select::make('guardian_relationship')->label('Relationship')->options(array_combine($g = ['Father', 'Mother', 'Legal guardian'], $g))->placeholder('Select'),
+                    self::relationshipSelect('guardian_relationship'),
                     PhoneField::make('guardian_phone', 'Guardian phone', codeLabel: 'Guardian phone country code'),
                     TextInput::make('guardian_email')->email()->maxLength(255),
                 ], 240),
@@ -305,6 +310,13 @@ final class PersonForm
             ->label(fn (array $arguments, Repeater $component) => 'Remove '.$noun.' '.((int) array_search($arguments['item'] ?? null, array_keys($component->getRawState() ?? []), true) + 1))
             ->icon(new HtmlString('<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>'))
             ->extraAttributes(['class' => 'sta-row-remove']);
+    }
+
+    /** STA's Relationships list (admin master data); a saved value no longer on the list stays an option, so it shows and saves. */
+    private static function relationshipSelect(string $name): Select
+    {
+        return Select::make($name)->label('Relationship')->placeholder('Select')
+            ->options(fn (?Model $record) => Relationship::options($record?->{$name}));
     }
 
     private static function consent(string $name, string $label, string $description): Toggle

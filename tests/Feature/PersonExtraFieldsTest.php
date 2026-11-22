@@ -36,7 +36,7 @@ it('shows the active fields of the person type in the portal and saves their val
         ->assertFormFieldExists("extra.{$this->shirt->id}")->assertFormFieldExists("extra.{$this->blood->id}")
         ->assertFormFieldDoesNotExist("extra.{$this->onDuty->id}")->assertFormFieldDoesNotExist("extra.{$this->old->id}")
         ->fillForm(extraAthlete(['extra' => [$this->shirt->id => 'NOOR', $this->weight->id => '57', $this->blood->id => 'A']]))
-        ->call('create')->assertHasNoFormErrors();
+        ->set('data.cross_checked', true)->call('create')->assertHasNoFormErrors();
 
     expect(Person::sole()->extraValues())->toBe([$this->shirt->id => 'NOOR', $this->weight->id => '57', $this->blood->id => 'A']);
 });
@@ -45,7 +45,7 @@ it('validates values by type in the form', function () {
     actingInPortal(User::factory()->assocEditor($this->assoc)->create());
 
     livewire(CreatePerson::class)->fillForm(extraAthlete(['extra' => [$this->weight->id => 'heavy']]))
-        ->call('create')->assertHasFormErrors(["extra.{$this->weight->id}" => 'numeric']);
+        ->set('data.cross_checked', true)->call('create')->assertHasFormErrors(["extra.{$this->weight->id}" => 'numeric']);
     expect(Person::count())->toBe(0);
 });
 
@@ -76,7 +76,7 @@ it('hides sensitive fields from STA without view_medical and keeps their values 
     $page = livewire(AdminEditPerson::class, ['record' => $p->getRouteKey()])
         ->assertFormFieldDoesNotExist("extra.{$this->blood->id}")->assertFormFieldExists("extra.{$this->shirt->id}");
     expect($page->get("data.extra.{$this->blood->id}"))->toBeNull();
-    $page->fillForm(['extra' => [$this->shirt->id => 'ALI H']])->call('save')->assertHasNoFormErrors();
+    $page->fillForm(['extra' => [$this->shirt->id => 'ALI H']])->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     expect($p->fresh()->extraValues())->toBe([$this->blood->id => 'B', $this->shirt->id => 'ALI H']);
 
     $sta->givePermissionTo(StaPermission::ViewMedical->value);

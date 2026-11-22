@@ -38,6 +38,9 @@
                         <span style="font-size: 13px; color: var(--sta-fg-orange-800, #9A3412)">Missing: {{ implode(', ', array_map($lower, $missing)) }}</span>
                     @endif
                 </div>
+                @if ($crossCheck = $person->crossCheckNote())
+                    <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $crossCheck }}</span>
+                @endif
             @endif
         </div>
     </div>

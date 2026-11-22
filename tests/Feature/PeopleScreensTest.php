@@ -43,7 +43,7 @@ function foreignPerson(array $attrs = []): Person
 it('creates an athlete with photo and clothing size in the current association', function () {
     livewire(CreatePerson::class)
         ->fillForm(athleteData(['photo_path' => UploadedFile::fake()->image('ali.jpg'), "sizes.{$this->shirt->id}" => 'M']))
-        ->call('create')
+        ->set('data.cross_checked', true)->call('create')
         ->assertHasNoFormErrors();
 
     $p = Person::sole();
@@ -52,13 +52,13 @@ it('creates an athlete with photo and clothing size in the current association',
 });
 
 it('requires function for team officials', function () {
-    livewire(CreatePerson::class)->fillForm(athleteData(['type' => PersonType::Official->value]))->call('create')
+    livewire(CreatePerson::class)->fillForm(athleteData(['type' => PersonType::Official->value]))->set('data.cross_checked', true)->call('create')
         ->assertHasFormErrors(['function' => 'required']);
 });
 
 it('rejects a passport already registered by another association', function () {
     foreignPerson(['passport_no' => 'BH7654321']);
-    livewire(CreatePerson::class)->fillForm(athleteData())->call('create')->assertHasFormErrors(['passport_no']);
+    livewire(CreatePerson::class)->fillForm(athleteData())->set('data.cross_checked', true)->call('create')->assertHasFormErrors(['passport_no']);
 });
 
 it('never shows or opens another association\'s people', function () {
@@ -103,7 +103,7 @@ it('edits a person keeping their own passport and syncs sizes', function () {
 
     livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
         ->fillForm(['first_name' => 'Changed', "sizes.{$this->shirt->id}" => 'L'])
-        ->call('save')
+        ->set('data.cross_checked', true)->call('save')
         ->assertHasNoFormErrors();
 
     expect($mine->refresh()->first_name)->toBe('Changed')->and($mine->sizesMap())->toBe([$this->shirt->id => 'L']);
@@ -116,7 +116,7 @@ it('removes athlete-only sizes when editing a person to official', function () {
 
     livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
         ->fillForm(['type' => PersonType::Official->value, 'function' => 'Head Coach'])
-        ->call('save')
+        ->set('data.cross_checked', true)->call('save')
         ->assertHasNoFormErrors();
 
     expect($mine->refresh()->sizesMap())->toBe([$this->shirt->id => 'M']);
@@ -124,7 +124,7 @@ it('removes athlete-only sizes when editing a person to official', function () {
 
 it('creates no person when a size is invalid', function () {
     // Filament's Select rule rejects it first; the DB transaction in SavesPersonSizes is the backstop for syncSizes failures.
-    livewire(CreatePerson::class)->fillForm(athleteData(["sizes.{$this->shirt->id}" => 'XXL']))->call('create')
+    livewire(CreatePerson::class)->fillForm(athleteData(["sizes.{$this->shirt->id}" => 'XXL']))->set('data.cross_checked', true)->call('create')
         ->assertHasFormErrors(["sizes.{$this->shirt->id}"]);
 
     expect(Person::count())->toBe(0);
@@ -137,7 +137,7 @@ it('refuses a tampered passport scan path pointing at another association\'s fil
 
     livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
         ->set('data.passport_scan_path', ['x' => $victim])
-        ->call('save')
+        ->set('data.cross_checked', true)->call('save')
         ->assertHasFormErrors(['passport_scan_path']);
 
     expect($mine->refresh()->passport_scan_path)->toBeNull();
@@ -152,14 +152,14 @@ it('keeps a person\'s own stored files when saving', function () {
 
     livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
         ->fillForm(['first_name' => 'Changed'])
-        ->call('save')
+        ->set('data.cross_checked', true)->call('save')
         ->assertHasNoFormErrors();
 
     expect($mine->refresh()->passport_scan_path)->toBe("scans/{$mine->code}_passport.pdf")->and($mine->photo_path)->toBe("photos/{$mine->code}_photo.png");
 });
 
 it('rejects unsafe or oversized uploads', function (string $field, Closure $file) {
-    livewire(CreatePerson::class)->fillForm(athleteData([$field => $file()]))->call('create')
+    livewire(CreatePerson::class)->fillForm(athleteData([$field => $file()]))->set('data.cross_checked', true)->call('create')
         ->assertHasFormErrors([$field]);
 
     expect(Person::count())->toBe(0);
@@ -174,18 +174,18 @@ it('can save twice on the edit page after an upload is renamed', function () {
 
     $page = livewire(EditPerson::class, ['record' => $mine->getRouteKey()])
         ->fillForm(['passport_scan_path' => UploadedFile::fake()->create('p.pdf', 5, 'application/pdf')])
-        ->call('save')
+        ->set('data.cross_checked', true)->call('save')
         ->assertHasNoFormErrors();
     $stored = "scans/{$mine->refresh()->code}_passport.pdf";
     expect($mine->passport_scan_path)->toBe($stored);
 
-    $page->call('save')->assertHasNoFormErrors();
+    $page->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     expect($mine->refresh()->passport_scan_path)->toBe($stored);
     Storage::disk(config('filesystems.private'))->assertExists($stored);
 });
 
 it('labels the person form button Save as draft and saves an incomplete person', function () {
-    livewire(CreatePerson::class)->assertSee('Save as draft')->fillForm(athleteData())->call('create')->assertHasNoFormErrors();
+    livewire(CreatePerson::class)->assertSee('Save as draft')->fillForm(athleteData())->set('data.cross_checked', true)->call('create')->assertHasNoFormErrors();
     $p = Person::sole();
     expect($p->missingFields())->not->toBeEmpty();
     livewire(EditPerson::class, ['record' => $p->getRouteKey()])->assertSee('Save as draft');

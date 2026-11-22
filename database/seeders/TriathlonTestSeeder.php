@@ -82,7 +82,7 @@ class TriathlonTestSeeder extends Seeder
                 'photo_path' => 'photos/triathlon-demo.png', 'passport_scan_path' => 'scans/triathlon-demo.pdf',
                 'height_cm' => $g === 'M' ? 178 : 165, 'weight_kg' => $g === 'M' ? 70 : 57, 'function' => $function,
                 'phone' => '3300'.str_pad((string) $n, 4, '0', STR_PAD_LEFT), 'whatsapp_same' => true, 'whatsapp' => '3300'.str_pad((string) $n, 4, '0', STR_PAD_LEFT),
-                'email' => strtolower("$first.$last").'@triathlon.example', 'emergency_name' => 'Family contact', 'emergency_relationship' => 'Parent',
+                'email' => strtolower("$first.$last").'@triathlon.example', 'emergency_name' => 'Family contact', 'emergency_relationship' => 'Father',
                 'emergency_phone' => '3911'.str_pad((string) $n, 4, '0', STR_PAD_LEFT), 'is_active' => true]);
         $size = $g === 'M' ? ['L', '50', '43'] : ['S', '44', '38'];
         $p->syncSizes($items->mapWithKeys(fn (ClothingItem $i, int $k) => [$i->id => collect($i->sizes)->contains($size[$k % 3]) ? $size[$k % 3] : null])->all());

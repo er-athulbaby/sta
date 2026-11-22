@@ -187,7 +187,7 @@ it('adds an athlete from the Long List and offers them in the picker straight aw
         ->call('openPanel', 'athlete', $this->judo->id)
         ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
-        ->call('createPerson', false)->assertHasNoErrors()
+        ->set('newPerson.cross_checked', true)->call('createPerson', false)->assertHasNoErrors()
         ->assertSet('panel', null)->assertSee('Hamad Isa');
 
     $p = Person::where('first_name', 'Hamad')->sole();
@@ -199,7 +199,7 @@ it('adds a team official with the official form', function () {
         ->call('openPanel', 'official', $this->judo->id)
         ->set('newPerson', ['first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male', 'function' => 'Team Manager',
             'nationality' => 'Bahrain', 'passport_no' => 'BH9998887', 'passport_expiry' => now()->addYears(2)->toDateString()])
-        ->call('createPerson', false)->assertHasNoErrors()->assertSee('Nasser Ali')->assertSee('Team Manager');
+        ->set('newPerson.cross_checked', true)->call('createPerson', false)->assertHasNoErrors()->assertSee('Nasser Ali')->assertSee('Team Manager');
 
     expect(Person::where('first_name', 'Nasser')->sole()->type)->toBe(PersonType::Official);
 });
@@ -210,7 +210,7 @@ it('keeps an added person in the tenant association whatever the form sends', fu
         ->call('openPanel', 'athlete')
         ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])->set('newPerson.association_id', $other->id)
-        ->call('createPerson', false)->assertHasNoErrors();
+        ->set('newPerson.cross_checked', true)->call('createPerson', false)->assertHasNoErrors();
 
     expect(Person::withoutGlobalScopes()->where('first_name', 'Hamad')->sole()->association_id)->toBe($this->assoc->id);
 });
@@ -243,7 +243,7 @@ it('creates an athlete from Add athlete even if the form sends another type', fu
         ->call('openPanel', 'athlete')
         ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])->set('newPerson.type', 'official')->set('newPerson.function', 'Team Manager')
-        ->call('createPerson', false)->assertHasNoErrors();
+        ->set('newPerson.cross_checked', true)->call('createPerson', false)->assertHasNoErrors();
 
     expect(Person::where('first_name', 'Hamad')->sole()->type)->toBe(PersonType::Athlete);
 });
@@ -265,7 +265,7 @@ it('draws the canvas short form and saves an athlete with sizes and uploads', fu
             'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString(), 'sizes' => [$item->id => 'M']])
         ->set('newPersonPhoto', UploadedFile::fake()->image('me.jpg'))
         ->assertSee('me.jpg')
-        ->call('createPerson', false)->assertHasNoErrors()->assertSet('panel', null);
+        ->set('newPerson.cross_checked', true)->call('createPerson', false)->assertHasNoErrors()->assertSet('panel', null);
 
     $p = Person::where('first_name', 'Hamad')->sole();
     expect($p->type)->toBe(PersonType::Athlete)->and($p->association_id)->toBe($this->assoc->id)->and($p->is_active)->toBeTrue()
@@ -280,7 +280,7 @@ it('saves a team official from the short form', function () {
         ->set('newPerson', ['function' => 'Team Manager', 'first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'phone' => '3644 7712', 'email' => 'n.ali@example.com', 'passport_no' => 'BH9998887',
             'passport_expiry' => now()->addYears(2)->toDateString()])
-        ->call('createPerson', true)->assertHasNoErrors();
+        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors();
 
     $p = Person::where('first_name', 'Nasser')->sole();
     expect($p->type)->toBe(PersonType::Official)->and($p->function)->toBe('Team Manager')->and($p->phone)->toBe('3644 7712')
@@ -292,7 +292,7 @@ it('validates the short form with the registry rules', function () {
         ->call('openPanel', 'official')
         ->set('newPerson', ['function' => 'Wizard', 'first_name' => '', 'gender' => 'x', 'dob' => now()->addDay()->toDateString(), 'nationality' => 'Atlantis',
             'phone' => 'abc', 'email' => 'not-an-email', 'cpr_no' => '123456789'])
-        ->call('createPerson', false)
+        ->set('newPerson.cross_checked', true)->call('createPerson', false)
         ->assertHasErrors(['newPerson.function', 'newPerson.first_name', 'newPerson.last_name', 'newPerson.gender', 'newPerson.dob',
             'newPerson.nationality', 'newPerson.phone', 'newPerson.email', 'newPerson.passport_no', 'newPerson.passport_expiry', 'newPerson.cpr_expiry'])
         ->assertSee('CPR expiry');
@@ -307,7 +307,7 @@ it('refuses a passport or CPR number already in the registry', function () {
         ->call('openPanel', 'athlete')
         ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male', 'nationality' => 'Bahrain',
             'passport_no' => $this->ali->passport_no, 'passport_expiry' => now()->addYears(2)->toDateString(), 'cpr_no' => '040917332', 'cpr_expiry' => '2030-01-01'])
-        ->call('createPerson', false)
+        ->set('newPerson.cross_checked', true)->call('createPerson', false)
         ->assertHasErrors(['newPerson.passport_no', 'newPerson.cpr_no'])->assertSee('This passport number is already registered in the system.');
 
     expect(Person::where('first_name', 'Hamad')->exists())->toBeFalse();
@@ -325,4 +325,16 @@ it('never lists a CPR scan as missing for a new team official', function () {
     $page = livewire(Phase3Entry::class, ['game' => $this->game->id])->call('openPanel', 'official');
 
     expect($page->instance()->shortFormMissing())->not->toContain('CPR scan')->not->toContain('CPR number');
+});
+
+it('refuses the Long List short form until the cross-check is ticked and stamps who ticked it', function () {
+    $page = livewire(Phase3Events::class, ['game' => $this->game->id])
+        ->call('openPanel', 'athlete', $this->judo->id)->assertSee(Person::CROSS_CHECK_LABEL)
+        ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
+            'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
+        ->call('createPerson', false)->assertHasErrors(['newPerson.cross_checked' => 'accepted'])->assertSee(Person::CROSS_CHECK_MESSAGE);
+    expect(Person::where('first_name', 'Hamad')->exists())->toBeFalse();
+
+    $page->set('newPerson.cross_checked', true)->call('createPerson', false)->assertHasNoErrors();
+    expect(Person::where('first_name', 'Hamad')->sole())->checked_by->toBe($this->admin->id)->checked_at->not->toBeNull();
 });

@@ -132,8 +132,10 @@ class ListPeople extends ListRecords
         $rules = collect(PersonForm::shortFormRules($person->type, 'panel.', 'panel', $person))
             ->filter(fn ($r, string $key) => Str::startsWith($key, ['panel.passport_no', 'panel.passport_expiry', 'panel.cpr_', 'panel.sizes.', 'panelPassportScan', 'panelCprScan']))
             ->all();
-        Validator::make(['panel' => $this->panel, 'panelPassportScan' => $this->panelPassportScan, 'panelCprScan' => $this->panelCprScan], $rules,
-            attributes: ['panel.passport_no' => 'passport number', 'panel.passport_expiry' => 'passport expiry', 'panel.cpr_no' => 'CPR number', 'panel.cpr_expiry' => 'CPR expiry'],
+        Validator::make(['panel' => $this->panel, 'panelPassportScan' => $this->panelPassportScan, 'panelCprScan' => $this->panelCprScan],
+            [...$rules, 'panel.cross_checked' => ['accepted']],
+            ['panel.cross_checked.accepted' => Person::CROSS_CHECK_MESSAGE],
+            ['panel.passport_no' => 'passport number', 'panel.passport_expiry' => 'passport expiry', 'panel.cpr_no' => 'CPR number', 'panel.cpr_expiry' => 'CPR expiry'],
         )->validate();
 
         $store = fn ($file) => $file?->store('scans', ['disk' => config('filesystems.private'), 'visibility' => 'private']) ?: null;
@@ -142,7 +144,7 @@ class ListPeople extends ListRecords
         $sizes = PersonForm::sizeItems($person->type)->mapWithKeys(fn ($item) => [$item->id => $this->panel['sizes'][$item->id] ?? null])->all();
 
         DB::transaction(function () use ($person, $data, $files, $sizes) {
-            $person->update([...$data, ...$files]);
+            $person->update([...$data, ...$files, ...Person::crossCheckStamp()]);
             $person->syncSizes($sizes);
         });
         Notification::make()->success()->title('Saved')->send();

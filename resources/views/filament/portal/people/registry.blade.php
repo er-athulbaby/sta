@@ -118,6 +118,11 @@
                         @endforeach
                     </div>
                 </fieldset>
+                @if ($canEdit)
+                    @include('filament.people.cross-check-tick', ['model' => 'panel.cross_checked', 'note' => $person->crossCheckNote()])
+                @elseif ($crossCheck = $person->crossCheckNote())
+                    <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $crossCheck }}</span>
+                @endif
 
                 @if ($items->isNotEmpty())
                     <fieldset @disabled(! $canEdit) style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px">

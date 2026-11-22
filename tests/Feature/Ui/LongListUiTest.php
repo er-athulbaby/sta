@@ -193,7 +193,7 @@ it('picks a registry athlete into the event from the side panel and adds a new o
         ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonEvent', (string) $this->m60->id)
-        ->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
+        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
 
     $hamad = Person::where('first_name', 'Hamad')->sole();
     expect($hamad->association_id)->toBe($this->assoc->id)
@@ -206,7 +206,7 @@ it('needs a matching event to add a new athlete to the Long List', function () {
         ->set('newPerson', ['first_name' => 'Huda', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'female',
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112299', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonEvent', (string) $this->m60->id)
-        ->call('createPerson', true)->assertHasErrors(['newPersonEvent']);
+        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasErrors(['newPersonEvent']);
 
     expect(Person::where('first_name', 'Huda')->exists())->toBeFalse();
 });
@@ -287,10 +287,10 @@ it('asks for the sport of a new team official when the panel covers several spor
         ->call('openPanel', 'official')
         ->assertSeeHtmlInOrder(['Sport', 'Judo', 'Karate', 'Mobile'])
         ->set('newPerson', $official)
-        ->call('createPerson', true)->assertHasErrors(['newPersonSport'])->assertSee('Choose the sport for this team official.');
+        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasErrors(['newPersonSport'])->assertSee('Choose the sport for this team official.');
     expect(Person::where('first_name', 'Nasser')->exists())->toBeFalse();
 
-    $page->set('newPersonSport', (string) $karate->id)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
+    $page->set('newPersonSport', (string) $karate->id)->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
     expect(Entry::where(['person_id' => Person::where('first_name', 'Nasser')->sole()->id, 'game_sport_id' => $karate->id])->exists())->toBeTrue();
 });
 
@@ -301,7 +301,7 @@ it('closes the panel and shows the list errors when the new person is saved but 
         ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonEvent', (string) $this->m60->id)
-        ->call('createPerson', true)
+        ->set('newPerson.cross_checked', true)->call('createPerson', true)
         ->assertSet('panel', null)->assertHasErrors(["athletes.{$this->m60->id}"])
         ->assertNotified('Saved to the registry, but the Long List was not saved');
 
@@ -320,7 +320,7 @@ it('deletes the uploaded files when the new person cannot be saved', function ()
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonPhoto', UploadedFile::fake()->image('me.jpg'));
 
-    expect(fn () => $page->call('createPerson', false))->toThrow(RuntimeException::class);
+    expect(fn () => $page->set('newPerson.cross_checked', true)->call('createPerson', false))->toThrow(RuntimeException::class);
     expect(Storage::disk(config('filesystems.private'))->allFiles('photos'))->toBe([]);
 });
 

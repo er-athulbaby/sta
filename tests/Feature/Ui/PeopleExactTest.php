@@ -75,12 +75,12 @@ it('saves documents and sizes from the registry aside with the registry rules', 
     otherAssociationPerson(['passport_no' => 'TAKEN123']);
 
     $page = livewire(PortalListPeople::class)->call('selectPerson', $p->id)
-        ->set('panel.passport_no', 'TAKEN123')->call('savePanel')->assertHasErrors(['panel.passport_no']);
+        ->set('panel.passport_no', 'TAKEN123')->set('panel.cross_checked', true)->call('savePanel')->assertHasErrors(['panel.passport_no']);
 
-    $page->set('panel.passport_no', 'NEW55555')->set("panel.sizes.{$this->shirt->id}", 'M')->call('savePanel')->assertHasNoErrors();
+    $page->set('panel.passport_no', 'NEW55555')->set("panel.sizes.{$this->shirt->id}", 'M')->set('panel.cross_checked', true)->call('savePanel')->assertHasNoErrors();
     expect($p->refresh()->passport_no)->toBe('NEW55555')->and($p->sizesMap())->toBe([$this->shirt->id => 'M']);
 
-    $page->set("panel.sizes.{$this->shirt->id}", 'XXXL')->call('savePanel')->assertHasErrors(["panel.sizes.{$this->shirt->id}"]);
+    $page->set("panel.sizes.{$this->shirt->id}", 'XXXL')->set('panel.cross_checked', true)->call('savePanel')->assertHasErrors(["panel.sizes.{$this->shirt->id}"]);
 });
 
 it('never opens another association\'s person in the registry aside', function () {
@@ -90,7 +90,7 @@ it('never opens another association\'s person in the registry aside', function (
 
     livewire(PortalListPeople::class)->call('selectPerson', $theirs->id)
         ->assertSet('panelFor', $mine->id)->assertDontSee('Foreign Person')
-        ->call('savePanel');
+        ->set('panel.cross_checked', true)->call('savePanel');
     expect($theirs->refresh()->updated_at->equalTo($theirs->updated_at))->toBeTrue();
 });
 
@@ -163,15 +163,15 @@ it('saves as draft and stays, or saves and returns to the registry', function ()
     actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
     $p = Person::factory()->create(['association_id' => $this->assoc->id]);
 
-    livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])->fillForm(['first_name' => 'Draft'])->call('save')
+    livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])->fillForm(['first_name' => 'Draft'])->set('data.cross_checked', true)->call('save')
         ->assertHasNoFormErrors()->assertNoRedirect();
     expect($p->refresh()->first_name)->toBe('Draft');
 
-    livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])->fillForm(['first_name' => 'Closed'])->call('saveAndClose')
+    livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])->fillForm(['first_name' => 'Closed'])->set('data.cross_checked', true)->call('saveAndClose')
         ->assertHasNoFormErrors()->assertRedirect(PortalPersonResource::getUrl('index'));
     expect($p->refresh()->first_name)->toBe('Closed');
 
-    livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])->fillForm(['first_name' => ''])->call('saveAndClose')
+    livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])->fillForm(['first_name' => ''])->set('data.cross_checked', true)->call('saveAndClose')
         ->assertHasFormErrors(['first_name' => 'required'])->assertNoRedirect();
 });
 
@@ -183,7 +183,7 @@ it('keeps a stored scan when an upload fails and replaces it only after the new 
     $page = livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()]);
     // The field never empties its state before an upload: a failed upload leaves the state as it was.
     expect($page->html())->not->toContain('$wire.set(')->toContain("'removeUploadedFile'");
-    $page->call('save')->assertHasNoFormErrors();
+    $page->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     expect($p->refresh()->passport_scan_path)->not->toBeNull();
     $stored = $p->passport_scan_path;
 
@@ -191,7 +191,7 @@ it('keeps a stored scan when an upload fails and replaces it only after the new 
     $oldKey = array_key_first($page->get('data.passport_scan_path'));
     $page->set('data.passport_scan_path.new', UploadedFile::fake()->create('new.pdf', 10, 'application/pdf'))
         ->call('callSchemaComponentMethod', 'form.passport_scan_path', 'removeUploadedFile', ['fileKey' => $oldKey])
-        ->call('save')->assertHasNoFormErrors();
+        ->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     expect($p->refresh()->passport_scan_path)->not->toBeNull()
         ->and(Storage::disk(config('filesystems.private'))->get($p->passport_scan_path))->not->toBe('old');
     expect($stored)->not->toBeNull();
@@ -220,7 +220,7 @@ it('keeps the injury description required', function () {
 
     livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])
         ->fillForm(['injuries' => [['injury_date' => '2025-01-02', 'status' => 'Recovered', 'description' => '']]])
-        ->call('save')->assertHasFormErrors();
+        ->set('data.cross_checked', true)->call('save')->assertHasFormErrors();
     expect($p->injuries()->count())->toBe(0);
 });
 

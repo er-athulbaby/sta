@@ -11,6 +11,7 @@ use App\Models\Concerns\RenamesAttachments;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -60,7 +61,13 @@ class Person extends Model
         'languages', 'blood_group', 'medical_clearance_expiry', 'insurance_policy_no', 'allergies',
         'chronic_conditions', 'medication', 'meal_requirement',
         'consent_data', 'consent_media', 'consent_medical', 'decl_conduct', 'decl_antidoping', 'decl_data_sharing',
+        'checked_by', 'checked_at',
     ];
+
+    /** The required tick at the end of the Person + Passport part of every person form (full form and side panels). */
+    public const CROSS_CHECK_LABEL = 'I have cross-checked the person and passport details against the passport';
+
+    public const CROSS_CHECK_MESSAGE = 'Tick the cross-check box to confirm the person and passport details before saving.';
 
     /** Mirror the DB defaults of the NOT NULL *_cc columns. */
     protected $attributes = ['phone_cc' => '+973', 'whatsapp_cc' => '+973', 'emergency_phone_cc' => '+973', 'guardian_phone_cc' => '+973'];
@@ -88,6 +95,7 @@ class Person extends Model
             'dob' => 'date',
             'weight_kg' => 'decimal:1',
             'is_active' => 'boolean',
+            'checked_at' => 'datetime',
         ];
     }
 
@@ -166,6 +174,23 @@ class Person extends Model
             ->where($hashColumn, self::blindIndex($number))
             ->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))
             ->exists();
+    }
+
+    /** @return array{checked_by: ?int, checked_at: CarbonInterface} merged into every form save (the tick is required each time) */
+    public static function crossCheckStamp(): array
+    {
+        return ['checked_by' => auth()->id(), 'checked_at' => now()];
+    }
+
+    public function checkedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_by');
+    }
+
+    /** "Cross-checked by {name} on {date}"; null for people never saved through a form (e.g. imported). */
+    public function crossCheckNote(): ?string
+    {
+        return $this->checked_at ? 'Cross-checked by '.($this->checkedBy?->name ?? 'a removed user').' on '.$this->checked_at->format('j M Y') : null;
     }
 
     public function visas(): HasMany

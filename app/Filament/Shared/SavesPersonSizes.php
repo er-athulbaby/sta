@@ -63,14 +63,17 @@ trait SavesPersonSizes
     protected function afterSave(): void
     {
         $this->refreshFormData(array_keys(Person::FILE_COLUMNS));
+        // The tick is never kept: each save needs a fresh cross-check.
+        $this->data['cross_checked'] = false;
     }
 
     private function pullRelated(array $data): array
     {
         $this->pendingSizes = $data['sizes'] ?? [];
         $this->pendingExtra = $data['extra'] ?? [];
-        unset($data['sizes'], $data['extra']);
+        unset($data['sizes'], $data['extra'], $data['cross_checked']);
 
-        return $data;
+        // The form only saves with the cross-check ticked (PersonForm), so every save records who ticked it and when.
+        return [...$data, ...Person::crossCheckStamp()];
     }
 }

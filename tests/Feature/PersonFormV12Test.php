@@ -28,7 +28,7 @@ function v12Athlete(array $o = []): array
 
 it('saves the new athlete fields and copies WhatsApp from mobile', function () {
     actingInPortal(User::factory()->assocEditor($this->assoc)->create());
-    livewire(CreatePerson::class)->fillForm(v12Athlete())->call('create')->assertHasNoFormErrors();
+    livewire(CreatePerson::class)->fillForm(v12Athlete())->set('data.cross_checked', true)->call('create')->assertHasNoFormErrors();
 
     $p = Person::sole();
     expect($p->code)->toBe('BWF-AT-0001')->and($p->whatsapp)->toBe('33445566')->and($p->whatsapp_cc)->toBe('+973')
@@ -61,7 +61,7 @@ it('hides medical fields in admin without view_medical', function () {
         ->and($page->get('data.medical_clearance_expiry'))->toBeNull()->and($page->get('data.injuries'))->toBeEmpty();
     $page->assertDontSee('Peanuts')->assertDontSee('INS-SECRET')->assertDontSee('Torn ligament')->assertDontSee('2031-03-04');
 
-    $page->fillForm(['first_name' => 'Changed'])->call('save')->assertHasNoFormErrors();
+    $page->fillForm(['first_name' => 'Changed'])->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     expect($person->refresh()->first_name)->toBe('Changed')->and($person->allergies)->toBe('Peanuts')
         ->and($person->blood_group)->toBe('O+')->and($person->medical_clearance_expiry->toDateString())->toBe('2031-03-04')
         ->and($person->injuries()->count())->toBe(1);
@@ -76,7 +76,7 @@ it('saves visas for officials', function () {
     actingInPortal(User::factory()->assocEditor($this->assoc)->create());
     livewire(CreatePerson::class)->fillForm(v12Athlete(['type' => 'official', 'function' => 'Head Coach', 'passport_no' => 'BH8888888',
         'visas' => [['country' => 'Japan', 'status' => 'Approved', 'visa_no' => 'J1', 'valid_until' => now()->addMonths(6)->toDateString()]]]))
-        ->call('create')->assertHasNoFormErrors();
+        ->set('data.cross_checked', true)->call('create')->assertHasNoFormErrors();
 
     expect(Person::sole()->visas()->sole()->country)->toBe('Japan');
 });
@@ -89,12 +89,12 @@ it('can save twice on the edit page after a visa copy is renamed', function () {
     $page = livewire(EditPerson::class, ['record' => $person->getRouteKey()])
         ->fillForm(['visas' => [['country' => 'Japan', 'status' => 'Applied',
             'copy_path' => [UploadedFile::fake()->create('v.pdf', 5, 'application/pdf')]]]])
-        ->call('save')->assertHasNoFormErrors();
+        ->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     $visa = $person->visas()->sole();
     $stored = "visas/{$person->code}_visa_{$visa->id}.pdf";
     expect($visa->copy_path)->toBe($stored);
 
-    $page->call('save')->assertHasNoFormErrors();
+    $page->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     expect($visa->refresh()->copy_path)->toBe($stored)->and($person->visas()->count())->toBe(1);
     Storage::disk(config('filesystems.private'))->assertExists($stored);
 });
@@ -104,7 +104,7 @@ it('stores a visa copy uploaded on create', function () {
     actingInPortal(User::factory()->assocEditor($this->assoc)->create());
     livewire(CreatePerson::class)->fillForm(v12Athlete(['type' => 'official', 'function' => 'Head Coach',
         'visas' => [['country' => 'Japan', 'status' => 'Applied', 'copy_path' => [UploadedFile::fake()->create('v.pdf', 5, 'application/pdf')]]]]))
-        ->call('create')->assertHasNoFormErrors();
+        ->set('data.cross_checked', true)->call('create')->assertHasNoFormErrors();
 
     $visa = Person::sole()->visas()->sole();
     expect($visa->copy_path)->toBe("visas/BWF-TO-0001_visa_{$visa->id}.pdf");
@@ -119,7 +119,7 @@ it('refuses a tampered visa copy path', function () {
 
     livewire(EditPerson::class, ['record' => $person->getRouteKey()])
         ->fillForm(['visas' => [['country' => 'Japan', 'status' => 'Applied', 'copy_path' => ['x' => 'scans/victim.pdf']]]])
-        ->call('save')->assertHasFormErrors(['visas.0.copy_path']);
+        ->set('data.cross_checked', true)->call('save')->assertHasFormErrors(['visas.0.copy_path']);
 
     expect($person->visas()->count())->toBe(0);
 });
@@ -137,7 +137,7 @@ it('deletes the visa copy file when the visa model or its row is removed', funct
     $a->delete();
     $disk->assertMissing('visas/a.pdf');
 
-    livewire(EditPerson::class, ['record' => $person->getRouteKey()])->fillForm(['visas' => []])->call('save')->assertHasNoFormErrors();
+    livewire(EditPerson::class, ['record' => $person->getRouteKey()])->fillForm(['visas' => []])->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     $disk->assertMissing('visas/b.pdf');
     expect($person->visas()->count())->toBe(0);
 

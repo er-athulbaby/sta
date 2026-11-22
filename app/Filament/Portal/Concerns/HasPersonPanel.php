@@ -153,8 +153,9 @@ trait HasPersonPanel
         $type = $this->panelType();
         Validator::make(
             ['newPerson' => $this->newPerson, 'newPersonPhoto' => $this->newPersonPhoto, 'newPersonPassportScan' => $this->newPersonPassportScan, 'newPersonCprScan' => $this->newPersonCprScan],
-            PersonForm::shortFormRules($type, 'newPerson.', 'newPerson'),
-            attributes: collect(self::SHORT_FORM_FIELDS)->mapWithKeys(fn ($f) => ["newPerson.$f" => str_replace('_', ' ', $f)])->all(),
+            [...PersonForm::shortFormRules($type, 'newPerson.', 'newPerson'), 'newPerson.cross_checked' => ['accepted']],
+            ['newPerson.cross_checked.accepted' => Person::CROSS_CHECK_MESSAGE],
+            collect(self::SHORT_FORM_FIELDS)->mapWithKeys(fn ($f) => ["newPerson.$f" => str_replace('_', ' ', $f)])->all(),
         )->validate();
         $target = $addToList ? $this->listTarget($type) : null;
         $data = collect(Arr::only($this->newPerson, self::SHORT_FORM_FIELDS))->map(fn ($v) => filled($v) ? $v : null)->all();
@@ -168,7 +169,7 @@ trait HasPersonPanel
         // RenamesAttachments renames the stored files after the person is saved.
         try {
             $person = DB::transaction(function () use ($data, $files, $sizes, $type) {
-                $person = Person::create([...$data, ...$files, 'type' => $type->value, 'is_active' => true, 'association_id' => $this->association()->getKey()]);
+                $person = Person::create([...$data, ...$files, ...Person::crossCheckStamp(), 'type' => $type->value, 'is_active' => true, 'association_id' => $this->association()->getKey()]);
                 $person->syncSizes($sizes);
 
                 return $person;
