@@ -36,13 +36,13 @@
     $link = 'display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px';
 @endphp
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
-    <div x-data="{ uploading: false, failed: false }" style="display: flex; flex-direction: column; gap: 10px">
+    <div x-data="{ uploading: false, progress: 0, failed: false }" style="display: flex; flex-direction: column; gap: 10px">
         @unless ($disabled)
             <input type="file" id="{{ $inputId }}" accept="{{ $accept }}" class="sta-sr-only" tabindex="-1"
                 x-on:change="
                     const f = $event.target.files[0];
                     if (! f) return;
-                    uploading = true; failed = false;
+                    uploading = true; progress = 0; failed = false;
                     const old = Object.keys($wire.get(@js($statePath)) || {});
                     $wire.upload(@js($statePath) + '.' + Math.random().toString(36).slice(2) + Date.now().toString(36), f,
                         async () => {
@@ -52,7 +52,8 @@
                             uploading = false;
                             $wire.$refresh();
                         },
-                        () => { uploading = false; failed = true });
+                        () => { uploading = false; failed = true },
+                        (e) => { progress = e.detail.progress });
                     $event.target.value = '';
                 ">
         @endunless
@@ -97,7 +98,6 @@
         @else
             <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">No file</span>
         @endif
-        <template x-if="uploading"><span role="status" style="font-size: 12px; color: var(--sta-fg-muted, #475569)">Uploading…</span></template>
-        <template x-if="failed"><span role="alert" style="font-size: 12px; color: var(--sta-fg-red-700, #B91C1C)">The upload failed. Check the file type and size, then try again.</span></template>
+        <x-sta.upload-progress />
     </div>
 </x-dynamic-component>

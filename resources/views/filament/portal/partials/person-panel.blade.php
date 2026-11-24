@@ -181,11 +181,14 @@
                             <button type="button" wire:click="viewUpload('{{ $prop }}')" aria-label="View the {{ $what }}" style="min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer">View</button>
                         </div>
                     @else
-                        <label style="{{ $uploadBtn }}" wire:key="file-{{ $prop }}">
-                            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
-                            {{ $label }}
-                            <input type="file" wire:model="{{ $prop }}" accept="{{ $accept }}" class="sta-sr-only">
-                        </label>
+                        <div {!! \App\Support\Sta::UPLOAD_PROGRESS !!} wire:key="file-{{ $prop }}" style="display: flex; flex-direction: column; gap: 6px">
+                            <label style="{{ $uploadBtn }}">
+                                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
+                                {{ $label }}
+                                <input type="file" wire:model="{{ $prop }}" accept="{{ $accept }}" class="sta-sr-only">
+                            </label>
+                            <x-sta.upload-progress />
+                        </div>
                     @endif
                     @if ($m = $err($prop))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 @endforeach

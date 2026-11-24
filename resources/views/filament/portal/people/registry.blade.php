@@ -106,11 +106,14 @@
                                     <a href="{{ \App\Filament\Shared\AttachmentActions::url($person->{$scan['column']}) }}" target="_blank" rel="noopener" aria-label="View {{ $scan['label'] }}" style="margin-left: auto; display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px">View</a>
                                 </div>
                             @else
-                                <label class="sta-upload" style="{{ $upload }}">
-                                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
-                                    <span style="overflow-wrap: anywhere">{{ $file ? $file->getClientOriginalName() : 'Upload '.$scan['label'] }}</span>
-                                    <input type="file" wire:model="{{ $scan['model'] }}" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">
-                                </label>
+                                <div {!! \App\Support\Sta::UPLOAD_PROGRESS !!} style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+                                    <label class="sta-upload" style="{{ $upload }}">
+                                        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/></svg>
+                                        <span style="overflow-wrap: anywhere">{{ $file ? $file->getClientOriginalName() : 'Upload '.$scan['label'] }}</span>
+                                        <input type="file" wire:model="{{ $scan['model'] }}" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">
+                                    </label>
+                                    <x-sta.upload-progress />
+                                </div>
                             @endif
                         @endforeach
                         @foreach ($scans as $scan)

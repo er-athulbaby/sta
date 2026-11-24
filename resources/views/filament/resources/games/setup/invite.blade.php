@@ -33,11 +33,12 @@
         @else
           <div role="img" aria-label="Logo placeholder" style="width: 64px; height: 64px; border-radius: 12px; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-muted, #475569); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">[LOGO]</div>
         @endif
-        <div style="display: flex; flex-direction: column; gap: 6px">
+        <div {!! \App\Support\Sta::UPLOAD_PROGRESS !!} style="display: flex; flex-direction: column; gap: 6px">
           <label style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; cursor: pointer">Upload logo
             <input type="file" wire:model="logo" accept="image/png,image/jpeg" class="sta-sr-only">
           </label>
           <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">PNG or JPG, printed on every PDF</span>
+          <x-sta.upload-progress />
           @error('logo') <span role="alert" style="font-size: 12px; color: var(--sta-fg-red-800, #991B1B)">{{ $message }}</span> @enderror
         </div>
       </div>

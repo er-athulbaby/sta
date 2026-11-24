@@ -133,10 +133,10 @@ it('numbers the athlete form sections and jump links as drawn', function () {
             'Cancel', 'Save as draft', 'Save'], false)
         ->assertSee('Required to save. Fields marked “needed for Long List” can stay empty for now, but the athlete stays Incomplete')
         ->assertSeeHtml('href="#passport"')->assertSeeHtml('id="passport"')->assertSeeHtml('id="consents"')
-        ->assertSeeInOrder(['1 Person', '2 Passport', 'missing', '3 CPR', '4 Contact', '5 Guardian', '6 Clothing', '7 Medical', '8 Consents'])
-        ->assertSeeInOrder(['1 · Person', 'Photo', 'Type', 'Full name (as in passport)', 'First name', 'Second name', 'Third name', 'Last name',
-            'Date of birth', 'Age', 'Gender', 'Nationality', 'Height (cm)', 'Weight (kg)',
-            '2 · Passport', 'Passport scan', 'Passport number', 'Issuing country', 'Missing · needed for Long List', 'Issue date', 'Expiry date',
+        ->assertSeeInOrder(['1 Passport', 'missing', '2 Person', '3 CPR', '4 Contact', '5 Guardian', '6 Clothing', '7 Medical', '8 Consents'])
+        ->assertSeeInOrder(['1 · Passport', 'Passport scan', 'Passport number', 'Issuing country', 'Missing · needed for Long List', 'Issue date', 'Expiry date',
+            '2 · Person', 'Photo', 'Type', 'Full name (as in passport)', 'First name', 'Second name', 'Third name', 'Last name',
+            'Date of birth', 'Age', 'Gender', 'Nationality', 'Height (cm)', 'Weight (kg)', 'I have cross-checked',
             '3 · CPR', 'CPR number', 'CPR expiry', 'CPR front', 'CPR back', 'CPR reader copy', 'Upload reader printout',
             '4 · Contact', 'Athlete mobile', 'WhatsApp is the same as mobile', 'Athlete email', 'Athlete address', 'Emergency contact name', 'Relationship', 'Emergency phone',
             '5 · Guardian', 'For athletes under 18.', '6 · Clothing', 'Chest (cm)', 'Waist (cm)', 'T-Shirt size',
@@ -147,8 +147,8 @@ it('numbers the athlete form sections and jump links as drawn', function () {
 it('renumbers for team officials and when medical is hidden', function () {
     actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
     $html = livewire(PortalCreatePerson::class)->fillForm(['type' => 'official'])->html();
-    expectInOrder($html, ['New team official', '1 Person', '2 Official details', '3 Passport', '4 CPR', '5 Contact', '6 Visas', '7 Clothing', '8 Health', '9 Declarations']);
-    expectInOrder($html, ['2 · Team official details', 'Function', 'Languages spoken', '6 · Visas', 'Add one row per country', 'Add visa',
+    expectInOrder($html, ['New team official', '1 Passport', '2 Person', '3 Official details', '4 CPR', '5 Contact', '6 Visas', '7 Clothing', '8 Health', '9 Declarations']);
+    expectInOrder($html, ['3 · Team official details', 'Function', 'Languages spoken', '6 · Visas', 'Add one row per country', 'Add visa',
         '8 · Health', 'Meal requirement', '9 · Declarations', 'Accepts the delegation code of conduct']);
 
     $p = Person::factory()->create();

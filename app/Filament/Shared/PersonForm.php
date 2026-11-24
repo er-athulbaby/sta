@@ -67,35 +67,7 @@ final class PersonForm
         $grid = fn (array $fields, int $min = 200) => Grid::make(1)->schema($fields)->extraAttributes(['class' => 'sta-auto-grid', 'style' => "--sta-min: {$min}px"]);
 
         return $schema->columns(1)->components([
-            $section('person')->schema([
-                Flex::make([
-                    self::need(self::upload('photo_path', 'Photo', 'photos', self::PHOTO_TYPES, 2048, 'photo'), 'photo_path')
-                        ->helperText('JPG or PNG, up to 2 MB')->grow(false)->extraFieldWrapperAttributes(['class' => 'sta-photo-field'], merge: true),
-                    $grid([
-                        ...($withAssociation ? [Select::make('association_id')->relationship('association', 'name')->required()] : []),
-                        Select::make('type')->options(self::options(PersonType::cases()))->required()->live()->default($type->value)->disabled($lockType)->dehydrated()->selectablePlaceholder(false),
-                        self::need(TextInput::make('full_name')->label('Full name (as in passport)')->maxLength(200), 'full_name')->columnSpanFull(),
-                        TextInput::make('first_name')->required()->maxLength(100),
-                        TextInput::make('second_name')->maxLength(100),
-                        TextInput::make('third_name')->maxLength(100),
-                        TextInput::make('last_name')->required()->maxLength(100),
-                        DatePicker::make('dob')->label('Date of birth')->required()->maxDate(now())->live(),
-                        Placeholder::make('age')->label('Age')->extraAttributes(['class' => 'sta-output'])
-                            ->content(fn (Get $get) => self::age($get('dob')) !== null ? self::age($get('dob')).' years · from date of birth' : 'From date of birth'),
-                        Select::make('gender')->options(self::options(PersonGender::cases()))->placeholder('Select')->required(),
-                        Select::make('nationality')->options($countries)->placeholder('Select country')->required(),
-                        TextInput::make('height_cm')->label('Height (cm)')->numeric()->minValue(50)->maxValue(250),
-                        TextInput::make('weight_kg')->label('Weight (kg)')->numeric()->minValue(20)->maxValue(250),
-                        Toggle::make('is_active')->label('Active')->default(true)->view('filament.people.switch-field'),
-                    ]),
-                ])->from('md'),
-            ]),
-            $section('role')->visible($isOfficial)->schema([
-                $grid([
-                    Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->placeholder('Select')->required($isOfficial),
-                    TextInput::make('languages')->label('Languages spoken')->maxLength(255),
-                ], 260),
-            ]),
+            // Passport first: upload the scan and "Read details from passport" before typing anything (M6 feedback).
             $section('passport')->schema([
                 Flex::make([
                     self::need(self::upload('passport_scan_path', 'Passport scan', 'scans', $scanTypes, 5120), 'passport_scan_path')
@@ -121,9 +93,38 @@ final class PersonForm
                         DatePicker::make('passport_expiry')->label('Expiry date')->required(),
                     ])->grow(),
                 ])->from('md'),
+            ]),
+            $section('person')->schema([
+                Flex::make([
+                    self::need(self::upload('photo_path', 'Photo', 'photos', self::PHOTO_TYPES, 2048, 'photo'), 'photo_path')
+                        ->helperText('JPG or PNG, up to 2 MB')->grow(false)->extraFieldWrapperAttributes(['class' => 'sta-photo-field'], merge: true),
+                    $grid([
+                        ...($withAssociation ? [Select::make('association_id')->relationship('association', 'name')->required()] : []),
+                        Select::make('type')->options(self::options(PersonType::cases()))->required()->live()->default($type->value)->disabled($lockType)->dehydrated()->selectablePlaceholder(false),
+                        self::need(TextInput::make('full_name')->label('Full name (as in passport)')->maxLength(200), 'full_name')->columnSpanFull(),
+                        TextInput::make('first_name')->required()->maxLength(100),
+                        TextInput::make('second_name')->maxLength(100),
+                        TextInput::make('third_name')->maxLength(100),
+                        TextInput::make('last_name')->required()->maxLength(100),
+                        DatePicker::make('dob')->label('Date of birth')->required()->maxDate(now())->live(),
+                        Placeholder::make('age')->label('Age')->extraAttributes(['class' => 'sta-output'])
+                            ->content(fn (Get $get) => self::age($get('dob')) !== null ? self::age($get('dob')).' years · from date of birth' : 'From date of birth'),
+                        Select::make('gender')->options(self::options(PersonGender::cases()))->placeholder('Select')->required(),
+                        Select::make('nationality')->options($countries)->placeholder('Select country')->required(),
+                        TextInput::make('height_cm')->label('Height (cm)')->numeric()->minValue(50)->maxValue(250),
+                        TextInput::make('weight_kg')->label('Weight (kg)')->numeric()->minValue(20)->maxValue(250),
+                        Toggle::make('is_active')->label('Active')->default(true)->view('filament.people.switch-field'),
+                    ]),
+                ])->from('md'),
                 // Required on every save and never filled (not a column): SavesPersonSizes stamps checked_by / checked_at.
                 Checkbox::make('cross_checked')->label(Person::CROSS_CHECK_LABEL)->accepted()->markAsRequired()->dehydrated(false)
                     ->validationMessages(['accepted' => Person::CROSS_CHECK_MESSAGE])->extraFieldWrapperAttributes(['class' => 'sta-cross-check']),
+            ]),
+            $section('role')->visible($isOfficial)->schema([
+                $grid([
+                    Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->placeholder('Select')->required($isOfficial),
+                    TextInput::make('languages')->label('Languages spoken')->maxLength(255),
+                ], 260),
             ]),
             $section('cpr')->schema([
                 $grid([
@@ -255,8 +256,8 @@ final class PersonForm
     public static function sectionKeys(PersonType $type, bool $medical, bool $extra): array
     {
         $keys = $type === PersonType::Official
-            ? ['person', 'role', 'passport', 'cpr', 'contact', 'visas', 'clothing', 'health', 'declarations', 'extra']
-            : ['person', 'passport', 'cpr', 'contact', 'guardian', 'clothing', 'medical', 'consents', 'extra'];
+            ? ['passport', 'person', 'role', 'cpr', 'contact', 'visas', 'clothing', 'health', 'declarations', 'extra']
+            : ['passport', 'person', 'cpr', 'contact', 'guardian', 'clothing', 'medical', 'consents', 'extra'];
 
         return array_values(array_filter($keys, fn (string $k) => ($medical || ! in_array($k, ['medical', 'health'], true)) && ($extra || $k !== 'extra')));
     }

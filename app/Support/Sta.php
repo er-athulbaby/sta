@@ -12,6 +12,17 @@ use Carbon\CarbonInterface;
 /** Canvas design tokens and small display helpers shared by Blade views and PDFs (spec 17). */
 final class Sta
 {
+    /**
+     * Alpine attributes for a wrapper around a `wire:model` file input: tracks Livewire's upload events (they bubble from
+     * the input) for <x-sta.upload-progress />. Static markup, safe to print raw.
+     */
+    public const UPLOAD_PROGRESS = 'x-data="{ uploading: false, progress: 0, failed: false }"'
+        .' x-on:livewire-upload-start="uploading = true; progress = 0; failed = false"'
+        .' x-on:livewire-upload-progress="progress = $event.detail.progress"'
+        .' x-on:livewire-upload-finish="uploading = false"'
+        .' x-on:livewire-upload-error="uploading = false; failed = true"'
+        .' x-on:livewire-upload-cancel="uploading = false"';
+
     /** Association colours of the canvas (docs/design/canvas/project/Main.dc.html, the LC map). */
     public const AVATAR_COLOURS = ['#9A3412', '#3730A3', '#15803D', '#86198F', '#0F766E', '#BE185D', '#374151', '#854D0E', '#4D7C0F', '#0369A1'];
 
