@@ -27,6 +27,7 @@ use App\Models\Person;
 use App\Models\Phase2SportTotal;
 use App\Models\SavedReport;
 use App\Models\Sport;
+use App\Models\StaGroup;
 use App\Models\Submission;
 use App\Models\User;
 use App\Services\Reports\Builder\Registry;
@@ -90,7 +91,11 @@ class DemoSeeder extends Seeder
 
         $sta = $this->user('Ali Haroona', 'ali.haroona@sta.example', Role::SuperAdmin);
         $staff = $this->user('Sara Almeer', 'sara.almeer@sta.example', Role::Sta);
-        $staff->syncPermissions(array_map(fn ($p) => $p->value, StaPermission::cases()));
+        // The old "all 11 rights" access as a group (everything except deleting people and managing users & groups).
+        $staffGroup = StaGroup::findOrCreate('STA staff', 'web');
+        $staffGroup->forceFill(['description' => 'STA staff: everything except deleting people and managing users and groups.'])->save();
+        $staffGroup->syncPermissions(StaPermission::grantsOf(StaPermission::cases()));
+        $staff->syncRoles([$staffGroup]);
 
         // Games are looked up by name, so a second run updates instead of duplicating.
         $game = Game::updateOrCreate(['name' => '6th Asian Indoor & Martial Arts Games 2026'],

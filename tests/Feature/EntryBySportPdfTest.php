@@ -94,7 +94,7 @@ it('is regenerated after an STA save of a submitted Phase 1', function () {
     Bus::fake();
     $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->subDay()]);
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    grantSta($sta, StaPermission::ViewSubmissions, StaPermission::EditSubmissions);
     actingInAdmin($sta);
 
     livewire(StaPhase1Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->p1])

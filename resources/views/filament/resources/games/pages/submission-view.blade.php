@@ -4,7 +4,7 @@
         $s = $this->submission;
         $deadline = $s->gamePhase()->effectiveDeadline($s);
         $showMedical = \App\Models\Person::canViewMedical(auth()->user());
-        $links = \App\Filament\Resources\Games\Pages\GameDashboard::pdfLinks($s);
+        $links = \App\Enums\StaArea::Submissions->can(\App\Enums\StaAction::Print) ? \App\Filament\Resources\Games\Pages\GameDashboard::pdfLinks($s) : [];
     @endphp
 
     <x-sta.card>

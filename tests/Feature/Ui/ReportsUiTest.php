@@ -40,7 +40,7 @@ it('defaults to the first game the user may report on and ignores any other', fu
     $published = Game::factory()->create(['name' => 'Published Games']);
     $draft = Game::factory()->draft()->create(['name' => 'Draft Games']);
     $user = User::factory()->sta()->create();
-    $user->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($user, StaPermission::ViewReports);
     actingInAdmin($user);
 
     livewire(Reports::class)->assertSet('game', $published->id)->assertDontSee('Draft Games')
@@ -96,7 +96,7 @@ it('renders a game\'s own reports page with the same band', function () {
 it('shows saved reports as cards with subject, filters and grouping, and exports one', function () {
     Association::factory()->create(['name' => 'Bahrain Judo Federation']);
     $other = User::factory()->sta()->create(['name' => 'Other']);
-    $other->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($other, StaPermission::ViewReports);
     $mine = savedUiReport($this->admin, 'private', 'Judo people', [
         'filters' => [['field' => 'full_name', 'op' => 'contains', 'value' => 'ali']],
         'groups' => [['field' => 'association', 'bucket' => null]],

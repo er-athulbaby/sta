@@ -76,7 +76,7 @@ it('never pre-ticks the cross-check on edit, needs it on every save and shows wh
 
 it('stamps the STA user who cross-checks in the admin form', function () {
     $sta = actingInAdmin(User::factory()->sta()->create());
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
 
     livewire(AdminCreatePerson::class)->fillForm([...crossCheckAthlete(), 'association_id' => $this->assoc->id])->call('create')
         ->assertHasFormErrors(['cross_checked' => 'accepted']);
@@ -172,7 +172,7 @@ it('lets only manage_master_data users manage relationships, and never deletes t
     $sta = actingInAdmin(User::factory()->sta()->create());
     $this->get(RelationshipResource::getUrl('index'))->assertForbidden();
 
-    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    grantSta($sta, StaPermission::ManageMasterData);
     $this->get(RelationshipResource::getUrl('index'))->assertOk()->assertSee('Relationships');
     livewire(ListRelationships::class)->loadTable()->assertCanSeeTableRecords(Relationship::orderBy('sort_order')->take(5)->get(), inOrder: true);
 

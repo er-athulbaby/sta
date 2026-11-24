@@ -26,7 +26,7 @@ beforeEach(function () {
     $this->inactive = User::factory()->assocEditor($this->assoc)->inactive()->create();
     $this->otherUser = User::factory()->assocAdmin()->create();
     $this->sta = User::factory()->sta()->create(['name' => 'Huda STA']);
-    $this->sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    grantSta($this->sta, StaPermission::ViewSubmissions, StaPermission::EditSubmissions);
 });
 
 it('lets STA with edit_submissions comment and emails the association\'s active users', function () {
@@ -51,7 +51,7 @@ it('words the email with the game, phase and comment', function () {
 
 it('hides the comment action without edit_submissions', function () {
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])->assertActionHidden('comment');
 });
@@ -67,7 +67,7 @@ it('shows comments read-only on the association\'s phase page, escaped', functio
 
 it('refuses a comment from STA with view_submissions only', function () {
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
 
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])

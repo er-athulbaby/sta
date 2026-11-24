@@ -4,6 +4,7 @@
     use App\Filament\Resources\Associations\Tables\AssociationsTable;
     use App\Support\Sta;
 
+    $can = fn (string $action) => \App\Enums\StaArea::Associations->can(\App\Enums\StaAction::from($action));
     $records = $this->getTableRecords();
     $sel = $this->panelAssociation();
     $pill = fn (string $bg, string $fg, ?string $ring = null) => 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: '.$bg.'; color: '.$fg.($ring ? '; box-shadow: inset 0 0 0 1px '.$ring : '');
@@ -78,9 +79,9 @@
                     </div>
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px">
-                    <a href="{{ \App\Filament\Resources\Associations\AssociationResource::getUrl('edit', ['record' => $sel]) }}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box">Edit details</a>
-                    <button type="button" wire:click="mountTableAction('invite', '{{ $sel->getKey() }}')" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 13px Inter, sans-serif; cursor: pointer">Invite admin</button>
-                    <button type="button" wire:click="mountTableAction('inviteEditor', '{{ $sel->getKey() }}')" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-brand, #1F3A5F); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer">Invite editor</button>
+                    @if ($can('save'))<a href="{{ \App\Filament\Resources\Associations\AssociationResource::getUrl('edit', ['record' => $sel]) }}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box">Edit details</a>@endif
+                    @if ($can('new'))<button type="button" wire:click="mountTableAction('invite', '{{ $sel->getKey() }}')" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 13px Inter, sans-serif; cursor: pointer">Invite admin</button>@endif
+                    @if ($can('new'))<button type="button" wire:click="mountTableAction('inviteEditor', '{{ $sel->getKey() }}')" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-brand, #1F3A5F); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer">Invite editor</button>@endif
                 </div>
             </section>
 
@@ -96,9 +97,9 @@
                             <span style="{{ $u->is_active ? $pills['active'] : $pills['off'] }}">{{ $u->is_active ? 'Active' : 'Deactivated' }}</span>
                             @if ($u->id !== auth()->id())
                                 @if ($u->is_active)
-                                    <button type="button" wire:click="mountAction('resetUserPassword', { id: {{ $u->id }} })" aria-label="Send {{ $u->name }} a password reset link" style="{{ $small }}; color: var(--sta-fg-strong, #334155)">Reset password</button>
+                                    @if ($can('save'))<button type="button" wire:click="mountAction('resetUserPassword', { id: {{ $u->id }} })" aria-label="Send {{ $u->name }} a password reset link" style="{{ $small }}; color: var(--sta-fg-strong, #334155)">Reset password</button>@endif
                                 @endif
-                                <button type="button" wire:click="mountAction('{{ $u->is_active ? 'deactivateUser' : 'activateUser' }}', { id: {{ $u->id }} })" aria-label="{{ ($u->is_active ? 'Deactivate ' : 'Activate ').$u->name }}" style="{{ $small }}; color: var(--sta-fg-strong, #334155)">{{ $u->is_active ? 'Deactivate' : 'Activate' }}</button>
+                                @if ($can('save'))<button type="button" wire:click="mountAction('{{ $u->is_active ? 'deactivateUser' : 'activateUser' }}', { id: {{ $u->id }} })" aria-label="{{ ($u->is_active ? 'Deactivate ' : 'Activate ').$u->name }}" style="{{ $small }}; color: var(--sta-fg-strong, #334155)">{{ $u->is_active ? 'Deactivate' : 'Activate' }}</button>@endif
                             @endif
                         </li>
                     @endforeach
@@ -108,7 +109,7 @@
             <section aria-labelledby="inv-title" style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px">
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px 8px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
                     <h3 id="inv-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Invitations</h3>
-                    <button type="button" wire:click="mountTableAction('inviteUser', '{{ $sel->getKey() }}')" aria-label="Invite a user to {{ $sel->name }}" title="Invite admin or editor" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
+                    @if ($can('new'))<button type="button" wire:click="mountTableAction('inviteUser', '{{ $sel->getKey() }}')" aria-label="Invite a user to {{ $sel->name }}" title="Invite admin or editor" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>@endif
                 </div>
                 @forelse ($sel->invitations as $inv)
                     @php $link = $this->inviteLinks[$sel->id.':'.mb_strtolower($inv->email)] ?? null; @endphp
@@ -131,8 +132,8 @@
                             </span>
                         </label>
                         <div style="display: flex; gap: 8px">
-                            <button type="button" wire:click="mountAction('resendInvite', { id: {{ $inv->id }} })" style="{{ $small }}">Resend email</button>
-                            <button type="button" wire:click="mountAction('revokeInvite', { id: {{ $inv->id }} })" style="{{ $small }}; border-color: var(--sta-bd-red-300, #FCA5A5); color: var(--sta-fg-red-800, #991B1B)">Revoke</button>
+                            @if ($can('save'))<button type="button" wire:click="mountAction('resendInvite', { id: {{ $inv->id }} })" style="{{ $small }}">Resend email</button>@endif
+                            @if ($can('delete'))<button type="button" wire:click="mountAction('revokeInvite', { id: {{ $inv->id }} })" style="{{ $small }}; border-color: var(--sta-bd-red-300, #FCA5A5); color: var(--sta-fg-red-800, #991B1B)">Revoke</button>@endif
                         </div>
                     </div>
                 @empty

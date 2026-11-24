@@ -4,7 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Enums\PhaseStatus;
 use App\Enums\Role;
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Filament\Resources\ActivityLogs\ActivityLogResource;
 use App\Filament\Resources\Associations\AssociationResource;
 use App\Filament\Resources\Associations\Tables\AssociationsTable;
@@ -20,6 +21,7 @@ use App\Services\Reports\Builder\Subjects\People;
 use App\Support\GameProgress;
 use App\Support\Sta;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Support\Components\Attributes\Unexposed;
@@ -59,16 +61,37 @@ class Dashboard extends BaseDashboard
     }
 
     #[Unexposed]
-    public function allowed(StaPermission $p): bool
+    public function allowed(StaArea $area, StaAction $action = StaAction::Access): bool
     {
-        return (bool) auth()->user()?->can($p->value);
+        return $area->can($action);
+    }
+
+    /**
+     * The admin home: without Dashboard: Access the user lands on the first page they may open instead; with nothing
+     * to open they stay on an empty home (every band checks its own permission), not on an error.
+     */
+    public function mount(): void
+    {
+        if (StaArea::Dashboard->can()) {
+            return;
+        }
+        $url = collect(Filament::getNavigation())->flatMap(fn ($group) => $group->getItems())
+            ->map(fn ($item) => $item->getUrl())->first(fn (?string $url) => filled($url) && $url !== static::getUrl());
+        if ($url) {
+            $this->redirect($url);
+        }
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return StaArea::Dashboard->can();
     }
 
     /** Published games that have not ended, soonest first. */
     #[Unexposed]
     public function activeGames(): Collection
     {
-        if (! $this->allowed(StaPermission::ViewSubmissions)) {
+        if (! $this->allowed(StaArea::Submissions)) {
             return collect();
         }
 
@@ -87,7 +110,7 @@ class Dashboard extends BaseDashboard
     #[Unexposed]
     public function canRemind(Game $game): bool
     {
-        return $game->isPublished() && $this->allowed(StaPermission::SendReminders);
+        return $game->isPublished() && $this->allowed(StaArea::Reminders);
     }
 
     /**
@@ -149,7 +172,7 @@ class Dashboard extends BaseDashboard
 
         // Replies from associations (M6): the user's unread reply bells; opening the submission marks them read.
         $unread = fn () => auth()->user()->unreadNotifications()->where('type', NewComment::class);
-        if ($this->allowed(StaPermission::EditSubmissions) && ($n = $unread()->count())) {
+        if ($this->allowed(StaArea::Submissions, StaAction::Save) && ($n = $unread()->count())) {
             $ids = $unread()->latest('created_at')->limit(3)->get()->pluck('data.comment_id')->filter();
             // A deleted reply (or submission) resolves to nothing: no item rather than a broken one.
             $latest = Comment::with('submission.association')->whereIn('id', $ids)->latest('id')->get()->filter(fn (Comment $c) => $c->submission);
@@ -161,7 +184,7 @@ class Dashboard extends BaseDashboard
             }
         }
 
-        if ($this->allowed(StaPermission::ManageAssociations) && ($n = Invitation::pending()->count())) {
+        if ($this->allowed(StaArea::Associations) && ($n = Invitation::pending()->count())) {
             $first = Invitation::pending()->with('association')->oldest('id')->limit(2)->get()
                 ->map(fn (Invitation $i) => ($i->association?->name ?? $i->email).' '.match ($i->role) {
                     Role::AssocAdmin => 'admin', Role::AssocEditor => 'editor', default => mb_strtolower($i->role->label()),
@@ -208,7 +231,7 @@ class Dashboard extends BaseDashboard
     #[Unexposed]
     public function registry(): ?array
     {
-        if (! $this->allowed(StaPermission::ManagePeople)) {
+        if (! $this->allowed(StaArea::People)) {
             return null;
         }
 
@@ -251,7 +274,7 @@ class Dashboard extends BaseDashboard
     #[Unexposed]
     public function associations(): Collection
     {
-        if (! $this->allowed(StaPermission::ManageAssociations)) {
+        if (! $this->allowed(StaArea::Associations)) {
             return collect();
         }
         $per = $this->registry()['perAssociation'] ?? collect();
@@ -275,7 +298,7 @@ class Dashboard extends BaseDashboard
     /** The row's Active switch: the same change as the association edit form's Active toggle, with its permission. */
     public function toggleActive(int $id): void
     {
-        abort_unless($this->allowed(StaPermission::ManageAssociations), 403);
+        abort_unless($this->allowed(StaArea::Associations, StaAction::Save), 403);
         $a = Association::query()->findOrFail($id);
         $a->update(['is_active' => ! $a->is_active]);
     }
@@ -284,7 +307,7 @@ class Dashboard extends BaseDashboard
     #[Unexposed]
     public function recentActivity(): Collection
     {
-        if (! $this->allowed(StaPermission::ViewAuditLog)) {
+        if (! $this->allowed(StaArea::AuditLog)) {
             return collect();
         }
 

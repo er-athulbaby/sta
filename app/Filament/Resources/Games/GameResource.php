@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Games;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Resources\Games\Pages\CreateGame;
 use App\Filament\Resources\Games\Pages\EditGame;
 use App\Filament\Resources\Games\Pages\GameDashboard;
@@ -28,7 +28,6 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Gate;
 
 class GameResource extends Resource
 {
@@ -40,37 +39,20 @@ class GameResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFlag;
 
+    /** The games list is also the way to a game's dashboard, reports and game system files. */
     public static function canAccess(): bool
     {
-        $u = auth()->user();
-
-        return (bool) ($u?->can(StaPermission::ManageGames->value) || $u?->can(StaPermission::ViewSubmissions->value)
-            || $u?->can(StaPermission::ViewReports->value) || $u?->can(StaPermission::ExportGameFiles->value));
+        return StaArea::Games->can() || StaArea::Submissions->can() || StaArea::Reports->can() || StaArea::GameFiles->can();
     }
 
-    public static function getCreateAuthorizationResponse(): Response
+    /** Create needs Games: New, edit (every setup screen) Games: Save; games are never deleted. */
+    public static function getAuthorizationResponse(string $action, ?Model $record = null): Response
     {
-        return static::manageResponse();
-    }
+        if (in_array($action, ['viewAny', 'view'], true)) {
+            return static::canAccess() ? Response::allow() : Response::deny();
+        }
 
-    public static function getEditAuthorizationResponse(Model $record): Response
-    {
-        return static::manageResponse();
-    }
-
-    public static function getDeleteAuthorizationResponse(Model $record): Response
-    {
-        return static::manageResponse();
-    }
-
-    public static function getDeleteAnyAuthorizationResponse(): Response
-    {
-        return static::manageResponse();
-    }
-
-    private static function manageResponse(): Response
-    {
-        return Gate::inspect(StaPermission::ManageGames->value);
+        return StaArea::Games->authorize($action);
     }
 
     public static function form(Schema $schema): Schema

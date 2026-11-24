@@ -3,7 +3,8 @@
 namespace App\Jobs;
 
 use App\Enums\PersonType;
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Models\Association;
 use App\Models\ExportLayout;
 use App\Models\Person;
@@ -65,7 +66,7 @@ class BuildGameFilesZip implements ShouldQueue
         // Re-checked at run time: the game may have gone back to draft, or the requester lost the permission, since the click.
         $refusal = match (true) {
             ! $game->isPublished() => "{$game->name} is a draft: draft games have no game system files.",
-            ! $this->user->can(StaPermission::ExportGameFiles->value) => 'You no longer have permission to export game system files.',
+            ! StaArea::GameSystemFiles->can(StaAction::Print, $this->user) => 'You no longer have permission to export game system files.',
             default => null,
         };
         if ($refusal) {

@@ -44,7 +44,7 @@
                     <h3 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600">{{ GameReports::REPORTS[$this->report] }}</h3>
                     <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $description }} · preview of the first {{ count($preview) }} of {{ $total }} {{ str('row')->plural($total) }}</span>
                 </div>
-                <button type="button" wire:click="export" @disabled(! $hasGame) style="{{ $outline }}">
+                <button type="button" wire:click="export" @disabled(! $hasGame || ! \App\Enums\StaArea::Reports->can(\App\Enums\StaAction::Print)) style="{{ $outline }}">
                     <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
                     Export to Excel
                 </button>

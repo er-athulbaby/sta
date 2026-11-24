@@ -88,12 +88,12 @@ it('reminds one association from the row', function () {
 
 it('hides Export Excel without view_reports and exports with it', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertDontSee('Export Excel')
         ->call('exportExcel')->assertForbidden();
 
-    $sta->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($sta, StaPermission::ViewReports);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertSee('Export Excel')
         ->call('exportExcel')->assertFileDownloaded('game-'.$this->game->id.'-dashboard.xlsx');
 });
@@ -257,7 +257,7 @@ it('exports only the rows on screen, names as literal text', function () {
 
 it('hides and refuses the row Remind on an unpublished game or without send_reminders', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
         ->assertActionHidden('remindOne')->assertDontSeeHtml('aria-label="Remind Late Fed"')

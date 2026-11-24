@@ -63,7 +63,7 @@ it('adds View PDF after View entry when the submitted entry has a PDF', function
 
 it('hides Edit as STA and Send remark without edit_submissions, and Re-open / Extend without manage_games', function () {
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
     $page = cellMenuDashboard($this->game);
     expect(cellMenuLabels($page, $this->done, 2))->toBe(['View entry'])
@@ -73,7 +73,7 @@ it('hides Edit as STA and Send remark without edit_submissions, and Re-open / Ex
         ->assertSeeHtml('<span class="sta-pill sta-pill-none">Not started</span>')
         ->assertDontSee('Edit as STA')->assertDontSee('Send remark');
 
-    $viewer->givePermissionTo(StaPermission::EditSubmissions->value);
+    grantSta($viewer, StaPermission::EditSubmissions);
     expect(cellMenuLabels(cellMenuDashboard($this->game), $this->late, 3))->toBe(['Edit as STA', 'Send remark']);
 });
 

@@ -48,13 +48,13 @@ beforeEach(function () {
     app(ShortListChecks::class)->preload($this->p4); // the copy of the Long List happens on first open (Ali and Omar)
     $this->p4->update(['status' => SubmissionStatus::Submitted, 'reference_no' => 'BJF-G001-P4-R1', 'revision' => 1, 'justification' => 'Both can medal']);
     $this->sta = User::factory()->sta()->create();
-    $this->sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    grantSta($this->sta, StaPermission::ViewSubmissions, StaPermission::EditSubmissions);
     actingInAdmin($this->sta);
 });
 
 it('shows the Short List with its over-limit lines and the justification', function () {
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
 
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->p4])
@@ -88,7 +88,7 @@ it('keeps the Long List rule for STA', function () {
 
 it('needs edit_submissions for the STA Short List page', function () {
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
     $this->get(GameResource::getUrl('submission-edit-4', ['record' => $this->game, 'submission' => $this->p4]))->assertForbidden();
 

@@ -59,7 +59,7 @@ it('hides the sections a user may not see', function () {
 
 it('hides the registry columns of the associations table without manage_people (ruling U6)', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManageAssociations->value);
+    grantSta($sta, StaPermission::ManageAssociations);
     actingInAdmin($sta);
 
     livewire(Dashboard::class)->assertSee('All associations')->assertSee('Needs your attention')
@@ -109,7 +109,7 @@ it('reminds the associations that have not submitted, from "Remind N"', function
 it('refuses the reminder without send_reminders', function () {
     Notification::fake();
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
 
     livewire(Dashboard::class)->assertSee('Asian Indoor Games')->assertDontSee('Remind 1')
@@ -124,7 +124,7 @@ it('switches an association active or inactive, only with manage_associations', 
     expect($this->assoc->fresh()->is_active)->toBeFalse();
 
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
     livewire(Dashboard::class)->call('toggleActive', $this->assoc->id)->assertForbidden();
     expect($this->assoc->fresh()->is_active)->toBeFalse();

@@ -70,7 +70,7 @@ it('hides sensitive fields from STA without view_medical and keeps their values 
     $p = Person::factory()->create(['association_id' => $this->assoc->id]);
     $p->syncExtraValues([$this->blood->id => 'B', $this->shirt->id => 'ALI']);
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
     actingInAdmin($sta);
 
     $page = livewire(AdminEditPerson::class, ['record' => $p->getRouteKey()])
@@ -79,7 +79,7 @@ it('hides sensitive fields from STA without view_medical and keeps their values 
     $page->fillForm(['extra' => [$this->shirt->id => 'ALI H']])->set('data.cross_checked', true)->call('save')->assertHasNoFormErrors();
     expect($p->fresh()->extraValues())->toBe([$this->blood->id => 'B', $this->shirt->id => 'ALI H']);
 
-    $sta->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($sta, StaPermission::ViewMedical);
     actingInAdmin($sta->fresh());
     livewire(AdminEditPerson::class, ['record' => $p->getRouteKey()])->assertFormFieldExists("extra.{$this->blood->id}")
         ->assertSchemaStateSet(["extra.{$this->blood->id}" => 'B']);

@@ -15,7 +15,7 @@ use function Pest\Livewire\livewire;
 it('lets STA with permission create an association with a private logo', function () {
     Storage::fake(config('filesystems.private'));
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManageAssociations->value);
+    grantSta($sta, StaPermission::ManageAssociations);
     actingInAdmin($sta);
 
     livewire(CreateAssociation::class)
@@ -90,7 +90,7 @@ it('keeps the association\'s own stored logo when saving in admin and portal', f
 
 it('lets STA deactivate an association and logs it', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManageAssociations->value);
+    grantSta($sta, StaPermission::ManageAssociations);
     actingInAdmin($sta);
     $assoc = Association::factory()->create();
     expect($assoc->is_active)->toBeTrue();

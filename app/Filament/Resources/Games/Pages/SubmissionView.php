@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\Games\Pages;
 
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Enums\SubmissionStatus;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\Comment;
@@ -33,7 +34,7 @@ class SubmissionView extends Page
 
     public static function canAccess(array $parameters = []): bool
     {
-        return (bool) auth()->user()?->can(StaPermission::ViewSubmissions->value);
+        return StaArea::Submissions->can();
     }
 
     /** $submission is a model over HTTP (Livewire binds the typed property) and an id in Livewire tests. */
@@ -115,12 +116,12 @@ class SubmissionView extends Page
     }
 
     /**
-     * STA "Add remark" (edit_submissions), here and on the game dashboard's phase cells. $submission(array $arguments)
+     * STA "Add remark" (Submissions: Save), here and on the game dashboard's phase cells. $submission(array $arguments)
      * resolves the submission; a published game's association gets a bell and an email.
      */
     public static function remarkAction(string $name, \Closure $submission): Action
     {
-        $allowed = fn () => (bool) auth()->user()->can(StaPermission::EditSubmissions->value);
+        $allowed = fn () => StaArea::Submissions->can(StaAction::Save);
 
         return Action::make($name)->label('Add remark')
             ->visible($allowed)
@@ -138,7 +139,7 @@ class SubmissionView extends Page
     {
         return [
             Action::make('edit')->label('Edit as STA')
-                ->visible(fn () => auth()->user()->can(StaPermission::EditSubmissions->value) && in_array($this->submission->phase, [1, 2, 3, 4], true))
+                ->visible(fn () => StaArea::EditAsSta->can(StaAction::Save) && in_array($this->submission->phase, [1, 2, 3, 4], true))
                 ->url(fn () => GameResource::getUrl('submission-edit-'.$this->submission->phase, ['record' => $this->record, 'submission' => $this->submission])),
             self::remarkAction('comment', fn () => $this->submission),
         ];

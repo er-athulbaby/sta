@@ -248,7 +248,7 @@
                 </div>
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--sta-bd-line, #E2E8F0)">
                     <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">Showing {{ number_format(count($result->rows)) }} of {{ number_format($result->rowCount) }} — export for all</span>
-                    <button type="button" wire:click="export" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 14px Inter, sans-serif; cursor: pointer">Export to Excel</button>
+                    <button type="button" wire:click="export" @disabled(! $this->canExport()) style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 14px Inter, sans-serif; cursor: pointer">Export to Excel</button>
                 </div>
             @endif
         </section>

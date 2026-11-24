@@ -27,9 +27,9 @@ beforeEach(function () {
     $this->admin = User::factory()->assocAdmin($this->assoc)->create();
     $this->editor = User::factory()->assocEditor($this->assoc)->create();
     $this->sta = User::factory()->sta()->create(['name' => 'Huda STA']);
-    $this->sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    grantSta($this->sta, StaPermission::ViewSubmissions, StaPermission::EditSubmissions);
     $this->viewer = User::factory()->sta()->create();
-    $this->viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($this->viewer, StaPermission::ViewSubmissions);
     $this->super = User::factory()->superAdmin()->create();
 });
 
@@ -104,7 +104,7 @@ it('lets an association editor reply on the phase page; STA with edit_submission
 
 it('sends no reply notification to an inactive STA user with edit_submissions', function () {
     $inactive = User::factory()->sta()->inactive()->create();
-    $inactive->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    grantSta($inactive, StaPermission::ViewSubmissions, StaPermission::EditSubmissions);
     Comment::post($this->sub, $this->sta, 'Remark');
     Notification::fake();
     Comment::post($this->sub, $this->editor, 'Reply');

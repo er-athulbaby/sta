@@ -50,7 +50,7 @@ beforeEach(function () {
         'event_id' => Event::factory()->create(['sport_id' => $this->judo->sport_id, 'name' => 'Men -60kg', 'gender' => EventGender::Men])->id]);
     $this->ali = Person::factory()->complete()->create(['association_id' => $this->assoc->id, 'first_name' => 'Ali', 'last_name' => 'Hasan']);
     $this->sta = User::factory()->sta()->create(['name' => 'Sta Editor']);
-    $this->sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    grantSta($this->sta, StaPermission::ViewSubmissions, StaPermission::EditSubmissions);
     actingInAdmin($this->sta);
 });
 
@@ -114,7 +114,7 @@ it('refuses a stale STA save', function () {
 it('refuses STA without edit_submissions, another game and the wrong phase page', function () {
     $s = Submission::for($this->game, $this->assoc, 3);
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
     $this->get(GameResource::getUrl('submission-edit-3', ['record' => $this->game, 'submission' => $s]))->assertForbidden();
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])->assertActionHidden('edit');
@@ -196,7 +196,7 @@ it('lets STA create a registry person from the Long List panel only with Manage 
     $page = livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])->call('openPanel', 'athlete');
     $page->call('createPerson')->assertForbidden();
 
-    $this->sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($this->sta, StaPermission::ManagePeople);
     livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
         ->call('openPanel', 'athlete')->assertSee('Or add a new athlete');
 });

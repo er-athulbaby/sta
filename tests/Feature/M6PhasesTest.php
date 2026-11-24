@@ -164,7 +164,7 @@ it('works for Phase 1 too and hides Edit as STA without edit_submissions', funct
         ->assertRedirect(GameResource::getUrl('submission-edit-1', ['record' => $this->game, 'submission' => Submission::for($this->game, $this->late, 1)]));
 
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
     m6Dashboard($this->game)->assertDontSee('Edit as STA')->call('editAsSta', $this->late->id, 3)->assertForbidden();
     expect(Submission::withoutGlobalScopes()->where(['association_id' => $this->late->id, 'phase' => 3])->exists())->toBeFalse();

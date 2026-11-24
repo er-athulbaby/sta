@@ -31,7 +31,7 @@ beforeEach(function () {
     $this->admin = User::factory()->assocAdmin($this->assoc)->create();
     $this->editor = User::factory()->assocEditor($this->assoc)->create();
     $this->sta = User::factory()->sta()->create();
-    $this->sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($this->sta, StaPermission::ViewSubmissions);
     $this->wf = app(SubmissionWorkflow::class);
 });
 

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Relationships;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\Relationships\Pages\CreateRelationship;
 use App\Filament\Resources\Relationships\Pages\EditRelationship;
@@ -34,9 +34,9 @@ class RelationshipResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ManageMasterData;
+        return StaArea::Relationships;
     }
 
     public static function form(Schema $schema): Schema

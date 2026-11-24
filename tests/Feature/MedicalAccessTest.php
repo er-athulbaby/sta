@@ -22,7 +22,7 @@ it('decides who may see medical data', function () {
     $assocUser = User::factory()->assocEditor()->create();
     $sta = User::factory()->sta()->create();
     $medic = User::factory()->sta()->create();
-    $medic->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($medic, StaPermission::ViewMedical);
 
     expect(Person::canViewMedical($assocUser))->toBeTrue()
         ->and(Person::canViewMedical($sta))->toBeFalse()
@@ -54,11 +54,11 @@ it('denies medical access to nobody', function () {
 it('hides the WADA certificate link from STA without view_medical', function () {
     $person = Person::factory()->create(['wada_certificate_path' => 'wada/x.pdf']);
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
     actingInAdmin($sta);
     Livewire\Livewire::test(ListPeople::class)->assertTableActionHidden('view_wada_certificate_path', $person);
 
-    $sta->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($sta, StaPermission::ViewMedical);
     actingInAdmin($sta->fresh());
     Livewire\Livewire::test(ListPeople::class)->assertTableActionVisible('view_wada_certificate_path', $person);
 });

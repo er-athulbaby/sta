@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\StaUsers\Pages;
 
 use App\Filament\Resources\StaUsers\StaUserResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Contracts\View\View;
 
 class ListStaUsers extends ListRecords
 {
@@ -16,10 +16,9 @@ class ListStaUsers extends ListRecords
         return [];
     }
 
-    protected function getHeaderActions(): array
+    /** "Users & groups" header with the Groups / Users tabs and New user. */
+    public function getHeader(): ?View
     {
-        return [
-            CreateAction::make(),
-        ];
+        return view('filament.resources.sta-users.header', ['tab' => 'users']);
     }
 }

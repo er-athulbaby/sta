@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\People;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Shared\PersonForm;
 use App\Filament\Shared\PersonTable;
@@ -27,9 +27,9 @@ class PersonResource extends Resource
 
     protected static ?string $pluralModelLabel = 'people';
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ManagePeople;
+        return StaArea::People;
     }
 
     public static function form(Schema $schema): Schema

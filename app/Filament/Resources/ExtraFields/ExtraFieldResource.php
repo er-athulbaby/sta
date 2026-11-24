@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ExtraFields;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\ExtraFields\Pages\CreateExtraField;
 use App\Filament\Resources\ExtraFields\Pages\EditExtraField;
@@ -30,9 +30,9 @@ class ExtraFieldResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ManageMasterData;
+        return StaArea::ExtraFields;
     }
 
     public static function form(Schema $schema): Schema

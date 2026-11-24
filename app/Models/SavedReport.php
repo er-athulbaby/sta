@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Services\Reports\Builder\ReportDefinition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -37,7 +37,7 @@ class SavedReport extends Model
         if ($user->isSuperAdmin()) {
             return;
         }
-        if (! $user->can(StaPermission::ViewReports->value)) {
+        if (! StaArea::Reports->can(user: $user)) {
             $query->whereRaw('1 = 0');
 
             return;

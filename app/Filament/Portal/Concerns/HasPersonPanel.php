@@ -4,7 +4,8 @@ namespace App\Filament\Portal\Concerns;
 
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Filament\Shared\PersonForm;
 use App\Models\GameSport;
 use App\Models\Person;
@@ -91,7 +92,7 @@ trait HasPersonPanel
     /** The short form adds to the association's registry: always on the portal, for STA only with Manage people. */
     public function canCreatePeople(): bool
     {
-        return filament()->getId() === 'portal' || (bool) auth()->user()?->can(StaPermission::ManagePeople->value);
+        return filament()->getId() === 'portal' || StaArea::People->can(StaAction::New);
     }
 
     public function panelType(): PersonType

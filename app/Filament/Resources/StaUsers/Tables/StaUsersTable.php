@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StaUsers\Tables;
 
+use App\Models\User;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -13,11 +14,14 @@ class StaUsersTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable(),
+                TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('email')->searchable(),
-                TextColumn::make('permissions_count')->counts('permissions')->label('Permissions'),
-                IconColumn::make('is_active')->boolean(),
+                TextColumn::make('group')->label('Group')
+                    ->state(fn (User $record) => $record->isSuperAdmin() ? 'Super Admin (everything)' : ($record->group()?->name ?? 'No group'))
+                    ->badge()->color(fn (User $record) => $record->isSuperAdmin() ? 'primary' : ($record->group() ? 'gray' : 'danger')),
+                IconColumn::make('is_active')->label('Active')->boolean(),
             ])
+            ->defaultSort('name')
             ->recordActions([EditAction::make()]);
     }
 }

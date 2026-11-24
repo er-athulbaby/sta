@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Sports\Pages;
 
 use App\Enums\EventGender;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Filament\Resources\Sports\SportResource;
 use App\Models\Association;
 use App\Models\GameEvent;
@@ -82,6 +84,7 @@ class ListSports extends ListRecords
     /** The details card saves each field on change with the Edit page's rules (SportForm). */
     public function saveSport(int $id, string $field, mixed $value): void
     {
+        abort_unless(StaArea::Sports->can(StaAction::Save), 403);
         $sport = Sport::query()->findOrFail($id);
         $rules = [
             'name' => ['required', 'string', 'max:255', Rule::unique('sports', 'name')->ignore($sport->id)],
@@ -103,6 +106,7 @@ class ListSports extends ListRecords
 
     public function addEvent(): void
     {
+        abort_unless(StaArea::Sports->can(StaAction::New), 403);
         $sport = $this->panelSport();
         if (! $sport) {
             return;
@@ -127,6 +131,7 @@ class ListSports extends ListRecords
 
     public function toggleEvent(int $id): void
     {
+        abort_unless(StaArea::Sports->can(StaAction::Save), 403);
         $event = $this->panelSport()?->events()->findOrFail($id);
         $event?->update(['is_active' => ! $event->is_active]);
     }

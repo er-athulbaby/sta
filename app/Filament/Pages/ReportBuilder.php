@@ -2,7 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Exports\Xlsx;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Models\SavedReport;
@@ -48,9 +49,9 @@ class ReportBuilder extends Page
     /** @var array<string, mixed> */
     public array $def = [];
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ViewReports;
+        return StaArea::Reports;
     }
 
     public static function getRoutePath(Panel $panel): string
@@ -95,9 +96,20 @@ class ReportBuilder extends Page
         return Registry::get((string) ($this->def['subject'] ?? ''));
     }
 
+    /** A new report needs Reports: New to be saved; a saved one is changed by its creator with Reports: Save. */
     public function canEdit(): bool
     {
-        return $this->reportId === null || auth()->user()->can('update', $this->saved());
+        return $this->reportId === null ? auth()->user()->can('create', SavedReport::class) : auth()->user()->can('update', $this->saved());
+    }
+
+    public function canDelete(): bool
+    {
+        return $this->reportId !== null && auth()->user()->can('delete', $this->saved());
+    }
+
+    public function canExport(): bool
+    {
+        return StaArea::Reports->can(StaAction::Print);
     }
 
     /** The saved report this page is on, after checking the user may still run it (it may have been made private). */
@@ -243,6 +255,7 @@ class ReportBuilder extends Page
     /** All rows (no screen cap), with the same group subtotal lines and grand total as the screen. */
     public function export(): StreamedResponse
     {
+        abort_unless($this->canExport(), 403);
         if ($this->reportId !== null) {
             $this->saved();
         }

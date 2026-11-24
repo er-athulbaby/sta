@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\StaPermission;
 use App\Models\Association;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -51,6 +52,14 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/** Gives an STA user the grid permissions the old on/off rights stand for (StaPermission::grants(), plus the Dashboard). */
+function grantSta(User $user, StaPermission ...$rights): User
+{
+    $user->givePermissionTo(StaPermission::grantsOf($rights));
+
+    return $user;
 }
 
 function actingInAdmin(User $user): User

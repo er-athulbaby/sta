@@ -75,7 +75,7 @@ it('lets only ManageMasterData users manage extra fields', function () {
     actingInAdmin($sta);
     $this->get(ExtraFieldResource::getUrl('index'))->assertForbidden();
 
-    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    grantSta($sta, StaPermission::ManageMasterData);
     $this->get(ExtraFieldResource::getUrl('index'))->assertOk();
 });
 
@@ -115,7 +115,7 @@ it('never reuses a fixed import column, the phone alias or a person attribute as
 it('lets only view_medical users change "sensitive", in the form and on the model', function () {
     $f = ExtraField::factory()->create(['sensitive' => true]);
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    grantSta($sta, StaPermission::ManageMasterData);
     actingInAdmin($sta);
 
     livewire(EditExtraField::class, ['record' => $f->getRouteKey()])->assertFormFieldIsDisabled('sensitive')
@@ -127,7 +127,7 @@ it('lets only view_medical users change "sensitive", in the form and on the mode
         ->and(fn () => ExtraField::factory()->create()->update(['sensitive' => true]))->toThrow(ValidationException::class, $message)
         ->and($f->fresh()->sensitive)->toBeTrue();
 
-    $sta->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($sta, StaPermission::ViewMedical);
     actingInAdmin($sta->fresh());
     livewire(EditExtraField::class, ['record' => $f->getRouteKey()])->assertFormFieldIsEnabled('sensitive');
     $f->fresh()->update(['sensitive' => false]);

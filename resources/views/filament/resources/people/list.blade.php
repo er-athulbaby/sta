@@ -130,7 +130,7 @@
             <div style="margin: 0 20px 16px; padding: 10px 12px; border-radius: 10px; background: var(--sta-bg-subtle, #F1F5F9); font-size: 12px; color: var(--sta-fg-strong, #334155); line-height: 1.5">Scans open through a secure link valid for 5 minutes.@if ($changed) Last changed by {{ $changed }} ·@endif @if ($audit)<a href="{{ $audit }}">see Audit log</a>@else see Audit log @endif.</div>
             <div style="margin-top: auto; display: flex; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--sta-bd-line, #E2E8F0)">
                 <a href="{{ \App\Filament\Resources\People\PersonResource::getUrl('edit', ['record' => $person]) }}" class="sta-btn-primary" style="flex: 1; min-height: 44px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; justify-content: center; text-decoration: none">Edit</a>
-                @if (auth()->user()?->isSuperAdmin())
+                @if (\App\Enums\StaArea::People->can(\App\Enums\StaAction::Delete))
                     <button type="button" wire:click="mountTableAction('delete', '{{ $person->getKey() }}')" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-red-300, #FCA5A5); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-red-800, #991B1B); font: 600 14px Inter, sans-serif; cursor: pointer">Delete (Super Admin)</button>
                 @endif
             </div>

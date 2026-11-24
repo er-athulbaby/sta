@@ -54,7 +54,7 @@ it('gates settings and clothing items behind manage_master_data', function () {
     $this->actingAs($sta)->get('/admin/settings')->assertForbidden();
     $this->actingAs($sta)->get('/admin/clothing-items')->assertForbidden();
 
-    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    grantSta($sta, StaPermission::ManageMasterData);
     $sta = $sta->fresh();
 
     $this->actingAs($sta)->get('/admin/settings')->assertOk();

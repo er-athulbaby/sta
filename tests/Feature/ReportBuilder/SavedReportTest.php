@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 function reportUser(): User
 {
     $user = User::factory()->sta()->create();
-    $user->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($user, StaPermission::ViewReports);
 
     return $user;
 }
@@ -45,7 +45,7 @@ it('lets the creator and a super admin change a report; others only see shared o
         ->and($admin->can('delete', $private))->toBeTrue()
         ->and($admin->can('delete', $shared))->toBeTrue();
 
-    $owner->revokePermissionTo(StaPermission::ViewReports->value);
+    $owner->revokePermissionTo(StaPermission::ViewReports->grants());
     $owner = $owner->fresh();
     expect($owner->can('view', $private))->toBeFalse()
         ->and($owner->can('update', $private))->toBeFalse()

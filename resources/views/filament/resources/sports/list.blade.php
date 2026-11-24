@@ -3,6 +3,8 @@
     use App\Enums\EventGender;
     use App\Support\Sta;
 
+    $canSave = \App\Enums\StaArea::Sports->can(\App\Enums\StaAction::Save);
+    $canNew = \App\Enums\StaArea::Sports->can(\App\Enums\StaAction::New);
     $records = $this->getTableRecords();
     $sel = $this->panelSport();
     $options = $this->associationOptions();
@@ -58,11 +60,11 @@
         <section aria-labelledby="sport-title" wire:key="sport-detail-{{ $sel->id }}" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
             <div style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; padding: 18px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end">
                 <label style="{{ $label }}">Sport name
-                    <input value="{{ $sel->name }}" wire:change="saveSport({{ $sel->id }}, 'name', $event.target.value)" maxlength="255" required style="{{ $field }}; padding: 0 12px" @error('sport.name') aria-invalid="true" @enderror>
+                    <input value="{{ $sel->name }}" @disabled(! $canSave) wire:change="saveSport({{ $sel->id }}, 'name', $event.target.value)" maxlength="255" required style="{{ $field }}; padding: 0 12px" @error('sport.name') aria-invalid="true" @enderror>
                     @error('sport.name')<span role="alert" style="font-weight: 500; color: var(--sta-fg-red-700, #B91C1C)">{{ $message }}</span>@enderror
                 </label>
                 <label style="{{ $label }}">Belongs to association
-                    <select wire:change="saveSport({{ $sel->id }}, 'association_id', $event.target.value)" style="{{ $field }}; padding: 0 10px">
+                    <select @disabled(! $canSave) wire:change="saveSport({{ $sel->id }}, 'association_id', $event.target.value)" style="{{ $field }}; padding: 0 10px">
                         @foreach ($options as $id => $name)
                             <option value="{{ $id }}" @selected($id === $sel->association_id)>{{ $name }}</option>
                         @endforeach
@@ -70,7 +72,7 @@
                     @error('sport.association_id')<span role="alert" style="font-weight: 500; color: var(--sta-fg-red-700, #B91C1C)">{{ $message }}</span>@enderror
                 </label>
                 <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600">
-                    <input type="checkbox" @checked($sel->is_active) wire:change="saveSport({{ $sel->id }}, 'is_active', $event.target.checked)" style="width: 20px; height: 20px; accent-color: var(--sta-bd-brand, #1F3A5F)">
+                    <input type="checkbox" @checked($sel->is_active) @disabled(! $canSave) wire:change="saveSport({{ $sel->id }}, 'is_active', $event.target.checked)" style="width: 20px; height: 20px; accent-color: var(--sta-bd-brand, #1F3A5F)">
                     Active
                 </label>
             </div>
@@ -81,8 +83,9 @@
                         <h2 id="sport-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600">{{ $sel->name }} events</h2>
                         <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">Events used in a game can be deactivated, not deleted</span>
                     </div>
-                    <a href="{{ \App\Filament\Resources\Sports\SportResource::getUrl('edit', ['record' => $sel]) }}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box">Rename events</a>
+                    @if ($canSave)<a href="{{ \App\Filament\Resources\Sports\SportResource::getUrl('edit', ['record' => $sel]) }}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box">Rename events</a>@endif
                 </div>
+                @if ($canNew)
                 <form wire:submit="addEvent" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 14px 20px; background: var(--sta-bg-surface-alt, #F8FAFC); border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
                     <label style="{{ $label }}; flex: 2 1 220px">New event name
                         <input wire:model="newName" placeholder="e.g. Male Singles" style="{{ $field }}; padding: 0 12px">
@@ -96,6 +99,7 @@
                     </label>
                     <button type="submit" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 14px Inter, sans-serif; cursor: pointer">Add event</button>
                 </form>
+                @endif
                 @if ($this->eventError)
                     <p role="alert" style="margin: 0; padding: 10px 20px; color: var(--sta-fg-red-800, #991B1B); background: var(--sta-bg-red-50, #FEF2F2); font-size: 13px">{{ $this->eventError }}</p>
                 @endif
@@ -117,7 +121,7 @@
                                     <td style="padding: 10px 12px"><span style="{{ $genderStyle[$e->gender->value] }}">{{ $e->gender->label() }}</span></td>
                                     <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ $n ? $n.($n === 1 ? ' game' : ' games') : 'Not yet' }}</td>
                                     <td style="padding: 2px 20px">
-                                        <button type="button" role="switch" aria-checked="{{ $e->is_active ? 'true' : 'false' }}" aria-label="Active: {{ $e->name }} {{ $e->gender->label() }}" wire:click="toggleEvent({{ $e->id }})" style="display: inline-flex; align-items: center; min-height: 44px; border: 0; padding: 0; background: transparent; cursor: pointer">
+                                        <button @disabled(! $canSave) type="button" role="switch" aria-checked="{{ $e->is_active ? 'true' : 'false' }}" aria-label="Active: {{ $e->name }} {{ $e->gender->label() }}" wire:click="toggleEvent({{ $e->id }})" style="display: inline-flex; align-items: center; min-height: 44px; border: 0; padding: 0; background: transparent; cursor: pointer">
                                             <span style="position: relative; width: 48px; height: 28px; border-radius: 999px; background: {{ $e->is_active ? 'var(--sta-bg-brand, #1F3A5F)' : 'var(--sta-bg-line-strong, #CBD5E1)' }}"><span style="position: absolute; top: 3px; left: {{ $e->is_active ? '23px' : '3px' }}; width: 22px; height: 22px; border-radius: 50%; background: var(--sta-bg-surface, #FFFFFF)"></span></span>
                                         </button>
                                     </td>

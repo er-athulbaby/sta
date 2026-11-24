@@ -8,7 +8,9 @@
         <span style="color: var(--sta-fg-muted, #475569)">{{ $this->getSubheading() }}</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: 12px">
-        <button type="button" wire:click="exportExcel" style="{{ $secondary }}">Export Excel</button>
+        @if (\App\Enums\StaArea::People->can(\App\Enums\StaAction::Print))
+            <button type="button" wire:click="exportExcel" style="{{ $secondary }}">Export Excel</button>
+        @endif
         @if (\App\Filament\Resources\People\PersonResource::canCreate())
             <a href="{{ \App\Filament\Resources\People\PersonResource::getUrl('create') }}" style="{{ $secondary }}">Add person</a>
         @endif

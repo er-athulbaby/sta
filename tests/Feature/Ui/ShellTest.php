@@ -37,7 +37,7 @@ it('orders the admin menu like the canvas', function () {
     actingInAdmin(User::factory()->superAdmin()->create());
 
     $this->get('/admin')->assertSeeInOrder(
-        ['Games', 'Associations', 'Sports &amp; events', 'Clothing items', 'People', 'Reports', 'Audit log', 'STA users'], escape: false);
+        ['Games', 'Associations', 'Sports &amp; events', 'Clothing items', 'People', 'Reports', 'Audit log', 'Users &amp; groups'], escape: false);
 });
 
 it('draws initials avatars without calling an outside service', function () {

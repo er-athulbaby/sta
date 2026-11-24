@@ -90,7 +90,7 @@ it('never lets an association admin act on another association\'s user or an edi
 
 it('lets STA with manage_associations deactivate and reset any association user', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManageAssociations->value);
+    grantSta($sta, StaPermission::ManageAssociations);
     actingInAdmin($sta);
 
     livewire(ListAssociations::class)

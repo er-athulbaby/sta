@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Games\Pages;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Concerns\ShowsReadyMadeReports;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\Game;
@@ -21,7 +21,7 @@ class GameReports extends Page
 
     public static function canAccess(array $parameters = []): bool
     {
-        return (bool) auth()->user()?->can(StaPermission::ViewReports->value);
+        return StaArea::Reports->can();
     }
 
     public function mount(int|string $record): void

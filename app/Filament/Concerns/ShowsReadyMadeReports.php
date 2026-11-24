@@ -2,6 +2,8 @@
 
 namespace App\Filament\Concerns;
 
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Exports\Xlsx;
 use App\Models\Game;
 use App\Services\Reports\GameReports;
@@ -27,6 +29,7 @@ trait ShowsReadyMadeReports
 
     public function export(): ?StreamedResponse
     {
+        abort_unless(StaArea::Reports->can(StaAction::Print), 403);
         $game = $this->reportGame();
         if ($game === null) {
             return null;

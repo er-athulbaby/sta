@@ -24,7 +24,7 @@ it('shows the audit log only with the permission', function () {
     $sta = User::factory()->sta()->create();
     $this->actingAs($sta)->get('/admin/activity-logs')->assertForbidden();
 
-    $sta->givePermissionTo(StaPermission::ViewAuditLog->value);
+    grantSta($sta, StaPermission::ViewAuditLog);
     $this->actingAs($sta)->get('/admin/activity-logs')->assertOk();
 });
 

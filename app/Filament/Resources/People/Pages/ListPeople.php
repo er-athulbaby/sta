@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\People\Pages;
 
 use App\Enums\PersonType;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Exports\LiteralRow;
 use App\Filament\Resources\People\PersonResource;
 use App\Models\Association;
@@ -105,6 +107,7 @@ class ListPeople extends ListRecords
     /** Export Excel: the rows of the current search, filters and sort (no document numbers or medical data). */
     public function exportExcel(): StreamedResponse
     {
+        abort_unless(StaArea::People->can(StaAction::Print), 403);
         $people = $this->getFilteredSortedTableQuery()->with(['association', 'fieldValues'])->get();
 
         return response()->streamDownload(function () use ($people) {

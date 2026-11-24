@@ -47,7 +47,7 @@ beforeEach(function () {
     $this->layout = ExportLayout::create(['game_id' => $this->game->id, 'type' => 'athlete', 'columns' => [],
         'zip_pattern' => '{association_code} {last_name}:{kind}']);
     $this->user = User::factory()->sta()->create();
-    $this->user->givePermissionTo(StaPermission::ExportGameFiles->value);
+    grantSta($this->user, StaPermission::ExportGameFiles);
 });
 
 /** @return array<string, string> file name => contents */
@@ -95,7 +95,7 @@ it('includes WADA certificates only for users who may view medical data', functi
         ->and(zipContents()['missing.txt'])->toStartWith("WADA certificates left out: they need \"View medical & health data\".\n");
 
     Storage::disk(config('filesystems.private'))->deleteDirectory('exports');
-    $this->user->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($this->user, StaPermission::ViewMedical);
     (new BuildGameFilesZip($this->layout, $this->user->fresh(), ['wada_certificate_path']))->handle(app(GameFileExporter::class));
     expect(zipContents())->toHaveKey('BJF Hasan_wada.pdf');
 });
@@ -133,7 +133,7 @@ it('refuses to build for a draft game or a requester who lost the permission', f
     (new BuildGameFilesZip($this->layout->fresh(), $this->user))->handle(app(GameFileExporter::class));
 
     $this->game->update(['published_at' => now()]);
-    $this->user->revokePermissionTo(StaPermission::ExportGameFiles->value);
+    $this->user->revokePermissionTo(StaPermission::ExportGameFiles->grants());
     (new BuildGameFilesZip($this->layout->fresh(), $this->user->fresh()))->handle(app(GameFileExporter::class));
 
     expect($this->disk->allFiles('exports'))->toBe([])
@@ -169,7 +169,7 @@ it('refuses a direct download call once the permission is gone or the game is a 
     $draft->call('download', 'athlete')->assertForbidden();
 
     $this->game->update(['published_at' => now()]);
-    $this->user->revokePermissionTo(StaPermission::ExportGameFiles->value);
+    $this->user->revokePermissionTo(StaPermission::ExportGameFiles->grants());
     $revoked->call('download', 'athlete')->assertForbidden();
     expect(Activity::where('description', 'game system file exported')->exists())->toBeFalse();
 });

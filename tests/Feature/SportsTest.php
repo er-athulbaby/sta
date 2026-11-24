@@ -16,7 +16,7 @@ use function Pest\Livewire\livewire;
 
 it('lets STA create a sport for an association', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    grantSta($sta, StaPermission::ManageMasterData);
     actingInAdmin($sta);
     $assoc = Association::factory()->create();
 

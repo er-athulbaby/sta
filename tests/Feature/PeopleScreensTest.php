@@ -74,7 +74,7 @@ it('lets STA with manage_people see all people, and blocks others', function () 
     $sta = User::factory()->sta()->create();
     $this->actingAs($sta)->get('/admin/people')->assertForbidden();
 
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
     actingInAdmin($sta);
     livewire(App\Filament\Resources\People\Pages\ListPeople::class)->assertCountTableRecords(2);
 });
@@ -89,7 +89,7 @@ it('offers no delete on the portal', function () {
 it('shows admin row delete to super admins only', function () {
     $person = Person::factory()->create();
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
 
     actingInAdmin($sta);
     livewire(App\Filament\Resources\People\Pages\ListPeople::class)->assertTableActionHidden('delete', $person);

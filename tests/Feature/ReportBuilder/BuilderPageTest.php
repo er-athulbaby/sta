@@ -25,9 +25,9 @@ beforeEach(function () {
     Person::factory()->create(['association_id' => $karate->id, 'first_name' => 'Karim', 'last_name' => 'Ahmed', 'dob' => '2005-03-10']);
 
     $this->owner = User::factory()->sta()->create(['name' => 'Owner']);
-    $this->owner->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($this->owner, StaPermission::ViewReports);
     $this->other = User::factory()->sta()->create(['name' => 'Other']);
-    $this->other->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($this->other, StaPermission::ViewReports);
 });
 
 function storedReport(User $owner, string $visibility, string $name, array $changes = []): SavedReport
@@ -38,7 +38,7 @@ function storedReport(User $owner, string $visibility, string $name, array $chan
 
 it('opens the pages only with view_reports', function () {
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
     $this->get(Reports::getUrl())->assertForbidden();
     $this->get(ReportBuilder::getUrl())->assertForbidden();
@@ -319,7 +319,7 @@ it('re-checks view_reports on every request, not only on mount', function () {
     $page2 = livewire(ReportBuilder::class);
     $list = livewire(Reports::class);
 
-    $this->owner->revokePermissionTo(StaPermission::ViewReports->value);
+    $this->owner->revokePermissionTo(StaPermission::ViewReports->grants());
     $this->owner->forgetCachedPermissions();
 
     $page->call('export')->assertForbidden();

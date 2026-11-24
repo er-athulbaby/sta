@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\Games\Pages\Concerns;
 
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Enums\SubmissionStatus;
 use App\Filament\Portal\Concerns\HandlesSubmission;
 use App\Filament\Resources\Games\GameResource;
@@ -27,9 +28,7 @@ trait StaEditsSubmission
 
     public static function canAccess(array $parameters = []): bool
     {
-        $u = auth()->user();
-
-        return (bool) ($u?->can(StaPermission::EditSubmissions->value) && $u->can(StaPermission::ViewSubmissions->value));
+        return StaArea::EditAsSta->can(StaAction::Save) && StaArea::Submissions->can();
     }
 
     /** $submission is a model over HTTP (Livewire binds the typed property) and an id in Livewire tests. */

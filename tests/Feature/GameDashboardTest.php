@@ -63,7 +63,7 @@ it('shows workflow errors as a notification instead of failing', function () {
 
 it('needs view_submissions to see and manage_games to extend', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertOk()
         ->call('extend', $this->late->id, 2, now()->addDays(10)->format('Y-m-d H:i'))->assertForbidden();
@@ -71,7 +71,7 @@ it('needs view_submissions to see and manage_games to extend', function () {
 
 it('lets a view-only STA see the list and dashboard action but not create or edit', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
     livewire(ListGames::class)->assertSee($this->game->name)
         ->assertTableActionVisible('dashboard', $this->game)->assertTableActionHidden('edit', $this->game);
@@ -82,7 +82,7 @@ it('lets a view-only STA see the list and dashboard action but not create or edi
 
 it('hides the dashboard from a manage-only STA', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManageGames->value);
+    grantSta($sta, StaPermission::ManageGames);
     actingInAdmin($sta);
     livewire(ListGames::class)->assertTableActionHidden('dashboard', $this->game)->assertTableActionVisible('edit', $this->game);
     $this->get(GameResource::getUrl('dashboard', ['record' => $this->game]))->assertForbidden();
@@ -95,7 +95,7 @@ it('forbids users without view_submissions', function () {
 
 it('refuses reminders without send_reminders and reopen without manage_games', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
         ->assertActionHidden('remindPending')

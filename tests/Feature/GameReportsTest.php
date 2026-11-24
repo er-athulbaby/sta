@@ -190,24 +190,24 @@ it('leaves out sports later answered "no" in Phase 1, except in the Phase 1 answ
 
 it('opens the reports page only with view_reports', function () {
     $reporter = User::factory()->sta()->create();
-    $reporter->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($reporter, StaPermission::ViewReports);
     actingInAdmin($reporter);
     $this->get(GameResource::getUrl('reports', ['record' => $this->game]))->assertOk()
         ->assertSee('Only submitted entries are included');
 
     $viewer = User::factory()->sta()->create();
-    $viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($viewer, StaPermission::ViewSubmissions);
     actingInAdmin($viewer);
     $this->get(GameResource::getUrl('reports', ['record' => $this->game]))->assertForbidden();
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertActionHidden('reports');
 
-    $viewer->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($viewer, StaPermission::ViewReports);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertActionVisible('reports');
 });
 
 it('previews the chosen report and exports it to Excel', function () {
     $reporter = User::factory()->sta()->create();
-    $reporter->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($reporter, StaPermission::ViewReports);
     actingInAdmin($reporter);
 
     $page = livewire(GameReportsPage::class, ['record' => $this->game->getRouteKey()])
@@ -240,7 +240,7 @@ it('refuses an unknown report', function () {
 
 it('gives a reports-only user nothing beyond the reports page', function () {
     $reporter = User::factory()->sta()->create();
-    $reporter->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($reporter, StaPermission::ViewReports);
     actingInAdmin($reporter);
 
     $this->get(GameResource::getUrl('reports', ['record' => $this->game]))->assertOk();

@@ -23,17 +23,19 @@
                 @endforeach
             </select>
         </label>
+        @if ($this->canExport())
         <button type="button" wire:click="export" style="{{ $outline }}">
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
             Export to Excel
         </button>
-        @if ($this->reportId)
+        @endif
+        @if ($this->reportId && auth()->user()->can('create', \App\Models\SavedReport::class))
             <button type="button" wire:click="saveAsCopy" style="{{ $outline }}">Save as copy</button>
         @endif
         @if ($canEdit)
             <button type="button" wire:click="save" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 14px Inter, sans-serif; cursor: pointer">Save</button>
         @endif
-        @if ($this->reportId && $canEdit)
+        @if ($this->canDelete())
             <button type="button" wire:click="delete" wire:confirm="Delete this report? This cannot be undone." style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--sta-bd-red-200, #FECACA); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-red-700, #B91C1C); font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer">
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>
                 Delete

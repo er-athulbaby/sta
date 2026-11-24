@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Associations\Pages;
 
 use App\Enums\Role;
+use App\Enums\StaAction;
 use App\Filament\Resources\Associations\AssociationResource;
 use App\Filament\Shared\InvitationActions;
 use App\Models\Association;
@@ -72,28 +73,28 @@ class ListAssociations extends ListRecords
 
     public function deactivateUserAction(): Action
     {
-        return InvitationActions::setActive(false)->name('deactivateUser')->label('Deactivate')->record(fn (array $arguments) => $this->associationUser($arguments));
+        return InvitationActions::setActive(false)->name('deactivateUser')->label('Deactivate')->authorize(AssociationResource::cellCheck(StaAction::Save))->record(fn (array $arguments) => $this->associationUser($arguments));
     }
 
     public function activateUserAction(): Action
     {
-        return InvitationActions::setActive(true)->name('activateUser')->label('Activate')->record(fn (array $arguments) => $this->associationUser($arguments));
+        return InvitationActions::setActive(true)->name('activateUser')->label('Activate')->authorize(AssociationResource::cellCheck(StaAction::Save))->record(fn (array $arguments) => $this->associationUser($arguments));
     }
 
     public function resetUserPasswordAction(): Action
     {
-        return InvitationActions::sendPasswordReset()->name('resetUserPassword')->record(fn (array $arguments) => $this->associationUser($arguments));
+        return InvitationActions::sendPasswordReset()->name('resetUserPassword')->authorize(AssociationResource::cellCheck(StaAction::Save))->record(fn (array $arguments) => $this->associationUser($arguments));
     }
 
     public function resendInviteAction(): Action
     {
-        return InvitationActions::resend()->name('resendInvite')->label('Resend email')
+        return InvitationActions::resend()->name('resendInvite')->label('Resend email')->authorize(AssociationResource::cellCheck(StaAction::Save))
             ->record(fn (array $arguments) => Invitation::query()->findOrFail($arguments['id'] ?? 0));
     }
 
     public function revokeInviteAction(): Action
     {
-        return InvitationActions::revoke()->name('revokeInvite')->label('Revoke')
+        return InvitationActions::revoke()->name('revokeInvite')->label('Revoke')->authorize(AssociationResource::cellCheck(StaAction::Delete))
             ->record(fn (array $arguments) => Invitation::query()->findOrFail($arguments['id'] ?? 0));
     }
 

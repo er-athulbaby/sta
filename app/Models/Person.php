@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Enums\AppliesTo;
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Models\Concerns\BelongsToAssociation;
 use App\Models\Concerns\RenamesAttachments;
 use App\Support\Sta;
@@ -403,6 +403,6 @@ class Person extends Model
 
     public static function canViewMedical(?User $user): bool
     {
-        return $user !== null && ($user->role->isAssociationRole() || $user->can(StaPermission::ViewMedical->value));
+        return $user !== null && ($user->role->isAssociationRole() || StaArea::Medical->can(user: $user));
     }
 }

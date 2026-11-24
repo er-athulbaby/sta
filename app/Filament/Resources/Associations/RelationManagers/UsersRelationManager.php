@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Associations\RelationManagers;
 
+use App\Enums\StaAction;
+use App\Filament\Resources\Associations\AssociationResource;
 use App\Filament\Shared\InvitationActions;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\IconColumn;
@@ -21,6 +23,7 @@ class UsersRelationManager extends RelationManager
                 TextColumn::make('role')->formatStateUsing(fn ($state) => $state->label()),
                 IconColumn::make('is_active')->boolean(),
             ])
-            ->recordActions([InvitationActions::setActive(false), InvitationActions::setActive(true), InvitationActions::sendPasswordReset()]);
+            ->recordActions(array_map(fn ($a) => $a->authorize(AssociationResource::cellCheck(StaAction::Save)),
+                [InvitationActions::setActive(false), InvitationActions::setActive(true), InvitationActions::sendPasswordReset()]));
     }
 }

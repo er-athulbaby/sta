@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Games\Tables;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\Game;
 use Filament\Actions\Action;
@@ -28,13 +28,13 @@ class GamesTable
             ->defaultSort('start_date', 'desc')
             ->recordActions([
                 Action::make('dashboard')->icon('heroicon-o-table-cells')
-                    ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewSubmissions->value))
+                    ->visible(fn () => StaArea::Submissions->can())
                     ->url(fn ($record) => GameResource::getUrl('dashboard', ['record' => $record])),
                 Action::make('gameFiles')->label('Game system files')->icon('heroicon-o-arrow-up-on-square')
-                    ->visible(fn (Game $record) => $record->isPublished() && auth()->user()->can(StaPermission::ExportGameFiles->value))
+                    ->visible(fn (Game $record) => $record->isPublished() && StaArea::GameFiles->can())
                     ->url(fn ($record) => GameResource::getUrl('export-files', ['record' => $record])),
                 Action::make('reports')->icon('heroicon-o-document-chart-bar')
-                    ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value))
+                    ->visible(fn () => StaArea::Reports->can())
                     ->url(fn ($record) => GameResource::getUrl('reports', ['record' => $record])),
                 EditAction::make()->visible(fn ($record) => GameResource::getEditAuthorizationResponse($record)->allowed()),
             ]);

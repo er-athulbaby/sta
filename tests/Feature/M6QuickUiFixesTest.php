@@ -28,7 +28,7 @@ it('item 1: centres the label with the icon in link actions such as the Games ro
         ->toContain('.fi-link > .fi-link-label { align-self: center; white-space: nowrap; }');
 
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::ViewReports->value, StaPermission::ManageGames->value]);
+    grantSta($sta, StaPermission::ViewSubmissions, StaPermission::ViewReports, StaPermission::ManageGames);
     actingInAdmin($sta);
     $game = Game::factory()->create();
 
@@ -76,7 +76,7 @@ it('item 10: the registry has an Edit button per row that opens the full edit fo
 
 it('item 10: the admin People list has an Edit button per row for STA with manage_people', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
     actingInAdmin($sta);
     $p = Person::factory()->create();
 

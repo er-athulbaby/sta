@@ -112,7 +112,7 @@ it('lets STA save a Phase 1 note', function () {
     $this->game->phase(1)->update(['enabled' => true, 'status' => PhaseStatus::Closed, 'deadline' => now()->subDay()]);
     $s = Submission::for($this->game, $this->assoc, 1);
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo([StaPermission::ViewSubmissions->value, StaPermission::EditSubmissions->value]);
+    grantSta($sta, StaPermission::ViewSubmissions, StaPermission::EditSubmissions);
     actingInAdmin($sta);
 
     livewire(StaPhase1Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])

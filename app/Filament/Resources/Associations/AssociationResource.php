@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\Associations;
 
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\Associations\Pages\CreateAssociation;
 use App\Filament\Resources\Associations\Pages\EditAssociation;
@@ -26,9 +27,15 @@ class AssociationResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ManageAssociations;
+        return StaArea::Associations;
+    }
+
+    /** For the invitation and user actions: Associations: New (invite), Save (resend, (de)activate, reset) or Delete (revoke). */
+    public static function cellCheck(StaAction $action): \Closure
+    {
+        return fn () => StaArea::Associations->can($action);
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ClothingItems;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\ClothingItems\Pages\CreateClothingItem;
 use App\Filament\Resources\ClothingItems\Pages\EditClothingItem;
@@ -30,9 +30,9 @@ class ClothingItemResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ManageMasterData;
+        return StaArea::ClothingItems;
     }
 
     public static function form(Schema $schema): Schema

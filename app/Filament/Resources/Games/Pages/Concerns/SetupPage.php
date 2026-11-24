@@ -31,6 +31,12 @@ trait SetupPage
         $this->loadState();
     }
 
+    /** Every Livewire call re-checks Games: Save, not only mount. */
+    public function hydrateSetupPage(): void
+    {
+        abort_unless(GameResource::canEdit($this->record), 403);
+    }
+
     protected function loadState(): void {}
 
     /** Canvas spacing: theme.css removes Filament's extra page padding and gaps for this class. */

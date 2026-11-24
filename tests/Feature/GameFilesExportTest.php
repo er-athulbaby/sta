@@ -85,7 +85,7 @@ beforeEach(function () {
         ['source' => 'person.consent_media', 'heading' => 'Media', 'format' => 'y_n'],
     ]]);
     $this->exporter = User::factory()->sta()->create();
-    $this->exporter->givePermissionTo(StaPermission::ExportGameFiles->value);
+    grantSta($this->exporter, StaPermission::ExportGameFiles);
 });
 
 it('builds rows from each association\'s Short List, else its Long List, leaving medical columns out for a non-medical user', function () {
@@ -98,7 +98,7 @@ it('builds rows from each association\'s Short List, else its Long List, leaving
             ['BKF-AT-0001', 'AHMED', '10/03/2005', 'M', 'BH7654321', 'Kumite', 21, 'BKF', 'BRN', null, 'N'],
         ]);
 
-    $this->exporter->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($this->exporter, StaPermission::ViewMedical);
     $medic = app(GameFileExporter::class)->table($this->layout, $this->exporter->fresh());
     expect($medic['left_out'])->toBe([])->and(array_slice($medic['rows'][0], 10, 2))->toBe(['B', 'Peanuts']);
 });

@@ -44,7 +44,7 @@ it('draws the admin menu like Main.dc.html: brand in the menu, sentence-case ite
         ->not->toContain('fi-global-search')
         ->toMatch('/fi-sidebar-footer.*?sta-user-role">Super Admin<.*?fi-user-menu-trigger.*?Ali Haroona/s');
     $this->get('/admin')->assertSeeInOrder(['Dashboard', 'Games', 'Associations', 'Sports &amp; events', 'Clothing items', 'People',
-        'Reports', 'Audit log', 'STA users', 'Settings', 'Extra fields'], escape: false);
+        'Reports', 'Audit log', 'Users &amp; groups', 'Settings', 'Extra fields'], escape: false);
 });
 
 it('draws the portal menu like Phase2.dc.html: brand, association block, items, user block', function () {

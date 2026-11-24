@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ActivityLogs;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
@@ -30,9 +30,9 @@ class ActivityLogResource extends Resource
 
     private const DOCUMENTS_PILL = '<span style="'.self::PILL.'; background: var(--sta-bg-indigo-100, #E0E7FF); color: var(--sta-fg-blue-900, #1E3A8A)">Documents changed</span>';
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ViewAuditLog;
+        return StaArea::AuditLog;
     }
 
     public static function canCreate(): bool

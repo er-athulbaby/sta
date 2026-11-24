@@ -2,7 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Shared\AttachmentActions;
 use App\Models\GamePhase;
@@ -25,9 +26,9 @@ class Settings extends Page
 
     public ?array $data = [];
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ManageMasterData;
+        return StaArea::Settings;
     }
 
     public function mount(): void
@@ -62,12 +63,14 @@ class Settings extends Page
             Form::make([EmbeddedSchema::make('form')])
                 ->id('form')
                 ->livewireSubmitHandler('save')
-                ->footer([Actions::make([Action::make('save')->label('Save')->submit('save')->keyBindings(['mod+s'])])]),
+                ->footer([Actions::make([Action::make('save')->label('Save')->submit('save')->keyBindings(['mod+s'])
+                    ->visible(fn () => StaArea::Settings->can(StaAction::Save))])]),
         ]);
     }
 
     public function save(): void
     {
+        abort_unless(StaArea::Settings->can(StaAction::Save), 403);
         $state = $this->form->getState();
         $logo = $state['noc_logo_path'] ?? null;
         Setting::put(Setting::NOC_LOGO, is_array($logo) ? (array_values($logo)[0] ?? null) : $logo);

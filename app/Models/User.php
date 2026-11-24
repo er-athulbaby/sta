@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
@@ -46,6 +47,27 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function isSuperAdmin(): bool
     {
         return $this->role === Role::SuperAdmin;
+    }
+
+    /** The user group of an STA user (spatie role); every STA user has exactly one. */
+    public function group(): ?StaGroup
+    {
+        return $this->roles->first();
+    }
+
+    /** Lock-out guard: the last active Super Admin can be neither demoted nor deactivated. */
+    protected static function booted(): void
+    {
+        static::updating(function (User $user) {
+            $wasActiveSuper = $user->getOriginal('role') === Role::SuperAdmin && $user->getOriginal('is_active');
+            if (! $wasActiveSuper || ($user->isSuperAdmin() && $user->is_active)) {
+                return;
+            }
+            $others = static::withoutGlobalScopes()->whereKeyNot($user->getKey())->where('role', Role::SuperAdmin)->where('is_active', true)->exists();
+            if (! $others) {
+                throw ValidationException::withMessages(['role' => 'This is the last active Super Admin: it cannot be demoted or deactivated.']);
+            }
+        });
     }
 
     public function canAccessPanel(Panel $panel): bool

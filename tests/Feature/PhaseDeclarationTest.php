@@ -82,7 +82,7 @@ it('edits the four phase declarations on Settings, empty ones showing the single
     actingInAdmin($sta);
     $this->get('/admin/settings')->assertForbidden();
 
-    $sta->givePermissionTo(StaPermission::ManageMasterData->value);
+    grantSta($sta, StaPermission::ManageMasterData);
     livewire(Settings::class)
         ->assertSchemaStateSet(['phase_declarations' => [1 => null, 2 => null, 3 => 'Stored three.', 4 => null]])
         ->assertSee('Phase 4 declaration (Short List PDF)')->assertSeeHtml('placeholder="Current wording."')

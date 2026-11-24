@@ -1,6 +1,7 @@
 {{-- Canvas AdminDashboard.dc.html (admin home): Active games, Needs your attention, Registry status, Associations, Recent activity.
      A band the user may not see is left out. --}}
-@use(App\Enums\StaPermission)
+@use(App\Enums\StaAction)
+@use(App\Enums\StaArea)
 @use(App\Filament\Resources\Associations\AssociationResource)
 @use(App\Filament\Resources\Games\GameResource)
 @use(App\Filament\Resources\People\PersonResource)
@@ -8,9 +9,9 @@
 @use(App\Support\Sta)
 @php
     $games = $this->activeGames();
-    $showGames = $this->allowed(StaPermission::ViewSubmissions);
-    $showAssocs = $this->allowed(StaPermission::ManageAssociations);
-    $showPeople = $this->allowed(StaPermission::ManagePeople);
+    $showGames = $this->allowed(StaArea::Submissions);
+    $showAssocs = $this->allowed(StaArea::Associations);
+    $showPeople = $this->allowed(StaArea::People);
     $attention = ($showGames || $showAssocs) ? $this->attention() : null;
     $registry = $this->registry();
     $phaseColours = [1 => ['var(--sta-bg-sky-100, #E0F2FE)', 'var(--sta-fg-sky-800, #075985)', 'var(--sta-bg-sky-700, #0369A1)'], 2 => ['var(--sta-bg-teal-100, #CCFBF1)', 'var(--sta-fg-teal-800, #115E59)', 'var(--sta-bg-teal-700, #0F766E)'], 3 => ['var(--sta-bg-amber-100, #FEF3C7)', 'var(--sta-fg-amber-800, #92400E)', 'var(--sta-bg-amber-700, #B45309)'], 4 => ['var(--sta-bg-violet-100, #EDE9FE)', 'var(--sta-fg-violet-800, #5B21B6)', 'var(--sta-bg-violet-700, #6D28D9)']];
@@ -264,7 +265,7 @@
                                 @endif
                                 <td style="padding: 8px 20px">
                                     <div style="display: flex; align-items: center; gap: 8px">
-                                        <button type="button" role="switch" aria-checked="{{ $a->is_active ? 'true' : 'false' }}" aria-label="Association {{ $code }} active" wire:click="toggleActive({{ $a->id }})" style="width: 52px; height: 44px; padding: 0; border: 0; background: transparent; display: flex; align-items: center; cursor: pointer">
+                                        <button type="button" role="switch" aria-checked="{{ $a->is_active ? 'true' : 'false' }}" aria-label="Association {{ $code }} active" @disabled(! $this->allowed(StaArea::Associations, StaAction::Save)) wire:click="toggleActive({{ $a->id }})" style="width: 52px; height: 44px; padding: 0; border: 0; background: transparent; display: flex; align-items: center; cursor: pointer">
                                             <span style="position: relative; width: 44px; height: 26px; border-radius: 999px; background: {{ $a->is_active ? 'var(--sta-bg-brand, #1F3A5F)' : 'var(--sta-bg-faint, #94A3B8)' }}"><span style="position: absolute; top: 3px; left: {{ $a->is_active ? '21px' : '3px' }}; width: 20px; height: 20px; border-radius: 50%; background: var(--sta-bg-surface, #FFFFFF)"></span></span>
                                         </button>
                                         <span style="font-size: 13px; color: var(--sta-fg-strong, #334155)">{{ $a->is_active ? 'Active' : 'Inactive' }}</span>
@@ -279,7 +280,7 @@
         </section>
     @endif
 
-    @if ($this->allowed(StaPermission::ViewAuditLog))
+    @if ($this->allowed(StaArea::AuditLog))
         <section aria-labelledby="log-title" style="background: var(--sta-bg-surface-alt, #F8FAFC); border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 14px; display: flex; flex-direction: column">
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-subtle, #F1F5F9); border-radius: 13px 13px 0 0">
                 <div style="display: flex; flex-direction: column; gap: 2px">

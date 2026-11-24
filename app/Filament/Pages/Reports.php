@@ -2,7 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Exports\Xlsx;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Concerns\ShowsReadyMadeReports;
@@ -44,9 +45,9 @@ class Reports extends Page
     #[Url]
     public int|string|null $game = null;
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ViewReports;
+        return StaArea::Reports;
     }
 
     public function mount(): void
@@ -144,6 +145,7 @@ class Reports extends Page
     /** A saved card's "Export to Excel": the same file as the builder's export, for a report this user may see. */
     public function exportSaved(int $id): ?StreamedResponse
     {
+        abort_unless(StaArea::Reports->can(StaAction::Print), 403);
         $saved = SavedReport::findOrFail($id);
         $this->authorize('view', $saved);
         try {

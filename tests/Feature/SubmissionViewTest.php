@@ -37,7 +37,7 @@ beforeEach(function () {
     Entry::create(['submission_id' => $this->sub->id, 'person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
     LongListDetail::create(['submission_id' => $this->sub->id, 'person_id' => $this->ali->id, 'insurance_company' => 'AXA Gulf', 'insurance_policy_no' => 'POL-777', 'vaccinations' => 'Yellow fever']);
     $this->viewer = User::factory()->sta()->create();
-    $this->viewer->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($this->viewer, StaPermission::ViewSubmissions);
 });
 
 it('shows the submission, its long list and its audit trail', function () {
@@ -48,7 +48,7 @@ it('shows the submission, its long list and its audit trail', function () {
 });
 
 it('shows the policy number only with view_medical', function () {
-    $this->viewer->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($this->viewer, StaPermission::ViewMedical);
     actingInAdmin($this->viewer);
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->sub])->assertSee('POL-777')->assertSee('Yellow fever');
 });

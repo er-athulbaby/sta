@@ -39,7 +39,7 @@ beforeEach(function () {
 
     $this->admin = User::factory()->superAdmin()->create();
     $this->sta = User::factory()->sta()->create();
-    $this->sta->givePermissionTo(StaPermission::ViewReports->value);
+    grantSta($this->sta, StaPermission::ViewReports);
 });
 
 function extraDef(string $subject, array $columns, array $filters = [], ?int $gameId = null): array
@@ -67,7 +67,7 @@ it('offers active extra fields on People and Entries, sensitive ones only with v
         ->and(array_keys(Registry::get('people')->fields()))->not->toContain('extra_donor_type')
         ->and(array_keys(Registry::get('submissions')->fields($this->admin)))->not->toContain('extra_shirt_name');
 
-    $this->sta->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($this->sta, StaPermission::ViewMedical);
     expect(array_keys(Registry::get('entries')->fields($this->sta->fresh())))->toContain('extra_donor_type')
         ->and(Registry::get('people')->fields($this->admin)['extra_donor_type']->section)->toBe('Additional information');
 });

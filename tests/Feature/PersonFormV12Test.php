@@ -53,7 +53,7 @@ it('hides medical fields in admin without view_medical', function () {
         'insurance_policy_no' => 'INS-SECRET', 'medical_clearance_expiry' => '2031-03-04']);
     $person->injuries()->create(['injury_date' => '2025-01-02', 'status' => 'Recovered', 'description' => 'Torn ligament']);
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
     actingInAdmin($sta);
     $page = livewire(AdminEditPerson::class, ['record' => $person->getRouteKey()])->assertFormFieldDoesNotExist('allergies');
     // Nothing medical may reach the browser: not the Livewire state, not the rendered HTML.
@@ -66,7 +66,7 @@ it('hides medical fields in admin without view_medical', function () {
         ->and($person->blood_group)->toBe('O+')->and($person->medical_clearance_expiry->toDateString())->toBe('2031-03-04')
         ->and($person->injuries()->count())->toBe(1);
 
-    $sta->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($sta, StaPermission::ViewMedical);
     actingInAdmin($sta->fresh());
     $page = livewire(AdminEditPerson::class, ['record' => $person->getRouteKey()])->assertFormFieldVisible('allergies');
     expect($page->get('data.allergies'))->toBe('Peanuts')->and($page->get('data.injuries'))->toHaveCount(1);

@@ -3,6 +3,8 @@
 namespace App\Filament\Shared;
 
 use App\Enums\PersonType;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Models\ClothingItem;
 use App\Models\Person;
 use App\Support\InitialsAvatarProvider;
@@ -65,7 +67,7 @@ final class PersonTable
             ->recordActions([
                 AttachmentActions::group(),
                 EditAction::make(),
-                ...($withAssociation ? [DeleteAction::make()->visible(fn () => (bool) auth()->user()?->isSuperAdmin())] : []),
+                ...($withAssociation ? [DeleteAction::make()->authorize(fn () => StaArea::People->can(StaAction::Delete))] : []),
             ]);
     }
 

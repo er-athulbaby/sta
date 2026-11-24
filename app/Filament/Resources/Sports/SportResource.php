@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Sports;
 
-use App\Enums\StaPermission;
+use App\Enums\StaArea;
 use App\Filament\Concerns\RequiresStaPermission;
 use App\Filament\Resources\Sports\Pages\CreateSport;
 use App\Filament\Resources\Sports\Pages\EditSport;
@@ -31,9 +31,9 @@ class SportResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTrophy;
 
-    protected static function requiredPermission(): StaPermission
+    protected static function staArea(): StaArea
     {
-        return StaPermission::ManageMasterData;
+        return StaArea::Sports;
     }
 
     public static function form(Schema $schema): Schema

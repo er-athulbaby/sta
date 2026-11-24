@@ -117,7 +117,7 @@ it('draws the admin People list with its filters and the person aside', function
 
 it('shows the admin aside Delete only to the super admin', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
     actingInAdmin($sta);
     Person::factory()->create();
 
@@ -153,7 +153,7 @@ it('renumbers for team officials and when medical is hidden', function () {
 
     $p = Person::factory()->create();
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ManagePeople->value);
+    grantSta($sta, StaPermission::ManagePeople);
     actingInAdmin($sta);
     livewire(AdminEditPerson::class, ['record' => $p->getRouteKey()])
         ->assertSeeInOrder(['6 Clothing', '7 Consents'])->assertSee('7 · Consents')->assertDontSee('7 · Medical');

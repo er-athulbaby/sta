@@ -3,7 +3,8 @@
 namespace App\Filament\Resources\Games\Pages;
 
 use App\Enums\PersonType;
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Filament\Resources\Games\GameResource;
 use App\Jobs\BuildGameFilesZip;
 use App\Models\ExportLayout;
@@ -42,7 +43,7 @@ class GameExportFiles extends Page
 
     public static function canAccess(array $parameters = []): bool
     {
-        return (bool) auth()->user()?->can(StaPermission::ExportGameFiles->value);
+        return StaArea::GameFiles->can();
     }
 
     public function mount(int|string $record): void
@@ -104,13 +105,14 @@ class GameExportFiles extends Page
     {
         return $schema->components([
             Form::make([EmbeddedSchema::make('form')])->id('form')->livewireSubmitHandler('save')
-                ->footer([Actions::make([Action::make('save')->label('Save layouts')->submit('save')])]),
+                ->footer([Actions::make([Action::make('save')->label('Save layouts')->submit('save')
+                    ->visible(fn () => StaArea::GameFiles->can(StaAction::Save))])]),
         ]);
     }
 
     public function save(): void
     {
-        $this->authorizeExport();
+        $this->authorizeExport(StaArea::GameFiles, StaAction::Save);
         $state = $this->form->getState();
         $layouts = [];
         $errors = [];
@@ -140,18 +142,18 @@ class GameExportFiles extends Page
     {
         return [
             Action::make('download')->label('Download upload file')->icon('heroicon-o-arrow-down-tray')
-                ->visible(fn () => $this->record->isPublished()) // spec 16.6
+                ->visible(fn () => $this->record->isPublished() && static::canDownload()) // spec 16.6
                 ->schema(fn () => $this->filterFields())
                 ->action(fn (array $data) => $this->download(PersonType::from($data['type']),
                     filled($data['association_id'] ?? null) ? (int) $data['association_id'] : null,
                     filled($data['game_sport_id'] ?? null) ? (int) $data['game_sport_id'] : null)),
             Action::make('zip')->label('Download files ZIP')->icon('heroicon-o-archive-box-arrow-down')
-                ->visible(fn () => $this->record->isPublished()) // spec 16.6
+                ->visible(fn () => $this->record->isPublished() && static::canDownload()) // spec 16.6
                 ->schema(fn () => [...$this->filterFields(), CheckboxList::make('columns')->label('Besides photos, include')
                     ->options(array_filter(['passport_scan_path' => 'Passport scans', 'cpr_front_path' => 'CPR front scans',
                         'wada_certificate_path' => Person::canViewMedical(auth()->user()) ? 'WADA certificates' : null]))])
                 ->action(function (array $data) {
-                    $this->authorizeExport();
+                    $this->authorizeExport(StaArea::GameSystemFiles, StaAction::Print);
                     BuildGameFilesZip::dispatch(
                         ExportLayout::firstOrCreate(['game_id' => $this->record->id, 'type' => PersonType::from($data['type'])->value]),
                         auth()->user(), array_values(array_intersect($data['columns'] ?? [], array_keys(BuildGameFilesZip::KINDS))),
@@ -161,6 +163,7 @@ class GameExportFiles extends Page
                         ->body('You will be notified here with a download link when it is ready.')->send();
                 }),
             Action::make('copy')->label('Copy layouts from another game')->color('gray')
+                ->visible(fn () => StaArea::GameFiles->can(StaAction::Save))
                 ->modalDescription('Replaces this game\'s layouts with the layouts the chosen game has; a layout it does not have is kept.')
                 ->schema([Select::make('game_id')->label('Game')->required()
                     ->options(fn () => Game::whereKeyNot($this->record->id)->whereNotNull('published_at')->whereHas('exportLayouts')->orderBy('name')->pluck('name', 'id'))])
@@ -182,14 +185,20 @@ class GameExportFiles extends Page
     }
 
     /** Public Livewire methods can be called directly: re-check what mount and the action visibility check. */
-    private function authorizeExport(): void
+    private function authorizeExport(StaArea $area = StaArea::GameFiles, StaAction $action = StaAction::Access): void
     {
-        abort_unless(static::canAccess() && $this->record->fresh()->isPublished(), 403);
+        abort_unless(static::canAccess() && $area->can($action) && $this->record->fresh()->isPublished(), 403);
+    }
+
+    /** Downloading the upload file or the files ZIP (passport numbers): Game system files: Print. */
+    public static function canDownload(): bool
+    {
+        return StaArea::GameSystemFiles->can(StaAction::Print);
     }
 
     public function download(PersonType $type, ?int $associationId = null, ?int $gameSportId = null): ?StreamedResponse
     {
-        $this->authorizeExport();
+        $this->authorizeExport(StaArea::GameSystemFiles, StaAction::Print);
         $layout = ExportLayout::for($this->record, $type);
         if (($layout->columns ?? []) === []) {
             Notification::make()->warning()->title("Set up the {$type->value} layout first.")->send();
@@ -223,7 +232,7 @@ class GameExportFiles extends Page
 
     private function copyFrom(Game $source): void
     {
-        $this->authorizeExport();
+        $this->authorizeExport(StaArea::GameFiles, StaAction::Save);
         $all = ExportSources::all();
         $medic = Person::canViewMedical(auth()->user());
         $dropped = [];

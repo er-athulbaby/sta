@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Associations\Tables;
 
 use App\Enums\Role;
+use App\Enums\StaAction;
+use App\Filament\Resources\Associations\AssociationResource;
 use App\Filament\Shared\InvitationActions;
 use App\Models\Association;
 use Filament\Actions\EditAction;
@@ -30,9 +32,11 @@ class AssociationsTable
                 EditAction::make(),
                 InvitationActions::invite('invite', Role::AssocAdmin,
                     association: fn (Association $record) => $record,
-                    defaultEmail: fn (?Association $record) => $record?->email),
-                InvitationActions::invite('inviteEditor', Role::AssocEditor, association: fn (Association $record) => $record),
-                InvitationActions::invite('inviteUser', null, association: fn (Association $record) => $record), // Invitations "+": role chosen in the form
+                    defaultEmail: fn (?Association $record) => $record?->email)->authorize(AssociationResource::cellCheck(StaAction::New)),
+                InvitationActions::invite('inviteEditor', Role::AssocEditor, association: fn (Association $record) => $record)
+                    ->authorize(AssociationResource::cellCheck(StaAction::New)),
+                InvitationActions::invite('inviteUser', null, association: fn (Association $record) => $record) // Invitations "+": role chosen in the form
+                    ->authorize(AssociationResource::cellCheck(StaAction::New)),
             ]);
     }
 

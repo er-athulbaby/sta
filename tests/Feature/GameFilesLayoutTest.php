@@ -21,7 +21,7 @@ beforeEach(function () {
     ExtraField::factory()->create(['label' => 'Shirt name']);
     ExtraField::factory()->create(['label' => 'Donor type', 'type' => ExtraFieldType::Choice, 'options' => ['A'], 'sensitive' => true]);
     $this->exporter = User::factory()->sta()->create();
-    $this->exporter->givePermissionTo(StaPermission::ExportGameFiles->value);
+    grantSta($this->exporter, StaPermission::ExportGameFiles);
 });
 
 /** @return list<string> */
@@ -32,12 +32,12 @@ function sourceKeys(?User $user, array $keep = []): array
 
 it('opens the page only with export_game_files and links it from the dashboard', function () {
     $sta = User::factory()->sta()->create();
-    $sta->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($sta, StaPermission::ViewSubmissions);
     actingInAdmin($sta);
     $this->get(GameResource::getUrl('export-files', ['record' => $this->game]))->assertForbidden();
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertActionHidden('gameFiles');
 
-    $sta->givePermissionTo(StaPermission::ExportGameFiles->value);
+    grantSta($sta, StaPermission::ExportGameFiles);
     $this->get(GameResource::getUrl('export-files', ['record' => $this->game]))->assertOk()->assertSee('Athlete layout');
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])->assertActionVisible('gameFiles');
 });
@@ -47,7 +47,7 @@ it('offers medical and sensitive sources only with view_medical, or when already
         ->not->toContain('person.allergies', 'person.blood_group', 'extra.donor_type')
         ->and(sourceKeys($this->exporter, ['person.allergies']))->toContain('person.allergies');
 
-    $this->exporter->givePermissionTo(StaPermission::ViewMedical->value);
+    grantSta($this->exporter, StaPermission::ViewMedical);
     expect(sourceKeys($this->exporter->fresh()))->toContain('person.allergies', 'extra.donor_type');
 });
 
@@ -129,7 +129,7 @@ it('offers only Male/Female and M/F gender formats', function () {
 
 it('offers layouts only for published games', function () {
     $draft = Game::factory()->draft()->create();
-    $this->exporter->givePermissionTo(StaPermission::ViewSubmissions->value);
+    grantSta($this->exporter, StaPermission::ViewSubmissions);
     actingInAdmin($this->exporter);
 
     $this->get(GameResource::getUrl('export-files', ['record' => $draft]))->assertNotFound();
@@ -163,7 +163,7 @@ it('refuses a crafted save with a medical source by a user without view_medical,
 it('refuses a save once the permission is gone', function () {
     actingInAdmin($this->exporter);
     $page = livewire(GameExportFiles::class, ['record' => $this->game->getRouteKey()]);
-    $this->exporter->revokePermissionTo(StaPermission::ExportGameFiles->value);
+    $this->exporter->revokePermissionTo(StaPermission::ExportGameFiles->grants());
 
     $page->call('save')->assertForbidden();
     expect(ExportLayout::where('game_id', $this->game->id)->exists())->toBeFalse();

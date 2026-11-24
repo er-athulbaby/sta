@@ -4,7 +4,7 @@
         <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.01em">Dashboard</h1>
         <span style="color: var(--sta-fg-muted, #475569)">{{ $this->getSubheading() }}</span>
     </div>
-    @if ($this->allowed(\App\Enums\StaPermission::ManageGames))
+    @if ($this->allowed(\App\Enums\StaArea::Games, \App\Enums\StaAction::New))
         <a href="{{ \App\Filament\Resources\Games\GameResource::getUrl('create') }}" style="min-height: 44px; padding: 0 18px; border-radius: 10px; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 14px Inter, sans-serif; display: inline-flex; align-items: center; gap: 8px; text-decoration: none">
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
             New game

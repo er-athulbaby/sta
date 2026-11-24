@@ -3,7 +3,8 @@
 namespace App\Filament\Resources\Games\Pages;
 
 use App\Enums\PhaseStatus;
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Exports\LiteralRow;
 use App\Filament\Resources\Games\GameResource;
 use App\Models\Association;
@@ -57,7 +58,7 @@ class GameDashboard extends Page
 
     public static function canAccess(array $parameters = []): bool
     {
-        return (bool) auth()->user()?->can(StaPermission::ViewSubmissions->value);
+        return StaArea::Submissions->can();
     }
 
     public function mount(int|string $record): void
@@ -183,7 +184,7 @@ class GameDashboard extends Page
         $items = [];
         if ($s) {
             $items[] = ['label' => 'View entry', 'href' => GameResource::getUrl('submission', ['record' => $this->record, 'submission' => $s])];
-            $pdfs = $status === 'submitted' ? static::pdfLinks($s) : [];
+            $pdfs = $status === 'submitted' && StaArea::Submissions->can(StaAction::Print) ? static::pdfLinks($s) : [];
             foreach ($pdfs as $pdf) {
                 $items[] = ['label' => 'View PDF'.(count($pdfs) > 1 ? ' ('.$pdf['name'].')' : ''), 'href' => $pdf['url'], 'blank' => true];
             }
@@ -192,6 +193,8 @@ class GameDashboard extends Page
             $items[] = $s
                 ? ['label' => 'Edit as STA', 'href' => GameResource::getUrl('submission-edit-'.$p->phase, ['record' => $this->record, 'submission' => $s])]
                 : ['label' => 'Edit as STA', 'click' => "editAsSta({$a->id}, {$p->phase})"];
+        }
+        if (StaArea::Submissions->can(StaAction::Save)) {
             $items[] = ['label' => 'Send remark', 'click' => "mountAction('remark', {$args})"];
         }
         if ($this->canManage()) {
@@ -247,7 +250,7 @@ class GameDashboard extends Page
     #[Unexposed]
     public function canEditSubmissions(): bool
     {
-        return (bool) auth()->user()->can(StaPermission::EditSubmissions->value);
+        return StaArea::EditAsSta->can(StaAction::Save);
     }
 
     /** "Edit as STA" from a phase cell: opens the STA edit page, creating the association's submission when it has none yet. */
@@ -330,19 +333,19 @@ class GameDashboard extends Page
     #[Unexposed]
     public function canManage(): bool
     {
-        return (bool) auth()->user()->can(StaPermission::ManageGames->value);
+        return StaArea::Games->can(StaAction::Save);
     }
 
     #[Unexposed]
     public function canRemind(): bool
     {
-        return $this->record->isPublished() && (bool) auth()->user()->can(StaPermission::SendReminders->value);
+        return $this->record->isPublished() && StaArea::Reminders->can();
     }
 
     #[Unexposed]
     public function canExport(): bool
     {
-        return (bool) auth()->user()->can(StaPermission::ViewReports->value);
+        return StaArea::Reports->can(StaAction::Print);
     }
 
     public function extend(int $associationId, int $phase, string $deadline, ?string $note = null): void
@@ -482,10 +485,10 @@ class GameDashboard extends Page
                 ->visible(fn () => $this->canManage()),
             Action::make('gameFiles')->label('Game system files')->color('gray')
                 ->url(fn () => GameResource::getUrl('export-files', ['record' => $this->record]))
-                ->visible(fn () => $this->record->isPublished() && auth()->user()->can(StaPermission::ExportGameFiles->value)),
+                ->visible(fn () => $this->record->isPublished() && StaArea::GameFiles->can()),
             Action::make('reports')->label('Reports')->color('gray')
                 ->url(fn () => GameResource::getUrl('reports', ['record' => $this->record]))
-                ->visible(fn () => (bool) auth()->user()->can(StaPermission::ViewReports->value)),
+                ->visible(fn () => StaArea::Reports->can()),
             Action::make('remindPending')
                 // N = who the modal's default phase (the focus phase when open, else the latest open one) would remind.
                 ->label(function () {

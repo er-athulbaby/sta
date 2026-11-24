@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\StaPermission;
+use App\Enums\StaAction;
+use App\Enums\StaArea;
 use App\Notifications\NewComment;
 use App\Services\Phases\Recipients;
 use Illuminate\Database\Eloquent\Model;
@@ -39,7 +40,7 @@ class Comment extends Model
         $reply = $author->association_id !== null;
         $comment = $s->comments()->create(['user_id' => $author->id, 'from_association' => $reply, 'body' => $body]);
         if ($s->game->isPublished()) {
-            Notification::send($reply ? Recipients::sta(StaPermission::EditSubmissions) : Recipients::association($s->association), new NewComment($comment));
+            Notification::send($reply ? Recipients::sta(StaArea::Submissions, StaAction::Save) : Recipients::association($s->association), new NewComment($comment));
         }
 
         return $comment;

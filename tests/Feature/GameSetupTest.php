@@ -80,7 +80,7 @@ it('is hidden from STA users without manage_games', function () {
     $sta = User::factory()->sta()->create();
     actingInAdmin($sta);
     $this->get(GameResource::getUrl('index'))->assertForbidden();
-    $sta->givePermissionTo(StaPermission::ManageGames->value);
+    grantSta($sta, StaPermission::ManageGames);
     $this->get(GameResource::getUrl('index'))->assertOk();
 });
 

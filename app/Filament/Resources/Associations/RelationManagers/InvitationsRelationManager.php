@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Associations\RelationManagers;
 
+use App\Enums\StaAction;
+use App\Filament\Resources\Associations\AssociationResource;
 use App\Filament\Shared\InvitationActions;
 use App\Models\Invitation;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -25,6 +27,7 @@ class InvitationsRelationManager extends RelationManager
                     }),
                 TextColumn::make('expires_at')->dateTime('d M Y'),
             ])
-            ->recordActions([InvitationActions::resend(), InvitationActions::revoke()]);
+            ->recordActions([InvitationActions::resend()->authorize(AssociationResource::cellCheck(StaAction::Save)),
+                InvitationActions::revoke()->authorize(AssociationResource::cellCheck(StaAction::Delete))]);
     }
 }
