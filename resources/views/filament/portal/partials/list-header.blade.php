@@ -48,7 +48,7 @@
             <button type="button" wire:click="previewPdf" wire:loading.attr="disabled" wire:target="previewPdf" style="{{ $secondary }}">Preview PDF</button>
         @endif
         @unless ($this->readOnlyReason)
-            <button type="button" wire:click="save" style="{{ $secondary }}">Save as draft</button>
+            <button type="button" wire:click="save" style="{{ $secondary }}">{{ filament()->getCurrentPanel()?->getId() === 'admin' ? 'Save changes' : 'Save as draft' }}</button>
         @endunless
         @if ($can('submit'))
             <button type="button" wire:click="mountAction('submit')" style="{{ $primary }}">{{ $this->getAction('submit', isMounting: false)->getLabel() }}</button>

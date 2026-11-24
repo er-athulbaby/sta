@@ -1,4 +1,4 @@
-{{-- Canvas Phase2.dc.html submit block (end of the aside). Pass $pdfName ("Entry by Event" / "Entry by Sport").
+{{-- STA edit pages (admin panel) read "Save changes": an STA save keeps the status. Canvas Phase2.dc.html submit block (end of the aside). Pass $pdfName ("Entry by Event" / "Entry by Sport").
      The buttons mount the page's existing actions; STA edit pages only save. --}}
 @php
     $portal = filament()->getId() === 'portal';
@@ -13,7 +13,7 @@
 <div style="display: flex; flex-direction: column; gap: 10px">
     <div style="display: flex; flex-wrap: wrap; gap: 10px">
         @unless ($readOnlyReason)
-            <button type="button" wire:click="save" style="{{ $secondary }}">Save as draft</button>
+            <button type="button" wire:click="save" style="{{ $secondary }}">{{ filament()->getCurrentPanel()?->getId() === 'admin' ? 'Save changes' : 'Save as draft' }}</button>
         @endunless
         @if ($can('submit'))
             <button type="button" wire:click="mountAction('submit')" style="{{ $primary }}">{{ $this->getAction('submit', isMounting: false)->getLabel() }}</button>
