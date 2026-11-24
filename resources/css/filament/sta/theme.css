@@ -582,6 +582,8 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-form-band.sta-consents .fi-section-content { padding: 4px 20px 8px; row-gap: 0; }
 .sta-form-band.sta-consents .fi-grid-col + .fi-grid-col .sta-consent-row { border-top: 1px solid var(--sta-row); }
 .sta-auto-grid > .fi-grid { grid-template-columns: repeat(auto-fit, minmax(min(var(--sta-min, 200px), 100%), 1fr)) !important; gap: 16px; }
+/* A label that wraps (long label + "needed for Long List" on a narrow column) must not push its input below the row: inputs line up at the bottom. */
+.sta-person-page .sta-auto-grid > .fi-grid { align-items: end; }
 .sta-auto-grid > .fi-grid > .fi-grid-col.fi-hidden { display: none; }
 .sta-phone > .fi-grid { grid-template-columns: 92px minmax(0, 1fr) !important; gap: 8px; align-items: end; }
 .sta-form-band .fi-sc-flex { flex-wrap: wrap; gap: 24px; align-items: flex-start; }
