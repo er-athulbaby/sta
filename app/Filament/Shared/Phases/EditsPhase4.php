@@ -78,10 +78,41 @@ trait EditsPhase4
         return app(ShortListChecks::class)->overLimits($this->submission, [$this->athletes, $this->officials]);
     }
 
-    #[Unexposed]
-    public function listRows(): Collection
+    /**
+     * Moves one Long List slot onto the Short List (athletes: per game event, officials: per game sport). Inactive people are
+     * refused; going over a maximum stays allowed (it needs a justification) but is warned with the limit message.
+     */
+    public function addToShortList(string $kind, int $slot, int $personId): void
     {
-        return app(LongListChecks::class)->rows($this->submission, $this->athletes, $this->officials);
+        if ($this->readOnlyReason !== null || ! in_array($kind, ['athletes', 'officials'], true)) {
+            return;
+        }
+        [$athletes, $officials] = $this->longListSlots();
+        if (! in_array((string) $personId, ($kind === 'athletes' ? $athletes : $officials)[$slot] ?? [], true)) {
+            return;
+        }
+        $person = $this->longListPeople()->get($personId);
+        if (! $person?->is_active) {
+            Notification::make()->danger()->title(($person?->fullName() ?? 'This person').' is inactive.')->send();
+
+            return;
+        }
+        $before = collect($this->overLimits())->map(fn ($o) => $o['game_sport_id'].$o['kind'])->all();
+        $this->{$kind}[$slot] = array_values(array_unique([...array_map('strval', (array) ($this->{$kind}[$slot] ?? [])), (string) $personId]));
+        foreach ($this->overLimits() as $o) {
+            if (! in_array($o['game_sport_id'].$o['kind'], $before, true)) {
+                Notification::make()->warning()->title('Over the maximum: '.ShortListChecks::describe($o))
+                    ->body('Give a justification before submitting.')->send();
+            }
+        }
+    }
+
+    public function removeFromShortList(string $kind, int $slot, int $personId): void
+    {
+        if ($this->readOnlyReason !== null || ! in_array($kind, ['athletes', 'officials'], true)) {
+            return;
+        }
+        $this->{$kind}[$slot] = array_values(array_filter(array_map('strval', (array) ($this->{$kind}[$slot] ?? [])), fn ($id) => $id !== (string) $personId));
     }
 
     public function save(): void
