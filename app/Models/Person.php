@@ -60,7 +60,7 @@ class Person extends Model
 
     protected $fillable = [
         'association_id', 'type', 'first_name', 'second_name', 'third_name', 'last_name', 'photo_path',
-        'passport_no', 'passport_expiry', 'passport_scan_path', 'cpr_no', 'cpr_expiry', 'cpr_front_path',
+        'passport_no', 'passport_expiry', 'passport_scan_path', 'passport_scan_extra', 'cpr_no', 'cpr_expiry', 'cpr_front_path',
         'nationality', 'dob', 'gender', 'height_cm', 'weight_kg', 'function', 'phone', 'email', 'is_active',
         'full_name', 'passport_issuing_country', 'passport_issue_date', 'cpr_back_path', 'cpr_reader_path',
         'wada_certificate_path', 'fit', 'chest_cm', 'waist_cm', 'phone_cc', 'whatsapp_same', 'whatsapp_cc', 'whatsapp',
@@ -85,6 +85,9 @@ class Person extends Model
     /** @var array<int, string> */
     public array $visaPathsToDelete = [];
 
+    /** @var array<int, string> passport_scan_extra before this save (captured in `saving`) */
+    public array $oldPassportScanExtra = [];
+
     protected function casts(): array
     {
         return [
@@ -92,6 +95,7 @@ class Person extends Model
             ...array_fill_keys(self::CONSENTS, 'boolean'),
             ...array_fill_keys(array_map(fn ($c) => $c.'_at', self::CONSENTS), 'datetime'),
             'passport_issue_date' => 'date',
+            'passport_scan_extra' => 'array',
             'medical_clearance_expiry' => 'date',
             'whatsapp_same' => 'boolean',
             'type' => PersonType::class,
@@ -117,6 +121,13 @@ class Person extends Model
                 // ponytail: *_cc columns are NOT NULL with a +973 default, so reset them to that instead of null.
                 $person->{$column} = in_array($column, self::CONSENTS, true) ? false : (str_ends_with($column, '_cc') ? '+973' : null);
             }
+            // The main scan is what completeness and the OCR look at first: when it goes, the first other page takes its place.
+            $person->oldPassportScanExtra = $person->getOriginal('passport_scan_extra') ?? [];
+            $extra = array_values(array_filter($person->passport_scan_extra ?? []));
+            if (blank($person->passport_scan_path) && $extra) {
+                $person->passport_scan_path = array_shift($extra);
+            }
+            $person->passport_scan_extra = $extra ?: null;
             if ($person->whatsapp_same) {
                 $person->whatsapp_cc = $person->phone_cc;
                 $person->whatsapp = $person->phone;
@@ -148,6 +159,14 @@ class Person extends Model
             }
         });
 
+        // Other passport pages keep their upload names (RenamesAttachments handles single paths); removed ones are deleted here.
+        static::saved(function (Person $person) {
+            if ($person->wasChanged('passport_scan_extra')) {
+                $gone = array_diff($person->oldPassportScanExtra, $person->passportScans());
+                Storage::disk(config('filesystems.private'))->delete(array_values($gone));
+            }
+        });
+
         // Visas cascade in the DB, so their file paths must be read before the row goes.
         static::deleting(function (Person $person) {
             $person->visaPathsToDelete = $person->visas()->pluck('copy_path')->filter()->all();
@@ -155,7 +174,7 @@ class Person extends Model
 
         static::deleted(function (Person $person) {
             $paths = array_filter(array_map(fn ($c) => $person->{$c}, array_keys(self::FILE_COLUMNS)));
-            Storage::disk(config('filesystems.private'))->delete([...$paths, ...$person->visaPathsToDelete]);
+            Storage::disk(config('filesystems.private'))->delete([...$paths, ...($person->passport_scan_extra ?? []), ...$person->visaPathsToDelete]);
         });
     }
 
@@ -234,6 +253,12 @@ class Person extends Model
     public function sizes(): HasMany
     {
         return $this->hasMany(PersonSize::class);
+    }
+
+    /** @return list<string> every passport scan file: the main one first, then the other pages */
+    public function passportScans(): array
+    {
+        return array_values(array_filter([$this->passport_scan_path, ...($this->passport_scan_extra ?? [])]));
     }
 
     public function fullName(): string

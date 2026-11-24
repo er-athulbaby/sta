@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Illuminate\Support\Arr;
 use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
 use Livewire\Component;
@@ -34,25 +35,28 @@ final class ReadPassportAction
             ->button()->extraAttributes(['class' => 'sta-read-passport'])
             ->visible(fn (Get $get) => filled($get('passport_scan_path')))
             ->action(function (FileUpload $component, Get $get, Set $set, Component $livewire) {
-                $state = $get('passport_scan_path');
+                // Every passport file in turn (main scan, then the other pages) until one has a readable MRZ.
                 // A stored string path is client-controlled in Livewire state: only the record's own files may be read.
-                $item = is_array($state) ? (array_values($state)[0] ?? null) : $state;
-                if (is_string($item) && ! $component->isFilePathAuthorized($item)) {
-                    $state = null;
-                }
-                $path = PassportScanFile::localPath($state);
-                try {
-                    $lines = $path ? app(MrzReader::class)->read($path) : null;
-                } catch (Throwable $e) {
-                    report($e); // missing binary / process failure: show the normal "couldn't read" notice
-                    $lines = null;
-                } finally {
-                    PassportScanFile::release($state, $path);
-                }
-                try {
-                    $r = $lines ? (new MrzParser)->parse($lines[0], $lines[1]) : null;
-                } catch (InvalidArgumentException) {
-                    $r = null;
+                $own = [...$component->getOriginalFilePaths(), ...(array) $component->getRecord()?->getOriginal('passport_scan_extra')];
+                $r = null;
+                foreach ([...Arr::wrap($get('passport_scan_path')), ...Arr::wrap($get('passport_scan_extra'))] as $item) {
+                    if ($r !== null || blank($item) || (is_string($item) && ! $component->isFilePathAuthorized($item, $own))) {
+                        continue;
+                    }
+                    $path = PassportScanFile::localPath($item);
+                    try {
+                        $lines = $path ? app(MrzReader::class)->read($path) : null;
+                    } catch (Throwable $e) {
+                        report($e); // missing binary / process failure: show the normal "couldn't read" notice
+                        $lines = null;
+                    } finally {
+                        PassportScanFile::release($item, $path);
+                    }
+                    try {
+                        $r = $lines ? (new MrzParser)->parse($lines[0], $lines[1]) : null;
+                    } catch (InvalidArgumentException) {
+                        $r = null;
+                    }
                 }
                 if ($r === null) {
                     $livewire->passportRead = ['tone' => 'error', 'text' => self::UNREADABLE];

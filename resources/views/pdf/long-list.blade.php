@@ -17,8 +17,7 @@
     .people .head th { text-align: left; white-space: nowrap; }
     .people .head th:first-child { text-align: center; }
     .people td:nth-child(2) { padding: 3px 6px; text-align: left; }
-    .people td:nth-child(3), .people td:last-child { font-weight: bold; }
-    .people td:last-child { text-align: center; }
+    .people td:nth-child(3) { font-weight: bold; }
     .people td.empty { font-weight: normal; text-align: left; }
     .summary td { border: 1px solid #94A3B8; padding: 2px 10px; font-size: 12px; color: #475569; text-align: center; white-space: nowrap; }
     .summary td strong { display: block; font-size: 14px; color: #0F172A; }
@@ -67,9 +66,8 @@
 <table class="grid people">
     <thead>
         <tr class="head">
-            <th style="width:30px">S.No</th><th style="width: 36px">Photo</th><th>Name</th><th>Sport</th><th>Event</th><th>Date of birth</th>
+            <th style="width:30px">S.No</th><th style="width: 36px">Photo</th><th style="width: 30%">Name</th><th>Sport</th><th>Event</th>
             @foreach($athleteItems as $item)<th class="c">{{ $item }}</th>@endforeach
-            <th class="c">Passport scan</th>
         </tr>
     </thead>
     <tbody>
@@ -80,12 +78,10 @@
         <td>{{ $r['name'] }}</td>
         <td>{{ $r['sport'] }}</td>
         <td>{{ $r['events'] }}</td>
-        <td>{{ $r['dob'] }}</td>
         @foreach($r['sizes'] as $size)<td class="c">{{ filled($size) ? $size : '—' }}</td>@endforeach
-        <td class="c">{{ $r['passport'] ? 'Yes' : 'No' }}</td>
     </tr>
     @empty
-    <tr><td class="empty" colspan="{{ 7 + count($athleteItems) }}">No athletes.</td></tr>
+    <tr><td class="empty" colspan="{{ 5 + count($athleteItems) }}">No athletes.</td></tr>
     @endforelse
     </tbody>
 </table>
@@ -94,9 +90,8 @@
 <table class="grid people">
     <thead>
         <tr class="head">
-            <th style="width:30px">S.No</th><th style="width: 36px">Photo</th><th>Name</th><th>Function</th><th>Date of birth</th><th>Phone</th><th>Email</th>
+            <th style="width:30px">S.No</th><th style="width: 36px">Photo</th><th style="width: 30%">Name</th><th>Function</th><th>Phone</th>
             @foreach($officialItems ?? [] as $item)<th class="c">{{ $item }}</th>@endforeach
-            <th class="c">Passport scan</th>
         </tr>
     </thead>
     <tbody>
@@ -106,14 +101,11 @@
         <td class="c">@if($r['photo'])<img src="{{ $r['photo'] }}" alt="Photo of {{ $r['name'] }}" style="width:24px;height:30px">@endif</td>
         <td>{{ $r['name'] }}</td>
         <td>{{ $r['function'] }}</td>
-        <td>{{ $r['dob'] }}</td>
         <td>{{ $r['phone'] }}</td>
-        <td>{{ $r['email'] }}</td>
         @foreach($r['sizes'] as $size)<td class="c">{{ filled($size) ? $size : '—' }}</td>@endforeach
-        <td class="c">{{ $r['passport'] ? 'Yes' : 'No' }}</td>
     </tr>
     @empty
-    <tr><td class="empty" colspan="{{ 8 + count($officialItems ?? []) }}">No team officials.</td></tr>
+    <tr><td class="empty" colspan="{{ 5 + count($officialItems ?? []) }}">No team officials.</td></tr>
     @endforelse
     </tbody>
 </table>

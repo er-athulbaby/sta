@@ -9,6 +9,7 @@ use App\Filament\Portal\Pages\Phase3Events;
 use App\Filament\Resources\Games\GameResource;
 use App\Filament\Resources\Games\Pages\StaPhase3Edit;
 use App\Filament\Resources\Games\Pages\StaPhase3EventsEdit;
+use App\Filament\Resources\People\PersonResource;
 use App\Models\Association;
 use App\Models\Entry;
 use App\Models\Event;
@@ -352,4 +353,19 @@ it('shows only active people in the picker by default; inactive ones greyed with
         ->set('panelStatus', '')->assertSee('Omar Saleh')->assertSeeHtml('aria-label="Add Ali Hasan"')
         ->call('addAthleteChip', $this->m60->id, $this->omar->id);
     expect((array) $page->get("athletes.{$this->m60->id}"))->not->toContain((string) $this->omar->id);
+});
+
+it('links each name to the person\'s registry page in a new tab and lists every passport page', function () {
+    Submission::for($this->game, $this->assoc, 3)->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+    Person::whereKey($this->ali->id)->update(['passport_scan_extra' => json_encode(['scans/p2.pdf'])]);
+    $edit = fn ($resource) => '<a href="'.e($resource::getUrl('edit', ['record' => $this->ali])).'" target="_blank" rel="noopener"';
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->assertSeeHtml($edit(App\Filament\Portal\Resources\People\PersonResource::class))
+        ->assertSeeText('Passport (2) · View 1 · View 2')->assertSeeHtml('aria-label="View passport scan 2 of Ali Hasan"');
+
+    $s = Submission::for($this->game, $this->assoc, 3);
+    actingInAdmin(User::factory()->superAdmin()->create());
+    livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->assertSeeHtml($edit(PersonResource::class));
 });

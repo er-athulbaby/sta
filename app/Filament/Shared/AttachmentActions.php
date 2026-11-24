@@ -15,11 +15,18 @@ final class AttachmentActions
 
     public static function group(): ActionGroup
     {
-        return ActionGroup::make(collect(self::LABELS)->map(fn (string $label, string $column) => Action::make('view_'.$column)
+        $actions = collect(self::LABELS)->map(fn (string $label, string $column) => Action::make('view_'.$column)
             ->label('View '.$label)->icon('heroicon-o-eye')
             ->visible(fn (Person $record) => filled($record->{$column})
                 && ($column !== 'wada_certificate_path' || Person::canViewMedical(auth()->user())))
-            ->url(fn (Person $record) => self::url($record->{$column}), shouldOpenInNewTab: true))->values()->all())
+            ->url(fn (Person $record) => self::url($record->{$column}), shouldOpenInNewTab: true))->values();
+        // The other passport pages (the form allows up to 10), right after the main passport scan.
+        $pages = collect(range(0, 9))->map(fn (int $i) => Action::make('view_passport_page_'.($i + 2))
+            ->label('View Passport page '.($i + 2))->icon('heroicon-o-eye')
+            ->visible(fn (Person $record) => filled($record->passport_scan_extra[$i] ?? null))
+            ->url(fn (Person $record) => self::url($record->passport_scan_extra[$i]), shouldOpenInNewTab: true));
+
+        return ActionGroup::make($actions->splice(0, 2)->merge($pages)->merge($actions)->all())
             ->label('Attachments')->icon('heroicon-o-paper-clip');
     }
 

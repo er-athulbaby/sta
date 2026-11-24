@@ -17,7 +17,7 @@
                         <td>
                             <div class="sta-who">
                                 <x-sta.person-avatar :name="$p->fullName()" />
-                                <div class="sta-who-text"><span class="sta-who-name">{{ $p->fullName() }}</span><span class="sta-who-sub">{{ $p->code }}</span></div>
+                                <div class="sta-who-text"><x-sta.person-link :person="$p" class="sta-who-name" /><span class="sta-who-sub">{{ $p->code }}</span></div>
                             </div>
                         </td>
                         <td class="sta-entered">{{ implode(', ', $row['roles']) }}</td>
@@ -29,6 +29,7 @@
                             @else
                                 <x-sta.pill status="ok">Complete</x-sta.pill>
                             @endif
+                            @if ($p->passport_scan_path)<div class="sta-who-sub"><x-sta.passport-links :person="$p" label="Passport" /></div>@endif
                         </td>
                         <td><ul class="sta-warn-list">@foreach ($row['warnings'] as $w)<li>{{ $w }}</li>@endforeach</ul></td>
                         <td class="sta-who-sub">

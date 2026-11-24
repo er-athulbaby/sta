@@ -161,7 +161,7 @@
                                     <div style="display: flex; align-items: center; gap: 10px">
                                         <div role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar">{{ \App\Support\Sta::initials($p->fullName()) }}</div>
                                         <div style="display: flex; flex-direction: column">
-                                            <span style="font-weight: 600">{{ $p->fullName() }}</span>
+                                            <x-sta.person-link :person="$p" style="font-weight: 600" />
                                             <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span>
                                         </div>
                                         @unless ($row['on_list'])

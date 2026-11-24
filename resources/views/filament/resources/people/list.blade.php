@@ -118,7 +118,10 @@
             <div style="padding: 0 20px 16px; display: flex; flex-wrap: wrap; gap: 8px">
                 @foreach (['passport_scan_path' => 'View passport scan', 'cpr_front_path' => 'View CPR scan'] as $column => $label)
                     @if (filled($person->{$column}))
-                        <a href="{{ \App\Filament\Shared\AttachmentActions::url($person->{$column}) }}" target="_blank" rel="noopener" style="{{ $scanBtn }}">{{ $label }}</a>
+                        @php $paths = $column === 'passport_scan_path' ? $person->passportScans() : [$person->{$column}]; @endphp
+                        @foreach ($paths as $i => $path)
+                            <a href="{{ \App\Filament\Shared\AttachmentActions::url($path) }}" target="_blank" rel="noopener" style="{{ $scanBtn }}">{{ $label }}{{ count($paths) > 1 ? ' '.($i + 1) : '' }}</a>
+                        @endforeach
                     @else
                         <button type="button" disabled title="Not uploaded" style="{{ $scanBtn }}; color: var(--sta-fg-faint, #94A3B8); cursor: not-allowed">{{ $label }}</button>
                     @endif

@@ -51,7 +51,7 @@
                     @endphp
                     <li wire:key="pick-{{ $p->id }}" x-data="{ ask: false }" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; background: {{ $p->is_active ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-subtle, #F1F5F9)' }}; border: 1px solid var(--sta-bd-line, #E2E8F0)">
                         <div style="display: flex; flex-direction: column; flex: 1; min-width: 0{{ $p->is_active ? '' : '; color: var(--sta-fg-muted, #475569)' }}">
-                            <span style="font-weight: 600">{{ $p->fullName() }}</span>
+                            <x-sta.person-link :person="$p" style="font-weight: 600" />
                             <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }} · {{ $isOfficial ? $p->function : $p->gender?->label().' · '.$p->dob?->format('Y') }}</span>
                         </div>
                         @if (! $p->is_active)

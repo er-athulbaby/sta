@@ -99,19 +99,21 @@ class BuildGameFilesZip implements ShouldQueue
             foreach ($people as ['person' => $p, 'association' => $a]) {
                 foreach ($columns as $column) {
                     $kind = self::KINDS[$column];
-                    $file = $p->{$column};
-                    if (blank($file) || ! $disk->exists($file)) {
-                        $missing[] = "{$p->code} ".($p->full_name ?: $p->fullName()).": {$kind}";
+                    // Every passport page goes in (named like the first, then -2, -3, … by fileName()).
+                    foreach ($column === 'passport_scan_path' ? ($p->passportScans() ?: [null]) : [$p->{$column}] as $file) {
+                        if (blank($file) || ! $disk->exists($file)) {
+                            $missing[] = "{$p->code} ".($p->full_name ?: $p->fullName()).": {$kind}";
 
-                        continue;
+                            continue;
+                        }
+                        $local = $dir.'/'.(++$count);
+                        $in = $disk->readStream($file);
+                        $out = fopen($local, 'w');
+                        stream_copy_to_stream($in, $out);
+                        fclose($in);
+                        fclose($out);
+                        $ok($zip->addFile($local, self::fileName($this->layout->zip_pattern, $p, $a, $kind, pathinfo($file, PATHINFO_EXTENSION), $used)), 'addFile');
                     }
-                    $local = $dir.'/'.(++$count);
-                    $in = $disk->readStream($file);
-                    $out = fopen($local, 'w');
-                    stream_copy_to_stream($in, $out);
-                    fclose($in);
-                    fclose($out);
-                    $ok($zip->addFile($local, self::fileName($this->layout->zip_pattern, $p, $a, $kind, pathinfo($file, PATHINFO_EXTENSION), $used)), 'addFile');
                 }
             }
             if ($missing || $count === 0) {

@@ -67,7 +67,7 @@ it('prints the one-row header, boxed summary, S.No tables, justification and sig
     $html = view('pdf.long-list', [
         'game' => Game::factory()->make(['name' => 'Asian Indoor Games']), 'association' => Association::factory()->make(['name' => 'Bahrain Judo Federation', 'code' => 'BJF']),
         'athleteItems' => ['Suit', 'T-Shirt'],
-        'athletes' => [['photo' => null, 'name' => 'Ali Hasan', 'sport' => 'Judo', 'events' => '-60kg', 'dob' => '10 Mar 2005', 'sizes' => ['', 'L'], 'passport' => true]],
+        'athletes' => [['photo' => null, 'name' => 'Ali Hasan', 'sport' => 'Judo', 'events' => '-60kg', 'sizes' => ['', 'L']]],
         'officials' => [], 'officialItems' => ['T-Shirt'], 'summary' => ['male' => 1, 'female' => 0, 'officials' => 0],
         'referenceNo' => 'BJF-G001-P4-R1', 'declaration' => 'I confirm.', 'nocLogo' => PdfContext::bocLogo(), 'gameLogo' => null, 'assocLogo' => null,
         'title' => 'Short List', 'justification' => 'Two medal chances', 'overLimits' => ['Judo — Male: 4 of max 3'],
@@ -80,7 +80,7 @@ it('prints the one-row header, boxed summary, S.No tables, justification and sig
 
     expect(pdfOrder($html, $order))->not->toContain(false)
         ->and(pdfOrder($html, $order))->toBe(collect(pdfOrder($html, $order))->sort()->values()->all())
-        ->and($html)->toContain('<td class="c">—</td>')->toContain('colspan="9">No team officials.')->toContain('<th class="c">T-Shirt</th>');
+        ->and($html)->toContain('<td class="c">—</td>')->toContain('colspan="6">No team officials.')->toContain('<th class="c">T-Shirt</th>');
 });
 
 it('builds the PDF context from the submission', function () {

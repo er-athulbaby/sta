@@ -215,3 +215,12 @@ it('renames Windows device names, caps long names and strips bidi controls', fun
     'long' => [str_repeat('a', 250), str_repeat('a', 200).'.jpg'],
     'bidi' => ["evil\u{202E}gpj.exe\u{2066}x\u{2069}", 'evilgpj.exex.jpg'],
 ]);
+
+it('puts every passport page in the ZIP', function () {
+    $this->disk->put('scans/a2.png', 'ali-passport-2');
+    Person::whereKey($this->ali->id)->update(['passport_scan_extra' => json_encode(['scans/a2.png'])]);
+
+    (new BuildGameFilesZip($this->layout, $this->user, ['passport_scan_path']))->handle(app(GameFileExporter::class));
+
+    expect(zipContents())->toMatchArray(['BJF Hasan_passport.pdf' => 'ali-passport', 'BJF Hasan_passport.png' => 'ali-passport-2']);
+});

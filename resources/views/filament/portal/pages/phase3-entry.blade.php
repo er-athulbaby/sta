@@ -128,7 +128,7 @@
                                         <div style="display: flex; align-items: center; gap: 10px">
                                             <div role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar">{{ \App\Support\Sta::initials($p->fullName()) }}</div>
                                             <div style="display: flex; flex-direction: column">
-                                                <span style="font-weight: 600">{{ $p->fullName() }}</span>
+                                                <x-sta.person-link :person="$p" style="font-weight: 600" />
                                                 <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span>
                                             </div>
                                         </div>
@@ -142,7 +142,7 @@
                                     @endforeach
                                     <td style="padding: 10px 12px">
                                         <div style="display: flex; flex-direction: column; font-size: 13px">
-                                            @if ($p->passport_scan_path)<span>Passport · <a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">Passport missing</span>@endif
+                                            @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport" />@else<span style="{{ $missingStyle }}">Passport missing</span>@endif
                                             @if ($p->cpr_front_path)<span>CPR · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR missing</span>@endif
                                             @include('filament.portal.partials.travel-cell')
                                         </div>
@@ -171,7 +171,7 @@
                                     <div role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar sta-avatar-lg">{{ \App\Support\Sta::initials($p->fullName()) }}</div>
                                 @endif
                                 <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
-                                    <span style="font-weight: 600; font-size: 15px">{{ $p->fullName() }}</span>
+                                    <x-sta.person-link :person="$p" style="font-weight: 600; font-size: 15px" />
                                     <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $p->code }} · {{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}@if ($startDay) on {{ $startDay }}@endif</span>
                                 </div>
                                 <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 8px; border-radius: 8px; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-strong, #334155); font-size: 12px; font-weight: 700">{{ $p->gender?->label() }}</span>
@@ -196,7 +196,7 @@
                                 </div>
                             @endif
                             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px">
-                                @if ($p->passport_scan_path)<span>Passport scan · <a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">Passport scan missing</span>@endif
+                                @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport scan" />@else<span style="{{ $missingStyle }}">Passport scan missing</span>@endif
                                 @if ($p->cpr_front_path)<span>CPR scan · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR scan missing</span>@endif
                                 @include('filament.portal.partials.travel-cell')
                             </div>
@@ -236,7 +236,7 @@
                                 @php $p = $row['person']; $d = $row['detail']; @endphp
                                 <tr wire:key="person-{{ $p->id }}" @unless ($flagged($row)) x-show="tab !== 'warnings'" @endunless style="border-top: 1px solid var(--sta-bd-row, #EEF2F6)">
                                     <td style="padding: 14px 20px">
-                                        <span style="font-weight: 600">{{ $p->fullName() }}</span>
+                                        <x-sta.person-link :person="$p" style="font-weight: 600" />
                                         @if ($flagged($row))
                                             <div style="font-size: 12px; color: var(--sta-fg-orange-800, #9A3412); max-width: 260px; line-height: 1.4">@if ($row['missing']){!! $incomplete !!} Missing: {{ implode(', ', $row['missing']) }}. @endif{{ $warnText($row) }}</div>
                                         @endif
@@ -250,7 +250,7 @@
                                     @endforeach
                                     <td style="padding: 14px 20px">
                                         <div style="display: flex; flex-direction: column; font-size: 13px">
-                                            @if ($p->passport_scan_path)<a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="font-weight: 600">View</a>@else<span style="{{ $missingStyle }}">Missing</span>@endif
+                                            @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" />@else<span style="{{ $missingStyle }}">Missing</span>@endif
                                             @include('filament.portal.partials.travel-cell')
                                         </div>
                                     </td>

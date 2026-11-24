@@ -8,7 +8,6 @@ use App\Models\Person;
 use App\Models\Setting;
 use App\Models\Submission;
 use App\Support\PdfContext;
-use App\Support\Sta;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -66,9 +65,7 @@ class GenerateLongListPdf implements ShouldQueue
                     'name' => $p->full_name ?: $p->fullName(),
                     'sport' => $gs->sport->name,
                     'events' => $gs->gameEvents->whereIn('id', $group->pluck('game_event_id')->all())->map(fn ($ge) => $ge->event->name)->sort()->implode(', '),
-                    'dob' => Sta::date($p->dob),
                     'sizes' => $athleteItems->map(fn ($i) => $sizes->get($i->id, ''))->all(),
-                    'passport' => filled($p->passport_scan_path),
                 ];
             })->sortBy([['sport', 'asc'], ['name', 'asc']])->values()->all();
 
@@ -82,11 +79,8 @@ class GenerateLongListPdf implements ShouldQueue
                     'photo' => GenerateEntryByEventPdfs::dataUri($p->photo_path),
                     'name' => $p->full_name ?: $p->fullName(),
                     'function' => $p->function,
-                    'dob' => Sta::date($p->dob),
                     'phone' => filled($p->phone) ? $p->phone_cc.' '.$p->phone : '',
-                    'email' => $p->email ?? '',
                     'sizes' => $officialItems->map(fn ($i) => $sizes->get($i->id, ''))->all(),
-                    'passport' => filled($p->passport_scan_path),
                 ];
             })->sortBy('name')->values()->all();
 

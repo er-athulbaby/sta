@@ -52,8 +52,11 @@ trait RenamesAttachments
                     $updates[$column] = $target;
                 }
             }
+            // A plain query: in `saved` the original still holds the old paths, so a save would see "no change" when the
+            // target is the old path (a replaced file of the same type), and it would reset wasChanged() for later listeners.
             if ($updates) {
-                $model->forceFill($updates)->saveQuietly();
+                $model->newQueryWithoutScopes()->whereKey($model->getKey())->toBase()->update($updates);
+                $model->forceFill($updates);
             }
         });
     }

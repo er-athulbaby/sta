@@ -87,6 +87,9 @@ final class PersonForm
                                     ->extraAttributes(['class' => 'sta-help']),
                                 View::make('filament.people.passport-read'),
                             ]),
+                        // Other pages of the passport (Person::passportScans()); a removed main scan is replaced by the first of these on save.
+                        self::upload('passport_scan_extra', 'Other passport pages', 'scans', $scanTypes, 5120, 'list', 'Add another file')->multiple()->maxFiles(10)
+                            ->visible(fn (Get $get) => filled($get('passport_scan_path')) || filled($get('passport_scan_extra'))),
                         self::need(self::upload('photo_path', 'Photo', 'photos', self::PHOTO_TYPES, 2048, 'photo'), 'photo_path')
                             ->helperText('JPG or PNG, up to 2 MB')->extraFieldWrapperAttributes(['class' => 'sta-photo-field'], merge: true),
                     ]),

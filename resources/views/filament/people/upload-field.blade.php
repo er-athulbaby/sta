@@ -1,10 +1,12 @@
-{{-- Canvas PlayerForm / OfficialForm file field for a Filament FileUpload: the photo column ($variant "photo") or a file row
-     (name, "TYPE · size · date", View through the 5-minute link, Replace), or a dashed upload button when empty. The file goes
-     into the FileUpload's own state ({statePath}.{key}), so Filament's validation and storage are unchanged. --}}
+{{-- Canvas PlayerForm / OfficialForm file field for a Filament FileUpload: the photo column ($variant "photo"), a file row
+     (name, "TYPE · size · date", View through the 5-minute link, Replace) or, for a multiple() upload ($variant "list"), one row
+     per file with View / Remove and an "add another" button; a dashed upload button when empty. The file goes into the
+     FileUpload's own state ({statePath}.{key}), so Filament's validation and storage are unchanged. --}}
 @php
     use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
     $statePath = $getStatePath();
+    $isList = $variant === 'list';
     // Replace keeps the stored entry until the new upload has arrived (then removes it), so a failed upload never empties
     // the field; while both are present, show the new one.
     $values = collect(\Illuminate\Support\Arr::wrap($field->getRawState()))->filter();
@@ -12,24 +14,31 @@
     $disabled = $isDisabled();
     $inputId = $getId();
     $human = fn (?int $bytes) => $bytes === null ? null : ($bytes >= 1048576 ? round($bytes / 1048576, 1).' MB' : max(1, (int) round($bytes / 1024)).' KB');
-    $file = null;
-    if ($value instanceof TemporaryUploadedFile) {
-        $file = ['name' => $value->getClientOriginalName(), 'size' => $human($value->getSize()), 'date' => 'not saved yet', 'url' => null,
-            'preview' => $value->isPreviewable() ? $value->temporaryUrl() : null];
-    } elseif (is_string($value) && $field->isFilePathAuthorized($value)) {
-        $disk = $field->getDisk();
-        try {
-            $size = $disk->size($value);
-            $date = \App\Support\Sta::date(\Illuminate\Support\Carbon::createFromTimestamp($disk->lastModified($value)));
-        } catch (\Throwable) {
-            $size = $date = null;
+    $describe = function ($value) use ($field, $human) {
+        if ($value instanceof TemporaryUploadedFile) {
+            $file = ['name' => $value->getClientOriginalName(), 'size' => $human($value->getSize()), 'date' => 'not saved yet', 'url' => null,
+                'preview' => $value->isPreviewable() ? $value->temporaryUrl() : null];
+        } elseif (is_string($value) && $field->isFilePathAuthorized($value)) {
+            $disk = $field->getDisk();
+            try {
+                $size = $disk->size($value);
+                $date = \App\Support\Sta::date(\Illuminate\Support\Carbon::createFromTimestamp($disk->lastModified($value)));
+            } catch (\Throwable) {
+                $size = $date = null;
+            }
+            $url = \App\Filament\Shared\AttachmentActions::url($value);
+            $file = ['name' => basename($value), 'size' => $human($size), 'date' => $date, 'url' => $url,
+                'preview' => in_array(strtolower(pathinfo($value, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'], true) ? $url : null];
+        } else {
+            return null;
         }
-        $url = \App\Filament\Shared\AttachmentActions::url($value);
-        $file = ['name' => basename($value), 'size' => $human($size), 'date' => $date, 'url' => $url,
-            'preview' => in_array(strtolower(pathinfo($value, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'], true) ? $url : null];
-    }
-    $type = $file ? strtoupper(pathinfo($file['name'], PATHINFO_EXTENSION)) : null;
-    $meta = $file ? implode(' · ', array_filter([$type, $file['size'], $file['date']])) : null;
+        $file['meta'] = implode(' · ', array_filter([strtoupper(pathinfo($file['name'], PATHINFO_EXTENSION)), $file['size'], $file['date']]));
+
+        return $file;
+    };
+    $file = $isList ? null : $describe($value);
+    $files = $isList ? $values->map($describe)->filter() : collect();
+    $meta = $file['meta'] ?? null;
     $accept = implode(',', $field->getAcceptedFileTypes() ?? []);
     $person = $field->getRecord();
     $btn = 'min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; cursor: pointer; box-sizing: border-box';
@@ -43,7 +52,7 @@
                     const f = $event.target.files[0];
                     if (! f) return;
                     uploading = true; progress = 0; failed = false;
-                    const old = Object.keys($wire.get(@js($statePath)) || {});
+                    const old = @js($isList) ? [] : Object.keys($wire.get(@js($statePath)) || {});
                     $wire.upload(@js($statePath) + '.' + Math.random().toString(36).slice(2) + Date.now().toString(36), f,
                         async () => {
                             for (const fileKey of old) {
@@ -58,7 +67,30 @@
                 ">
         @endunless
 
-        @if ($variant === 'photo')
+        @if ($isList)
+            @foreach ($files as $fileKey => $f)
+                <div wire:key="{{ $statePath }}-{{ $fileKey }}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 52px; padding: 6px 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--sta-bd-line, #E2E8F0); background: var(--sta-bg-surface-alt, #F8FAFC)">
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--sta-fg-brand, #1F3A5F); flex-shrink: 0"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg>
+                    <div style="flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column">
+                        <span style="font-weight: 600; font-size: 13px; overflow-wrap: anywhere">{{ $f['name'] }}</span>
+                        <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $f['meta'] }}</span>
+                    </div>
+                    @if ($f['url'])
+                        <a href="{{ $f['url'] }}" target="_blank" rel="noopener" aria-label="View {{ $getLabel() }} {{ $loop->iteration }}" style="{{ $link }}">View</a>
+                    @endif
+                    @unless ($disabled)
+                        <button type="button" x-on:click="$wire.callSchemaComponentMethod(@js($getKey()), 'removeUploadedFile', { fileKey: @js($fileKey) }).then(() => $wire.$refresh())" style="{{ $btn }}">Remove<span class="sta-sr-only"> {{ $getLabel() }} {{ $loop->iteration }}</span></button>
+                    @endunless
+                </div>
+            @endforeach
+            @unless ($disabled)
+                <label for="{{ $inputId }}" tabindex="0" role="button" class="sta-upload" x-on:keydown.enter.prevent="$el.click()" x-on:keydown.space.prevent="$el.click()"
+                    style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 10px; border: 1px dashed var(--sta-bd-faint, #94A3B8); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-strong, #334155); font: 600 13px Inter, sans-serif; cursor: pointer">
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    {{ $uploadLabel }}
+                </label>
+            @endunless
+        @elseif ($variant === 'photo')
             @if ($file && $file['preview'])
                 <img src="{{ $file['preview'] }}" alt="Photo preview: {{ $person?->fullName() }}" style="width: 160px; height: 200px; border-radius: 12px; object-fit: cover; background: var(--sta-bg-selected, #E8EEF6)">
             @else

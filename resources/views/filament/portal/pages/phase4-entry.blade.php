@@ -29,7 +29,6 @@
             $subhead = 'margin: 0; font-size: 13px; font-weight: 700; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em';
             $view = 'display: inline-flex; align-items: center; min-height: 44px; font-weight: 600';
             $pill = 'display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 600; ';
-            $url = fn ($path) => \App\Filament\Shared\AttachmentActions::url($path);
         @endphp
 
         <div role="note" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); color: var(--sta-fg-strong, #334155)">
@@ -72,14 +71,14 @@
                                                         <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
                                                             <input type="checkbox" value="{{ $id }}" wire:model.live="athletes.{{ $ge->id }}" @disabled($readOnlyReason) style="width: 22px; height: 22px; accent-color: var(--sta-bd-violet-700, #6D28D9); flex-shrink: 0">
                                                             <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; background: var(--sta-bg-avatar, #2B4C7E); color: var(--sta-fg-on-brand, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0">{{ \App\Support\Sta::initials($p->fullName()) }}</span>
-                                                            <span style="display: flex; flex-direction: column"><span style="font-weight: 600; color: {{ $on ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}">{{ $p->fullName() }}</span><span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span></span>
+                                                            <span style="display: flex; flex-direction: column"><x-sta.person-link :person="$p" style="font-weight: 600; color: {{ $on ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}" /><span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span></span>
                                                         </label>
                                                     </td>
                                                     <td style="padding: 4px 12px">{{ $p->gender?->label() }}</td>
                                                     <td style="padding: 4px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">{{ \App\Support\Sta::eventLabel($ge->event) }}</td>
                                                     <td style="padding: 4px 20px">
                                                         @if ($p->passport_scan_path)
-                                                            <a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="{{ $view }}">View</a>
+                                                            <x-sta.passport-links :person="$p" :link-style="$view" />
                                                         @else
                                                             <span style="color: var(--sta-fg-orange-800, #9A3412); font-weight: 600">Missing</span>
                                                         @endif
@@ -112,13 +111,13 @@
                                                 <td style="padding: 4px 20px">
                                                     <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
                                                         <input type="checkbox" value="{{ $id }}" wire:model.live="officials.{{ $gs->id }}" @disabled($readOnlyReason) style="width: 22px; height: 22px; accent-color: var(--sta-bd-violet-700, #6D28D9); flex-shrink: 0">
-                                                        <span style="font-weight: 600; color: {{ $on ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}">{{ $p->fullName() }}</span>
+                                                        <x-sta.person-link :person="$p" style="font-weight: 600; color: {{ $on ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}" />
                                                     </label>
                                                 </td>
                                                 <td style="padding: 4px 12px">{{ $p->function }}</td>
                                                 <td style="padding: 4px 20px">
                                                     @if ($p->passport_scan_path)
-                                                        <a href="{{ $url($p->passport_scan_path) }}" target="_blank" aria-label="View passport scan of {{ $p->fullName() }}" style="{{ $view }}">View</a>
+                                                        <x-sta.passport-links :person="$p" :link-style="$view" />
                                                     @else
                                                         <span style="color: var(--sta-fg-orange-800, #9A3412); font-weight: 600">Missing</span>
                                                     @endif
