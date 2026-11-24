@@ -3,6 +3,7 @@
 use App\Services\Mrz\MrzParser;
 use App\Services\Mrz\TesseractMrzReader;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Process;
 
 const BHR_L1 = 'P<BHRALSAYED<<NOOR<KHALID<AHMED<<<<<<<<<<<<<';
 const BHR_L2 = 'BH12345676BHR0605276F3101159<<<<<<<<<<<<<<00';
@@ -47,4 +48,39 @@ it('picks the last two MRZ-like lines from OCR text', function () {
     $ocr = "REPUBLIC OF BAHRAIN\nPASSPORT\nP<BHRALSAYED<<NOOR<KHALID<AHMED<<<<<<<<<<<<<\nBH12345676BHR0605276F3101159<<<<<<<<<<<<<<00\n";
     expect(TesseractMrzReader::pickLines($ocr))->toBe([
         'P<BHRALSAYED<<NOOR<KHALID<AHMED<<<<<<<<<<<<<', 'BH12345676BHR0605276F3101159<<<<<<<<<<<<<<00']);
+});
+
+it('picks the line starting with P and the next one, even with noise below the MRZ', function () {
+    $ocr = "PASSPORT\n".BHR_L1."\n".BHR_L2."\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
+    expect(TesseractMrzReader::pickLines($ocr))->toBe([BHR_L1, BHR_L2]);
+});
+
+it('fixes OCR look-alikes: letters in digit fields and digits in country codes', function () {
+    // dob 060527 read as O6O527, expiry check 9 read as ... kept, nationality BHR read as 8HR
+    $l2 = 'BH12345676'.'8HR'.'O6O5276F3101159<<<<<<<<<<<<<<OO';
+    $r = (new MrzParser)->parse(BHR_L1, $l2, Carbon::parse('2026-11-09'));
+    expect($r->dob)->toBe('2006-05-27')->and($r->nationalityCode)->toBe('BHR')->and($r->invalid)->toBe([]);
+});
+
+it('reads with the passport-trained mrz model, tries cleaned copies and stops at the first fully valid read', function () {
+    Process::fake(fn () => Process::result("NOISE\n".BHR_L1."\n".BHR_L2."\n"));
+    $img = imagecreatetruecolor(800, 500);
+    imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+    imagepng($img, $file = tempnam(sys_get_temp_dir(), 'pp').'.png');
+
+    expect((new TesseractMrzReader)->read($file))->toBe([BHR_L1, BHR_L2]);
+    Process::assertRanTimes(fn ($p) => in_array('mrz', $p->command, true)
+        && in_array(resource_path('tessdata'), $p->command, true), 1);
+    @unlink($file);
+});
+
+it('returns the read with the fewest failed checks when none is fully valid', function () {
+    $bad = substr_replace(BHR_L2, '5', 19, 1);
+    Process::fake(fn () => Process::result(BHR_L1."\n".$bad."\n"));
+    $img = imagecreatetruecolor(800, 500);
+    imagepng($img, $file = tempnam(sys_get_temp_dir(), 'pp').'.png');
+
+    expect((new TesseractMrzReader)->read($file))->toBe([BHR_L1, $bad]);
+    Process::assertRanTimes(fn ($p) => true, 4); // 3 cleaned widths + the original
+    @unlink($file);
 });

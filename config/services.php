@@ -28,7 +28,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'tesseract' => ['binary' => env('TESSERACT_PATH', 'tesseract'), 'pdftoppm' => env('PDFTOPPM_PATH', 'pdftoppm')],
+    // "mrz" = passport-trained model (BSD-3, DoubangoTelecom/tesseractMRZ) shipped in resources/tessdata, as in the visa app.
+    'tesseract' => ['binary' => env('TESSERACT_PATH', 'tesseract'), 'pdftoppm' => env('PDFTOPPM_PATH', 'pdftoppm'),
+        'tessdata' => env('TESSDATA_DIR', resource_path('tessdata')), 'lang' => env('TESSERACT_LANG', 'mrz')],
 
     'slack' => [
         'notifications' => [

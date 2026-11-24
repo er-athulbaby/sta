@@ -16,6 +16,12 @@ final class MrzParser
         if (strlen($l1) !== 44 || strlen($l2) !== 44 || $l1[0] !== 'P') {
             throw new InvalidArgumentException('Not a passport (TD3) machine-readable zone.');
         }
+        // OCR reads look-alikes (as in the visa app): letters in digit-only fields, digits in the letter-only country codes.
+        $digits = fn (string $s) => strtr($s, ['O' => '0', 'Q' => '0', 'D' => '0', 'I' => '1', 'L' => '1', 'Z' => '2', 'S' => '5', 'B' => '8']);
+        $letters = fn (string $s) => strtr($s, ['0' => 'O', '1' => 'I', '5' => 'S', '8' => 'B']);
+        $l1 = substr($l1, 0, 2).$letters(substr($l1, 2, 3)).substr($l1, 5);
+        $l2 = substr($l2, 0, 9).$digits($l2[9]).$letters(substr($l2, 10, 3)).$digits(substr($l2, 13, 7)).$l2[20]
+            .$digits(substr($l2, 21, 7)).substr($l2, 28, 14).$digits(substr($l2, 42, 2)); // 42, 43: check digits
         $today ??= Carbon::now();
         $invalid = [];
 
