@@ -1,6 +1,6 @@
 {{-- Canvas LongListEvents.dc.html token field: person chips with ×, a search input and a multi-select listbox.
      $id (input id), $placeholder, $chips (list of [person, sub, remove (wire call), removeLabel, bad]), $options (list of
-     [id, person, sub]), $chosen (ids), $add / $remove (Livewire method names), $arg (first argument), $listLabel,
+     [id, person, sub]), $chosen (ids), $remove (Livewire method name; picking an option opens the "Add to Long List" pop-up), $arg (event / sport id), $listLabel,
      $filterHtml (trusted markup, values escaped by the caller), $footer, $error. Read-only: chips without × and no input. --}}
 @php
     $field = 'display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 48px; box-sizing: border-box; padding: 1px 8px; border-radius: 10px; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid '.($error ? 'var(--sta-bd-red-600, #DC2626)' : 'var(--sta-bd-line-strong, #CBD5E1)');
@@ -48,7 +48,7 @@
                     @php $sel = in_array($o['person']->id, $chosen, true); @endphp
                     <div id="{{ $id }}-opt-{{ $o['person']->id }}" role="option" aria-selected="{{ $sel ? 'true' : 'false' }}" wire:key="{{ $id }}-opt-{{ $o['person']->id }}"
                         x-show="matches(@js(mb_strtolower($o['person']->fullName().' '.$o['person']->code.' '.$o['sub'])))"
-                        wire:click="{{ $sel ? $remove : $add }}({{ $arg }}, {{ $o['person']->id }})"
+                        wire:click="{{ $sel ? $remove.'('.$arg.', '.$o['person']->id.')' : 'openAdd('.$o['person']->id.', '.$arg.')' }}"
                         x-bind:style="active === $el.id ? { outline: '2px solid var(--sta-bd-brand, #1F3A5F)', outlineOffset: '-2px' } : {}"
                         style="cursor: pointer; background: {{ $sel ? 'var(--sta-bg-subtle, #F1F5F9)' : 'var(--sta-bg-surface, #FFFFFF)' }}">
                         <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px">

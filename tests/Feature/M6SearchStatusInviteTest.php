@@ -99,6 +99,6 @@ it('builds the Registry status footnote from the Long List fields', function () 
 
     livewire(Dashboard::class)->assertSee('Registry status')->assertDontSee('Registry health')
         ->assertSee('Incomplete = missing any Long List field: Date of birth, Gender, Nationality, Passport number, Passport expiry, Full name')
-        ->assertSee('team officials also Function, Mobile')
+        ->assertSee('team officials also Position, Mobile')
         ->assertDontSee('CPR number.');
 });

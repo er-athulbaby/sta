@@ -145,7 +145,7 @@
                                             <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}</td>
                                             <td style="padding: 10px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">@foreach ($eventsOf($row) as $e)<a href="{{ $e['url'] }}" style="color: var(--sta-fg-brand, #1F3A5F); text-decoration: none">{{ $e['label'] }}</a>@if (! $loop->last), @endif @endforeach</td>
                                         @else
-                                            <td style="padding: 10px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">{{ $p->function }}</td>
+                                            <td style="padding: 10px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">{{ $row['function'] }}</td>
                                             <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155); white-space: nowrap">{{ filled($p->phone) ? trim($p->phone_cc.' '.$p->phone) : '' }}</td>
                                         @endif
                                         @foreach ($g['items'] as $item)
@@ -194,8 +194,8 @@
                                     <div style="display: flex; flex-wrap: wrap; gap: 6px">
                                         @if ($athletesGroup)
                                             @foreach ($eventsOf($row) as $e)<a href="{{ $e['url'] }}" style="{{ $chip }}">{{ $e['label'] }}</a>@endforeach
-                                        @elseif (filled($p->function))
-                                            <span style="{{ $chip }}">{{ $p->function }}</span>
+                                        @elseif (filled($row['function']))
+                                            <span style="{{ $chip }}">{{ $row['function'] }}</span>
                                         @endif
                                     </div>
                                 </div>
@@ -232,5 +232,6 @@
     </div>
 
     @include('filament.portal.partials.person-panel')
+    @include('filament.portal.partials.add-to-list')
     @include('filament.partials.comments', ['comments' => $this->submission->commentsNewestFirst()])
 </x-filament-panels::page>

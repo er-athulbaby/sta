@@ -111,7 +111,7 @@ class ListPeople extends ListRecords
             $tmp = tempnam(sys_get_temp_dir(), 'ppl');
             $writer = new Writer;
             $writer->openToFile($tmp);
-            $writer->addRow(LiteralRow::from(['Code', 'Name', 'Association', 'Type', 'Function', 'Gender', 'Date of birth', 'Nationality', 'Passport expiry', 'Passport scan', 'CPR scan', 'Complete']));
+            $writer->addRow(LiteralRow::from(['Code', 'Name', 'Association', 'Type', 'Position', 'Gender', 'Date of birth', 'Nationality', 'Passport expiry', 'Passport scan', 'CPR scan', 'Complete']));
             foreach ($people as $p) {
                 $writer->addRow(LiteralRow::from([$p->code, $p->fullName(), $p->association?->name ?? '', $p->type->label(), $p->function ?? '',
                     $p->gender?->label() ?? '', Sta::date($p->dob), $p->nationality ?? '', Sta::date($p->passport_expiry),

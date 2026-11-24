@@ -9,6 +9,7 @@
             [$slotAthletes, $slotOfficials] = $this->longListSlots();
             $people = $this->longListPeople();
             $over = $this->overLimits();
+            $fns = \App\Services\Phases\LongListChecks::officialFunctions($this->submission);
             $kinds = ['men' => 'Male', 'women' => 'Female', 'officials' => 'Team officials'];
             $overText = collect($over)->groupBy('sport')
                 ->map(fn ($items, $sport) => $sport.' — '.$items->map(fn ($o) => $kinds[$o['kind']].' '.$o['count'].' / max '.$o['max'])->implode(' · '))
@@ -55,7 +56,7 @@
                                 })],
                             ['key' => 'o', 'title' => 'Team officials', 'errors' => ['officials.'.$gs->id],
                                 'entries' => collect($s['officials'])->map(fn ($id) => ['p' => $people[$id], 'id' => $id, 'slot' => $gs->id,
-                                    'on' => in_array($id, $tickedOfficials, true), 'model' => 'officials.'.$gs->id, 'detail' => $people[$id]->function])],
+                                    'on' => in_array($id, $tickedOfficials, true), 'model' => 'officials.'.$gs->id, 'detail' => $fns[$gs->id][$id] ?? $people[$id]->function])],
                         ];
                     @endphp
                     <section aria-labelledby="sport-title-{{ $gs->id }}" wire:key="sport-{{ $gs->id }}" style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px">

@@ -26,6 +26,8 @@ use Illuminate\Validation\ValidationException;
 /** Phase 3 (Long List) state, checks, save and travel details; use together with HandlesSubmission. */
 trait EditsPhase3
 {
+    use AddsToLongList;
+
     /** @var array<int|string, mixed> game_event_id => person ids */
     public array $athletes = [];
 
@@ -136,10 +138,12 @@ trait EditsPhase3
             DB::transaction(function () {
                 $this->claimOrHalt();
                 app(LongListChecks::class)->sync($this->submission, $this->athletes, $this->officials);
+                $this->applyEntryMeta();
             });
         } catch (Halt) {
             return; // notification already sent; loadedVersion unchanged so submit knows nothing was saved
         }
+        $this->entryMeta = [];
         $this->refreshLoadedAt();
         Notification::make()->success()->title('Saved')->send();
     }

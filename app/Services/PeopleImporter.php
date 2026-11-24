@@ -136,7 +136,9 @@ final class PeopleImporter
     {
         $row = [];
         foreach (PeopleTemplateExport::COLUMNS as $column) {
-            $value = $raw[$column] ?? ($column === 'mobile' ? $raw['phone'] ?? null : null); // old templates used 'phone'
+            $value = $raw[$column] ?? match ($column) {
+                'mobile' => $raw['phone'] ?? null, 'position' => $raw['function'] ?? null, default => null
+            }; // old templates used 'phone' and 'function'
             $value = is_string($value) ? trim($value) : $value;
             if (in_array($column, self::DATE_COLUMNS, true)) {
                 if ($value instanceof DateTimeInterface) {
@@ -153,7 +155,7 @@ final class PeopleImporter
         $row['type'] = strtolower((string) $row['type']);
         $row['gender'] = strtolower((string) $row['gender']);
         if ($row['type'] !== 'official') {
-            $row['function'] = null;
+            $row['position'] = null;
         }
         $row['extra'] = [];
         foreach ($this->extraFields as $field) {
@@ -190,7 +192,7 @@ final class PeopleImporter
             'passport_expiry' => ['required', 'date_format:Y-m-d'],
             'cpr_no' => ['nullable', 'string', 'max:30'],
             'cpr_expiry' => ['nullable', 'required_with:cpr_no', 'date_format:Y-m-d'],
-            'function' => ['nullable', 'required_if:type,official', Rule::in(PersonForm::FUNCTIONS)],
+            'position' => ['nullable', 'required_if:type,official', Rule::in(PersonForm::FUNCTIONS)],
             'email' => ['nullable', 'email'],
             ...$extraRules,
         ], [], $names)->errors()->all();
@@ -204,7 +206,7 @@ final class PeopleImporter
             'gender' => $row['gender'], 'nationality' => $row['nationality'], 'height_cm' => $row['height_cm'],
             'weight_kg' => $row['weight_kg'], 'passport_no' => (string) $row['passport_no'], 'passport_expiry' => $row['passport_expiry'],
             'cpr_no' => $row['cpr_no'] !== null ? (string) $row['cpr_no'] : null, 'cpr_expiry' => $row['cpr_expiry'],
-            'function' => $row['function'], 'phone' => $row['mobile'], 'phone_cc' => '+973', 'email' => $row['email'],
+            'function' => $row['position'], 'phone' => $row['mobile'], 'phone_cc' => '+973', 'email' => $row['email'],
             'passport_issuing_country' => $row['passport_issuing_country'], 'passport_issue_date' => $row['passport_issue_date'],
             'emergency_relationship' => $row['emergency_relationship'], 'guardian_relationship' => $row['guardian_relationship'],
         ];

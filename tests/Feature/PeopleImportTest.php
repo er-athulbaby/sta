@@ -32,7 +32,7 @@ function row(array $overrides = []): array
         'type' => 'athlete', 'full_name' => 'Sara Ali', 'first_name' => 'Sara', 'second_name' => '', 'third_name' => '', 'last_name' => 'Ali',
         'date_of_birth' => '2007-04-02', 'gender' => 'female', 'nationality' => 'Bahrain', 'height_cm' => 165, 'weight_kg' => 55,
         'passport_no' => 'BH1111111', 'passport_issuing_country' => 'Bahrain', 'passport_issue_date' => '2023-01-01', 'passport_expiry' => '2029-01-01', 'cpr_no' => '070402111', 'cpr_expiry' => '2028-01-01',
-        'function' => '', 'mobile' => '', 'email' => '',
+        'position' => '', 'mobile' => '', 'email' => '',
     ], $overrides);
 }
 
@@ -102,8 +102,8 @@ it('imports the untouched default template', function () {
     expect($result->errors)->toBe([])->and($result->created)->toBe(1);
 });
 
-it('ignores function for athletes', function () {
-    $result = app(PeopleImporter::class)->import(xlsxWith([row(['function' => 'whatever'])]), Association::factory()->create());
+it('ignores position for athletes', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['position' => 'whatever'])]), Association::factory()->create());
 
     expect($result->ok())->toBeTrue()->and(Person::sole()->function)->toBeNull();
 });
@@ -175,8 +175,8 @@ it('rejects a nationality that is not in the country list', function () {
     expect($result->ok())->toBeFalse()->and(Person::count())->toBe(0);
 });
 
-it('rejects an official function outside the form list', function () {
-    $result = app(PeopleImporter::class)->import(xlsxWith([row(['type' => 'official', 'function' => 'Coach'])]), Association::factory()->create());
+it('rejects an official position outside the form list', function () {
+    $result = app(PeopleImporter::class)->import(xlsxWith([row(['type' => 'official', 'position' => 'Coach'])]), Association::factory()->create());
     expect($result->ok())->toBeFalse();
 });
 
@@ -244,4 +244,23 @@ it('keeps the fixed column when an extra field is labelled like it', function ()
     $result = app(PeopleImporter::class)->import(xlsxWith([row(['email' => 'sara@x.bh', 'email_2' => 'work@x.bh'])]), Association::factory()->create());
     expect($result->ok())->toBeTrue()->and(Person::sole()->email)->toBe('sara@x.bh')
         ->and(Person::sole()->extraValues())->toBe([$email->id => 'work@x.bh']);
+});
+
+it('imports the position and accepts the legacy function header', function () {
+    $official = ['type' => 'official', 'position' => 'Head Coach', 'mobile' => '33445566'];
+    expect(app(PeopleImporter::class)->import(xlsxWith([row($official)]), Association::factory()->create())->ok())->toBeTrue()
+        ->and(Person::sole()->function)->toBe('Head Coach');
+    Person::query()->delete();
+
+    $path = storage_path('app/testing/legacy-'.uniqid().'.xlsx');
+    $columns = array_map(fn ($c) => $c === 'position' ? 'function' : $c, PeopleTemplateExport::COLUMNS);
+    $writer = new Writer;
+    $writer->openToFile($path);
+    $writer->addRow(Row::fromValues($columns));
+    $writer->addRow(Row::fromValues(array_map(fn ($c) => row($official)[$c === 'function' ? 'position' : $c] ?? '', $columns)));
+    $writer->close();
+
+    $result = app(PeopleImporter::class)->import($path, Association::factory()->create());
+
+    expect($result->ok())->toBeTrue()->and(Person::sole()->function)->toBe('Head Coach');
 });

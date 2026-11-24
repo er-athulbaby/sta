@@ -81,7 +81,7 @@ final class People extends Subject
             Field::text('nationality', 'Nationality', 'Person', 'people.nationality'),
             Field::date('dob', 'Date of birth', 'Person', 'people.dob'),
             Field::number('age', 'Age (today)', 'Person', Sql::age('people.dob', Sql::today())),
-            Field::text('function', 'Function', 'Person', 'people.function'),
+            Field::text('function', 'Position', 'Person', 'people.function'),
             Field::boolean('complete', 'Complete', 'Person', self::completeSql()),
             Field::text('association', 'Association', 'Association', 'associations.name'),
             Field::text('association_code', 'Association code', 'Association', 'associations.code'),

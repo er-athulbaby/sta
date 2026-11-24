@@ -156,7 +156,7 @@ trait HasPersonPanel
         return $p;
     }
 
-    /** "Save as draft" saves the person to the registry; "Save and add to Long List" also puts them on the list and saves the list draft. */
+    /** "Save as draft" saves the person to the registry; "Save and add to Long List" then opens the "Add to Long List" pop-up for them. */
     public function createPerson(bool $addToList = false): void
     {
         if ($this->panel === null || $this->readOnlyReason !== null) {
@@ -167,7 +167,7 @@ trait HasPersonPanel
             ['newPerson' => $this->newPerson, 'newPersonPhoto' => $this->newPersonPhoto, 'newPersonPassportScan' => $this->newPersonPassportScan, 'newPersonCprScan' => $this->newPersonCprScan],
             [...PersonForm::shortFormRules($type, 'newPerson.', 'newPerson'), 'newPerson.cross_checked' => ['accepted']],
             ['newPerson.cross_checked.accepted' => Person::CROSS_CHECK_MESSAGE],
-            collect(self::SHORT_FORM_FIELDS)->mapWithKeys(fn ($f) => ["newPerson.$f" => str_replace('_', ' ', $f)])->all(),
+            collect(self::SHORT_FORM_FIELDS)->mapWithKeys(fn ($f) => ["newPerson.$f" => $f === 'function' ? 'position' : str_replace('_', ' ', $f)])->all(),
         )->validate();
         $target = $addToList ? $this->listTarget($type) : null;
         $data = collect(Arr::only($this->newPerson, self::SHORT_FORM_FIELDS))->map(fn ($v) => filled($v) ? $v : null)->all();
@@ -197,15 +197,7 @@ trait HasPersonPanel
         $this->closePanel();
 
         if ($target !== null) {
-            $type === PersonType::Athlete ? $this->addAthleteChip($target, $person->id) : $this->addOfficialChip($target, $person->id);
-            try {
-                $this->save();
-            } catch (ValidationException $e) {
-                Notification::make()->danger()->title('Saved to the registry, but the Long List was not saved')
-                    ->body(collect($e->errors())->flatten()->first())->send();
-
-                throw $e; // the list errors show on the page
-            }
+            $this->openAdd($person->id, $target); // the "Add to Long List" pop-up puts them on the list
         }
     }
 

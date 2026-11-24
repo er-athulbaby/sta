@@ -10,6 +10,7 @@
         $athleteOptions = $readOnlyReason ? collect() : $this->candidates(\App\Enums\PersonType::Athlete);
         $officialOptions = $readOnlyReason ? collect() : $this->candidates(\App\Enums\PersonType::Official);
         $canAdd = property_exists($this, 'panel') && ! $readOnlyReason;
+        $fns = \App\Services\Phases\LongListChecks::officialFunctions($this->submission);
         // Counts use only the people that get a chip (ids of other associations or deleted people are never counted).
         $shown = fn ($ids) => array_values(array_filter(array_map('intval', (array) $ids), fn ($id) => $people->has($id)));
         $Male = \App\Enums\PersonGender::Male;
@@ -74,7 +75,7 @@
                         </div>
                         @include('filament.portal.partials.person-picker', [
                             'id' => 'event-'.$ge->id, 'placeholder' => 'Search athletes…', 'arg' => $ge->id,
-                            'add' => 'addAthleteChip', 'remove' => 'removeAthleteChip', 'chosen' => $chosen, 'error' => $err,
+                            'remove' => 'removeAthleteChip', 'chosen' => $chosen, 'error' => $err,
                             'chips' => array_map(fn ($id) => ['person' => $people[$id], 'sub' => $people[$id]->code,
                                 'removeLabel' => 'Remove '.$people[$id]->fullName().' from '.$evLabel,
                                 'bad' => $err && ! \App\Services\Phases\LongListChecks::genderMatches($people[$id]->gender, $evGender)], $chosen),
@@ -92,10 +93,10 @@
                     <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">For the whole sport, not one event · active officials only</span>
                 </div>
                 @include('filament.portal.partials.person-picker', [
-                    'id' => 'officials-'.$gs->id, 'placeholder' => 'Search officials by name or function', 'arg' => $gs->id,
-                    'add' => 'addOfficialChip', 'remove' => 'removeOfficialChip', 'chosen' => $chosenOfficials,
+                    'id' => 'officials-'.$gs->id, 'placeholder' => 'Search officials by name or position', 'arg' => $gs->id,
+                    'remove' => 'removeOfficialChip', 'chosen' => $chosenOfficials,
                     'error' => $errors->first('officials.'.$gs->id),
-                    'chips' => array_map(fn ($id) => ['person' => $people[$id], 'sub' => $people[$id]->function, 'bad' => false,
+                    'chips' => array_map(fn ($id) => ['person' => $people[$id], 'sub' => $fns[$gs->id][$id] ?? $people[$id]->function, 'bad' => false,
                         'removeLabel' => 'Remove '.$people[$id]->fullName().' from '.$gs->sport->name.' team officials'], $chosenOfficials),
                     'options' => $officialOptions->map(fn ($p) => ['person' => $p, 'sub' => (string) $p->function])->values()->all(),
                     'listLabel' => $gs->sport->name.' team officials', 'filterHtml' => 'Active <strong>team officials</strong> only',
@@ -170,7 +171,7 @@
                                     </div>
                                 </td>
                                 <td style="padding: 10px 12px">{{ $p->gender?->label() }}</td>
-                                <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ $athlete ? 'Athlete' : 'Team official'.(filled($p->function) ? ' · '.$p->function : '') }}</td>
+                                <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ $athlete ? 'Athlete' : 'Team official'.(filled($row['function']) ? ' · '.$row['function'] : '') }}</td>
                                 <td style="padding: 10px 20px; font-weight: 600; color: {{ $bad ? 'var(--sta-fg-red-700, #B91C1C)' : 'var(--sta-fg-brand, #1F3A5F)' }}">{{ $parts->pluck('text')->implode('; ') }}</td>
                             </tr>
                         @endforeach
@@ -181,5 +182,6 @@
     </section>
 
     @include('filament.portal.partials.person-panel')
+    @include('filament.portal.partials.add-to-list')
     @include('filament.partials.comments', ['comments' => $this->submission->commentsNewestFirst()])
 </x-filament-panels::page>

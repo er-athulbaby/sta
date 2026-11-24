@@ -153,7 +153,7 @@ it('imports rows as not cross-checked', function () {
         'type' => 'athlete', 'full_name' => 'Sara Ali', 'first_name' => 'Sara', 'second_name' => '', 'third_name' => '', 'last_name' => 'Ali',
         'date_of_birth' => '2007-04-02', 'gender' => 'female', 'nationality' => 'Bahrain', 'height_cm' => 165, 'weight_kg' => 55,
         'passport_no' => 'BH1111111', 'passport_issuing_country' => 'Bahrain', 'passport_issue_date' => '2023-01-01', 'passport_expiry' => '2029-01-01',
-        'cpr_no' => '070402111', 'cpr_expiry' => '2028-01-01', 'function' => '', 'mobile' => '', 'email' => '',
+        'cpr_no' => '070402111', 'cpr_expiry' => '2028-01-01', 'position' => '', 'mobile' => '', 'email' => '',
     ]]))->writeTo($path);
 
     expect(app(PeopleImporter::class)->import($path, $this->assoc)->ok())->toBeTrue()

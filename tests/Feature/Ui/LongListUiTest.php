@@ -109,7 +109,7 @@ it('draws the LongListEvents canvas sections in order', function () {
     livewire(Phase3Events::class, ['game' => $this->game->id])
         ->assertSeeHtmlInOrder(['Long List', 'Phase 3', 'Only sports you entered in Phase 1 are shown', 'Save as draft', 'Send for approval',
             'The association admin sees', 'Judo', 'Add athlete', 'Add team official', 'Pick athletes from your registry', 'Men -60kg', 'Search athletes…',
-            'Team officials', 'Search officials by name or function', 'People on your Long List'])
+            'Team officials', 'Search officials by name or position', 'People on your Long List'])
         ->assertDontSee('Preview PDF')
         ->assertSeeHtml('role="listbox"')->assertSeeHtml('aria-multiselectable="true"')
         ->assertSee('Female and inactive athletes are not listed for this event.');
@@ -194,7 +194,8 @@ it('picks a registry athlete into the event from the side panel and adds a new o
         ->set('newPerson', ['first_name' => 'Hamad', 'last_name' => 'Isa', 'dob' => '2004-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonEvent', (string) $this->m60->id)
-        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
+        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null)
+        ->set('adding.confirmed', true)->call('confirmAdd')->assertHasNoErrors();
 
     $hamad = Person::where('first_name', 'Hamad')->sole();
     expect($hamad->association_id)->toBe($this->assoc->id)
@@ -291,11 +292,12 @@ it('asks for the sport of a new team official when the panel covers several spor
         ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasErrors(['newPersonSport'])->assertSee('Choose the sport for this team official.');
     expect(Person::where('first_name', 'Nasser')->exists())->toBeFalse();
 
-    $page->set('newPersonSport', (string) $karate->id)->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null);
+    $page->set('newPersonSport', (string) $karate->id)->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors()->assertSet('panel', null)
+        ->set('adding.confirmed', true)->call('confirmAdd')->assertHasNoErrors();
     expect(Entry::where(['person_id' => Person::where('first_name', 'Nasser')->sole()->id, 'game_sport_id' => $karate->id])->exists())->toBeTrue();
 });
 
-it('closes the panel and shows the list errors when the new person is saved but the Long List is not', function () {
+it('closes the pop-up and shows the list errors when the new person is saved but the Long List is not', function () {
     $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $this->coach->id]) // an official in an athlete event: a Long List error
         ->call('openPanel', 'athlete')
@@ -303,8 +305,10 @@ it('closes the panel and shows the list errors when the new person is saved but 
             'nationality' => 'Bahrain', 'passport_no' => 'BH1112223', 'passport_expiry' => now()->addYears(2)->toDateString()])
         ->set('newPersonEvent', (string) $this->m60->id)
         ->set('newPerson.cross_checked', true)->call('createPerson', true)
-        ->assertSet('panel', null)->assertHasErrors(["athletes.{$this->m60->id}"])
-        ->assertNotified('Saved to the registry, but the Long List was not saved');
+        ->assertSet('panel', null)->assertSet('adding.target', (string) $this->m60->id)
+        ->set('adding.confirmed', true)->call('confirmAdd')
+        ->assertSet('adding', null)->assertHasErrors(["athletes.{$this->m60->id}"])
+        ->assertNotified('Added, but the Long List was not saved');
 
     $hamad = Person::where('first_name', 'Hamad')->sole();
     expect(Entry::count())->toBe(0);

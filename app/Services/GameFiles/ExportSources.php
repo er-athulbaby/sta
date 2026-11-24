@@ -23,7 +23,7 @@ final class ExportSources
         'passport_no' => ['Passport number', 'text'], 'passport_issuing_country' => ['Passport issuing country', 'text'],
         'passport_issue_date' => ['Passport issue date', 'date'], 'passport_expiry' => ['Passport expiry', 'date'],
         'cpr_no' => ['CPR number', 'text'], 'cpr_expiry' => ['CPR expiry', 'date'],
-        'function' => ['Function (team officials)', 'text'], 'languages' => ['Languages spoken', 'text'],
+        'function' => ['Position (team officials)', 'text'], 'languages' => ['Languages spoken', 'text'],
         'phone' => ['Mobile', 'text'], 'whatsapp' => ['WhatsApp', 'text'], 'email' => ['Email', 'text'], 'address' => ['Address', 'text'],
         'emergency_name' => ['Emergency contact name', 'text'], 'emergency_relationship' => ['Emergency contact relationship', 'text'],
         'emergency_phone' => ['Emergency phone', 'text'], 'guardian_name' => ['Guardian name', 'text'],

@@ -276,11 +276,12 @@ it('draws the canvas short form and saves an athlete with sizes and uploads', fu
 it('saves a team official from the short form', function () {
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->call('openPanel', 'official')
-        ->assertSeeHtmlInOrder(['Function', 'First name', 'Family name', 'Gender', 'Date of birth', 'Nationality', 'Mobile', 'Email', 'Passport number'])
+        ->assertSeeHtmlInOrder(['Position', 'First name', 'Family name', 'Gender', 'Date of birth', 'Nationality', 'Mobile', 'Email', 'Passport number'])
         ->set('newPerson', ['function' => 'Team Manager', 'first_name' => 'Nasser', 'last_name' => 'Ali', 'dob' => '1980-05-01', 'gender' => 'male',
             'nationality' => 'Bahrain', 'phone' => '3644 7712', 'email' => 'n.ali@example.com', 'passport_no' => 'BH9998887',
             'passport_expiry' => now()->addYears(2)->toDateString()])
-        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors();
+        ->set('newPerson.cross_checked', true)->call('createPerson', true)->assertHasNoErrors()
+        ->set('adding.confirmed', true)->call('confirmAdd')->assertHasNoErrors();
 
     $p = Person::where('first_name', 'Nasser')->sole();
     expect($p->type)->toBe(PersonType::Official)->and($p->function)->toBe('Team Manager')->and($p->phone)->toBe('3644 7712')

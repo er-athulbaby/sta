@@ -11,7 +11,7 @@ class PeopleTemplateExport
 {
     public const COLUMNS = [
         'type', 'full_name', 'first_name', 'second_name', 'third_name', 'last_name', 'date_of_birth', 'gender', 'nationality',
-        'height_cm', 'weight_kg', 'passport_no', 'passport_issuing_country', 'passport_issue_date', 'passport_expiry', 'cpr_no', 'cpr_expiry', 'function', 'mobile', 'email',
+        'height_cm', 'weight_kg', 'passport_no', 'passport_issuing_country', 'passport_issue_date', 'passport_expiry', 'cpr_no', 'cpr_expiry', 'position', 'mobile', 'email',
         'emergency_relationship', 'guardian_relationship',
     ];
 
@@ -34,7 +34,7 @@ class PeopleTemplateExport
             'type' => 'athlete', 'full_name' => 'Ahmed Ali Hassan', 'first_name' => 'Ahmed', 'second_name' => 'Ali', 'third_name' => '', 'last_name' => 'Hassan',
             'date_of_birth' => '2006-05-20', 'gender' => 'male', 'nationality' => 'Bahrain', 'height_cm' => 180, 'weight_kg' => 75,
             'passport_no' => 'BH0000000', 'passport_issuing_country' => 'Bahrain', 'passport_issue_date' => '2023-01-01', 'passport_expiry' => '2030-12-31', 'cpr_no' => '060520000', 'cpr_expiry' => '2029-12-31',
-            'function' => '', 'mobile' => '', 'email' => '',
+            'position' => '', 'mobile' => '', 'email' => '',
         ]];
         $columns = self::columns($this->user);
 

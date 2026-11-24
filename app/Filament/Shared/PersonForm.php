@@ -114,7 +114,7 @@ final class PersonForm
             ]),
             $section('role')->visible($isOfficial)->schema([
                 $grid([
-                    Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->placeholder('Select')->required(fn (Get $get, $livewire) => $isOfficial($get) && $final($livewire)),
+                    Select::make('function')->label('Position')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->placeholder('Select')->required(fn (Get $get, $livewire) => $isOfficial($get) && $final($livewire)),
                     TextInput::make('languages')->label('Languages spoken')->maxLength(255),
                 ], 260),
             ]),

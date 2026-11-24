@@ -132,6 +132,32 @@ final class LongListChecks
         };
     }
 
+    /**
+     * Team officials' function in this game, chosen in the "Add to Long List" pop-up; a Short List (Phase 4) reads its Long List's.
+     *
+     * @return array<int, array<int, string>> game_sport_id => [person_id => function]
+     */
+    public static function officialFunctions(Submission $s): array
+    {
+        $source = $s->phase === 4 ? Submission::withoutGlobalScope('association')
+            ->where(['game_id' => $s->game_id, 'association_id' => $s->association_id, 'phase' => 3])->first() : $s;
+        $out = [];
+        foreach ($source?->entries()->whereNull('game_event_id')->whereNotNull('function')->get() ?? [] as $e) {
+            $out[$e->game_sport_id][$e->person_id] = $e->function;
+        }
+
+        return $out;
+    }
+
+    /** The function(s) of an official in this game (one sport, or all of them joined); falls back to the registry position. */
+    public static function officialFunction(array $functions, Person $p, ?int $gameSportId = null): ?string
+    {
+        $chosen = $gameSportId !== null ? array_filter([$functions[$gameSportId][$p->id] ?? null])
+            : collect($functions)->map(fn ($byPerson) => $byPerson[$p->id] ?? null)->filter()->unique()->values()->all();
+
+        return $chosen ? implode(', ', $chosen) : $p->function;
+    }
+
     /** Hard errors of the saved list plus incomplete people (spec 13): blocks submit and approve. @return list<string> */
     public function submitErrors(Submission $s): array
     {
@@ -208,7 +234,7 @@ final class LongListChecks
     /**
      * The people table under the pickers (and on the admin submission page), for a proposed or saved selection.
      *
-     * @return Collection<int, array{person: Person, roles: list<string>, age: int, missing: list<string>, warnings: list<string>, detail: ?LongListDetail, on_list: bool}>
+     * @return Collection<int, array{person: Person, roles: list<string>, function: ?string, age: int, missing: list<string>, warnings: list<string>, detail: ?LongListDetail, on_list: bool}>
      */
     public function rows(Submission $s, array $athletes, array $officials): Collection
     {
@@ -216,6 +242,8 @@ final class LongListChecks
         [$sports, $events] = $this->visible($s);
         $roles = [];
         $sportsOf = [];
+        $officialSports = [];
+        $functions = self::officialFunctions($s);
         foreach ($athletes as $geId => $ids) {
             $ge = $events->get((int) $geId);
             if (! $ge) {
@@ -233,7 +261,8 @@ final class LongListChecks
                 continue;
             }
             foreach ((array) $ids as $id) {
-                $roles[(int) $id][] = $gs->sport->name.' · team official';
+                $roles[(int) $id] ??= [];
+                $officialSports[(int) $id][] = $gs;
             }
         }
         $saved = $s->entries()->pluck('person_id')->map(fn ($id) => (int) $id)->all();
@@ -243,7 +272,9 @@ final class LongListChecks
             ->orderBy('type')->orderBy('last_name')->orderBy('first_name')->get()
             ->map(fn (Person $p) => [
                 'person' => $p,
-                'roles' => $roles[$p->id],
+                'roles' => [...$roles[$p->id], ...array_map(fn ($gs) => $gs->sport->name.' · team official'
+                    .(($f = self::officialFunction($functions, $p, $gs->id)) ? ' · '.$f : ''), $officialSports[$p->id] ?? [])],
+                'function' => $p->type === PersonType::Official ? self::officialFunction($functions, $p) : null,
                 'age' => $p->age($game->start_date),
                 'missing' => $p->missingFields(),
                 'warnings' => $this->warnings($game, $p, $sportsOf[$p->id] ?? []),

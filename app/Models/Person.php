@@ -52,7 +52,7 @@ class Person extends Model
             'passport_expiry' => 'Passport expiry', 'full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
             'passport_issue_date' => 'Passport issue date', 'passport_scan_path' => 'Passport scan'],
         'official' => ['dob' => 'Date of birth', 'gender' => 'Gender', 'nationality' => 'Nationality', 'passport_no' => 'Passport number',
-            'passport_expiry' => 'Passport expiry', 'function' => 'Function', 'full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
+            'passport_expiry' => 'Passport expiry', 'function' => 'Position', 'full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
             'passport_issue_date' => 'Passport issue date', 'passport_scan_path' => 'Passport scan', 'phone' => 'Mobile',
             'whatsapp' => 'WhatsApp', 'email' => 'Email', 'emergency_name' => 'Emergency contact name',
             'emergency_relationship' => 'Emergency contact relationship', 'emergency_phone' => 'Emergency phone'],

@@ -148,7 +148,7 @@ it('renumbers for team officials and when medical is hidden', function () {
     actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
     $html = livewire(PortalCreatePerson::class)->fillForm(['type' => 'official'])->html();
     expectInOrder($html, ['New team official', '1 Person', '2 Official details', '3 Passport', '4 CPR', '5 Contact', '6 Visas', '7 Clothing', '8 Health', '9 Declarations']);
-    expectInOrder($html, ['2 · Team official details', 'Function', 'Languages spoken', '6 · Visas', 'Add one row per country', 'Add visa',
+    expectInOrder($html, ['2 · Team official details', 'Position', 'Languages spoken', '6 · Visas', 'Add one row per country', 'Add visa',
         '8 · Health', 'Meal requirement', '9 · Declarations', 'Accepts the delegation code of conduct']);
 
     $p = Person::factory()->create();

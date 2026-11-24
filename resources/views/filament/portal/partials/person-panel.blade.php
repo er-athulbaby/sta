@@ -47,9 +47,8 @@
                         $targets = $isOfficial
                             ? $panelSports->map(fn ($gs) => ['id' => $gs->id, 'label' => $gs->sport->name])->values()
                             : $events->filter(fn ($e) => \App\Services\Phases\LongListChecks::genderMatches($p->gender, $e['ge']->event->gender))->map(fn ($e) => ['id' => $e['ge']->id, 'label' => $e['label']])->values();
-                        $call = $isOfficial ? 'addOfficialChip' : 'addAthleteChip';
                     @endphp
-                    <li wire:key="pick-{{ $p->id }}" x-data="{ ask: false }" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; background: {{ $p->is_active ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-subtle, #F1F5F9)' }}; border: 1px solid var(--sta-bd-line, #E2E8F0)">
+                    <li wire:key="pick-{{ $p->id }}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; background: {{ $p->is_active ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-subtle, #F1F5F9)' }}; border: 1px solid var(--sta-bd-line, #E2E8F0)">
                         <div style="display: flex; flex-direction: column; flex: 1; min-width: 0{{ $p->is_active ? '' : '; color: var(--sta-fg-muted, #475569)' }}">
                             <x-sta.person-link :person="$p" style="font-weight: 600" />
                             <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }} · {{ $isOfficial ? $p->function : $p->gender?->label().' · '.$p->dob?->format('Y') }}</span>
@@ -60,17 +59,9 @@
                         @else
                         <span style="{{ $pill }}{{ $complete ? 'background: var(--sta-bg-green-100, #DCFCE7); color: var(--sta-fg-green-800, #166534)' : 'background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412)' }}">{{ $complete ? 'Complete' : 'Incomplete' }}</span>
                         @endif
-                        @if (! $p->is_active)
-                        @elseif ($targets->count() === 1)
-                            <button type="button" wire:click="{{ $call }}({{ $targets[0]['id'] }}, {{ $p->id }})" aria-label="Add {{ $p->fullName() }}" style="{{ $addBtn }}">Add</button>
-                        @else
-                            <button type="button" x-show="! ask" x-on:click="ask = true; $nextTick(() => $refs.target.focus())" aria-label="Add {{ $p->fullName() }}" style="{{ $addBtn }}">Add</button>
-                            <label x-show="ask" style="flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">{{ $isOfficial ? 'Sport' : 'Event' }}
-                                <select x-ref="target" x-on:change="$event.target.value && $wire.{{ $call }}($event.target.value, {{ $p->id }})" style="{{ $input }}">
-                                    <option value="">Choose…</option>
-                                    @foreach ($targets as $t)<option value="{{ $t['id'] }}">{{ $t['label'] }}</option>@endforeach
-                                </select>
-                            </label>
+                        @if ($p->is_active)
+                            {{-- Opens the "Add to Long List" pop-up (event or function, passport, sizes). --}}
+                            <button type="button" wire:click="openAdd({{ $p->id }}, {{ $targets->count() === 1 ? $targets[0]['id'] : 'null' }})" aria-label="Add {{ $p->fullName() }}" style="{{ $addBtn }}">Add</button>
                         @endif
                     </li>
                 @empty
@@ -100,7 +91,7 @@
             @endphp
             <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px">
                 @if ($isOfficial)
-                    <label style="grid-column: 1 / -1; {{ $lbl }}">Function
+                    <label style="grid-column: 1 / -1; {{ $lbl }}">Position
                         <select wire:model.live="newPerson.function" style="{{ $field }}; padding: 0 10px; background: var(--sta-bg-surface, #FFFFFF)">
                             <option value="">Choose…</option>
                             @foreach (\App\Filament\Shared\PersonForm::FUNCTIONS as $fn)<option value="{{ $fn }}">{{ $fn }}</option>@endforeach

@@ -7,6 +7,7 @@ use App\Enums\PersonType;
 use App\Models\Person;
 use App\Models\Setting;
 use App\Models\Submission;
+use App\Services\Phases\LongListChecks;
 use App\Support\PdfContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -69,16 +70,17 @@ class GenerateLongListPdf implements ShouldQueue
                 ];
             })->sortBy([['sport', 'asc'], ['name', 'asc']])->values()->all();
 
-        // One row per official, whatever the number of sports.
+        // One row per official, whatever the number of sports; the function chosen for this game (registry position when none).
+        $functions = LongListChecks::officialFunctions($s);
         $officials = $entries->whereNull('game_event_id')->pluck('person_id')->unique()
-            ->map(function ($id) use ($people, $officialItems) {
+            ->map(function ($id) use ($people, $officialItems, $functions) {
                 $p = $people[$id];
                 $sizes = $p->sizes->pluck('size', 'clothing_item_id');
 
                 return [
                     'photo' => GenerateEntryByEventPdfs::dataUri($p->photo_path),
                     'name' => $p->full_name ?: $p->fullName(),
-                    'function' => $p->function,
+                    'function' => LongListChecks::officialFunction($functions, $p),
                     'phone' => filled($p->phone) ? $p->phone_cc.' '.$p->phone : '',
                     'sizes' => $officialItems->map(fn ($i) => $sizes->get($i->id, ''))->all(),
                 ];

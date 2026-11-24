@@ -12,7 +12,12 @@ class Entry extends Model
 {
     use LogsActivity;
 
-    protected $fillable = ['submission_id', 'person_id', 'game_event_id', 'game_sport_id'];
+    protected $fillable = ['submission_id', 'person_id', 'game_event_id', 'game_sport_id', 'function', 'passport_confirmed_at', 'passport_confirmed_by'];
+
+    protected function casts(): array
+    {
+        return ['passport_confirmed_at' => 'datetime'];
+    }
 
     public function submission(): BelongsTo
     {
