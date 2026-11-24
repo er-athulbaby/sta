@@ -4,6 +4,7 @@ namespace App\Filament\Portal\Concerns;
 
 use App\Enums\PersonGender;
 use App\Enums\PersonType;
+use App\Enums\StaPermission;
 use App\Filament\Shared\PersonForm;
 use App\Models\GameSport;
 use App\Models\Person;
@@ -20,7 +21,7 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Canvas LongList.dc.html side panel (portal Long List pages only; STA pages never use it): pick a registry person
+ * Canvas LongList.dc.html side panel (portal Long List pages and the STA Long List edit pages): pick a registry person
  * for the Long List, or create one with the canvas short form (registry rules: PersonForm::shortFormRules) and optionally
  * put them on the list. Uses EditsPhase3's chip methods and save(), so the Long List rules stay in one place.
  */
@@ -85,6 +86,12 @@ trait HasPersonPanel
         $this->newPersonEvent = $this->newPersonSport = null;
         $this->newPersonPhoto = $this->newPersonPassportScan = $this->newPersonCprScan = null;
         $this->resetErrorBag();
+    }
+
+    /** The short form adds to the association's registry: always on the portal, for STA only with Manage people. */
+    public function canCreatePeople(): bool
+    {
+        return filament()->getId() === 'portal' || (bool) auth()->user()?->can(StaPermission::ManagePeople->value);
     }
 
     public function panelType(): PersonType
@@ -162,6 +169,7 @@ trait HasPersonPanel
         if ($this->panel === null || $this->readOnlyReason !== null) {
             return;
         }
+        abort_unless($this->canCreatePeople(), 403);
         $type = $this->panelType();
         Validator::make(
             ['newPerson' => $this->newPerson, 'newPersonPhoto' => $this->newPersonPhoto, 'newPersonPassportScan' => $this->newPersonPassportScan, 'newPersonCprScan' => $this->newPersonCprScan],

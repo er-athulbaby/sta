@@ -4,6 +4,7 @@ use App\Enums\EventGender;
 use App\Enums\PhaseStatus;
 use App\Enums\StaPermission;
 use App\Enums\SubmissionStatus;
+use App\Filament\Portal\Pages\Phase4Entry;
 use App\Filament\Resources\Games\GameResource;
 use App\Filament\Resources\Games\Pages\StaPhase4Edit;
 use App\Filament\Resources\Games\Pages\SubmissionView;
@@ -100,4 +101,14 @@ it('warns on the submission view when a submitted Short List no longer matches t
 
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $this->p4])
         ->assertSee('Short List needs attention')->assertSee(ShortListChecks::LONG_LIST_FIRST);
+});
+
+it('keeps the association read-only on a submitted Short List in a closed phase past its deadline', function () {
+    $this->game->update(['published_at' => now()]);
+    actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
+
+    livewire(Phase4Entry::class, ['game' => $this->game->id])->assertSet('readOnlyReason', 'This phase is closed.')
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->set('justification', 'Changed')->call('save');
+
+    expect($this->p4->fresh()->justification)->toBe('Both can medal')->and($this->p4->entries()->count())->toBe(2);
 });

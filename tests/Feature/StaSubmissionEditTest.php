@@ -5,10 +5,14 @@ use App\Enums\InterestAnswerValue;
 use App\Enums\PhaseStatus;
 use App\Enums\StaPermission;
 use App\Enums\SubmissionStatus;
+use App\Filament\Portal\Pages\Phase1Entry;
+use App\Filament\Portal\Pages\Phase2Entry;
+use App\Filament\Portal\Pages\Phase3Entry;
 use App\Filament\Resources\Games\GameResource;
 use App\Filament\Resources\Games\Pages\StaPhase1Edit;
 use App\Filament\Resources\Games\Pages\StaPhase2Edit;
 use App\Filament\Resources\Games\Pages\StaPhase3Edit;
+use App\Filament\Resources\Games\Pages\StaPhase3EventsEdit;
 use App\Filament\Resources\Games\Pages\SubmissionView;
 use App\Jobs\GenerateEntryByEventPdfs;
 use App\Jobs\GenerateLongListPdf;
@@ -171,9 +175,50 @@ it('never lets STA without view_medical read or overwrite vaccinations', functio
     expect($d->vaccinations)->toBe('Yellow fever')->and($d->insurance_company)->toBe('X');
 });
 
-it('does not offer adding people or the registry link on the STA long list edit', function () {
+it('lets STA add people from the Long List of a submitted entry in a closed phase past its deadline', function (string $page) {
     $s = Submission::for($this->game, $this->assoc, 3);
+    $s->update(['status' => SubmissionStatus::Submitted, 'reference_no' => 'BJF-G001-P3-R1', 'revision' => 1]);
 
+    // Item 11: the STA Long List had no Add athlete / Add team official, so nothing on it could be changed.
+    livewire($page, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->assertSee('Add athlete')->assertSee('Add team official')
+        ->call('openPanel', 'athlete')->assertSee('Pick from your registry')->assertDontSee('Open registry')
+        ->assertDontSee('Or add a new athlete') // creating registry people needs Manage people
+        ->call('openAdd', $this->ali->id, $this->m60->id)->set('adding.confirmed', true)
+        ->call('confirmAdd')->assertHasNoErrors();
+
+    expect(Entry::sole()->person_id)->toBe($this->ali->id)->and($s->fresh()->status)->toBe(SubmissionStatus::Submitted);
+    Bus::assertDispatched(GenerateLongListPdf::class);
+})->with(['long list' => [StaPhase3Edit::class], 'events screen' => [StaPhase3EventsEdit::class]]);
+
+it('lets STA create a registry person from the Long List panel only with Manage people', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $page = livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])->call('openPanel', 'athlete');
+    $page->call('createPerson')->assertForbidden();
+
+    $this->sta->givePermissionTo(StaPermission::ManagePeople->value);
     livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
-        ->assertDontSee('Add athlete')->assertDontSee('Add team official')->assertDontSee('Open registry');
+        ->call('openPanel', 'athlete')->assertSee('Or add a new athlete');
 });
+
+it('saves STA edits in every phase of a submitted entry in a closed phase past its deadline, while the association stays read-only', function (int $phase, string $sta, string $portal, string $field, mixed $value, Closure $saved) {
+    $this->game->update(['published_at' => now()]);
+    $s = Submission::for($this->game, $this->assoc, $phase);
+    $s->update(['status' => SubmissionStatus::Submitted]);
+    $key = str_replace(['{judo}', '{m60}'], [$this->judo->id, $this->m60->id], $field);
+    $value = $value === 'ali' ? [(string) $this->ali->id] : $value;
+
+    actingInPortal(User::factory()->assocAdmin($this->assoc)->create());
+    livewire($portal, ['game' => $this->game->id])->assertSet('readOnlyReason', 'This phase is closed.')
+        ->set($key, $value)->call('save');
+    expect($saved($this))->toBeFalse();
+
+    actingInAdmin($this->sta);
+    livewire($sta, ['record' => $this->game->getRouteKey(), 'submission' => $s])->assertSet('readOnlyReason', null)
+        ->set($key, $value)->call('save')->assertHasNoErrors()->assertNotified('Saved');
+    expect($saved($this))->toBeTrue()->and($s->fresh()->status)->toBe(SubmissionStatus::Submitted);
+})->with([
+    'phase 1' => [1, StaPhase1Edit::class, Phase1Entry::class, 'answers.{judo}', 'yes', fn ($t) => InterestAnswer::where('answer', 'yes')->exists()],
+    'phase 2' => [2, StaPhase2Edit::class, Phase2Entry::class, 'counts.{m60}', 1, fn ($t) => NumberEntry::where('count', 1)->exists()],
+    'phase 3' => [3, StaPhase3Edit::class, Phase3Entry::class, 'athletes.{m60}', 'ali', fn ($t) => Entry::where('person_id', $t->ali->id)->exists()],
+]);

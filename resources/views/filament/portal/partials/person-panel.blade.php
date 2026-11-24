@@ -1,4 +1,5 @@
-{{-- Canvas LongList.dc.html side panel (panel=athlete / panel=official), portal Long List pages only (HasPersonPanel):
+{{-- Canvas LongList.dc.html side panel (panel=athlete / panel=official), portal Long List pages and STA "Edit as STA" (HasPersonPanel;
+     STA creates people only with Manage people, and has no portal "Open registry"):
      pick from the registry (Add → chip; athletes choose the event inline) or create a person with the registry form. --}}
 @if (property_exists($this, 'panel') && $panel !== null && ! $readOnlyReason)
     @php
@@ -26,7 +27,9 @@
         <section aria-labelledby="pick-title" style="padding: 18px 24px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0); background: var(--sta-bg-surface-alt, #F8FAFC)">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
                 <h3 id="pick-title" style="margin: 0; font-size: 15px; font-weight: 700">Pick from your registry</h3>
-                <a href="{{ \App\Filament\Portal\Resources\People\PersonResource::getUrl('index') }}" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600">Open registry</a>
+                @if (filament()->getId() === 'portal')
+                    <a href="{{ \App\Filament\Portal\Resources\People\PersonResource::getUrl('index') }}" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600">Open registry</a>
+                @endif
             </div>
             <label style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; background: var(--sta-bg-surface, #FFFFFF)">
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="stroke: var(--sta-fg-muted, #475569)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -70,6 +73,7 @@
             </ul>
         </section>
 
+        @if ($this->canCreatePeople())
         <div style="padding: 18px 24px; display: flex; flex-direction: column; gap: 12px">
             <div style="display: flex; flex-direction: column; gap: 2px">
                 <h3 id="new-title" style="margin: 0; font-size: 15px; font-weight: 700">{{ $isOfficial ? 'Or add a new team official' : 'Or add a new athlete' }}</h3>
@@ -225,5 +229,6 @@
                 <button type="button" wire:click="createPerson(true)" style="{{ $btn }}flex: 1 1 auto; padding: 0 16px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF)">Save and add to Long List</button>
             </div>
         </div>
+        @endif
     </aside>
 @endif

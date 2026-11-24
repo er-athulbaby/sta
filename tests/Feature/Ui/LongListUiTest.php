@@ -222,16 +222,16 @@ it('adds a registry official from the side panel', function () {
         ->assertDontSeeHtml('wire:key="pick-'.$this->coach->id.'"');
 });
 
-it('gives STA both Long List screens without the side panel', function () {
+it('gives STA both Long List screens with the Add side panel', function () {
     $s = Submission::for($this->game, $this->assoc, 3);
     $s->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
     actingInAdmin(User::factory()->superAdmin()->create());
     $events = GameResource::getUrl('submission-edit-3-events', ['record' => $this->game, 'submission' => $s]);
 
     livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
-        ->assertSeeHtml(e($events.'#sport-'.$this->judo->id))->assertDontSee('Add athlete');
+        ->assertSeeHtml(e($events.'#sport-'.$this->judo->id))->assertSee('Add athlete');
     livewire(StaPhase3EventsEdit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
-        ->assertSee('Pick athletes from your registry')->assertSee('People on your Long List')->assertDontSee('Add athlete')
+        ->assertSee('Pick athletes from your registry')->assertSee('People on your Long List')->assertSee('Add athlete')
         ->call('addAthleteChip', $this->m60->id, $this->omar->id)->call('save')->assertHasNoErrors();
     $this->get($events)->assertOk();
 
