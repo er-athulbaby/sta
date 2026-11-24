@@ -369,3 +369,25 @@ it('links each name to the person\'s registry page in a new tab and lists every 
     livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
         ->assertSeeHtml($edit(PersonResource::class));
 });
+
+it('remembers the List / Grid choice per user and gives each tab only its own group', function () {
+    $user = auth()->user();
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->assertSeeHtml("localStorage.getItem('longListView.{$user->id}') === 'grid' ? 'grid' : 'list'")
+        ->assertSeeHtml("try { localStorage.setItem('longListView.{$user->id}', v) } catch (e) {}")
+        ->assertSeeHtml("x-bind:aria-pressed=\"view === 'list'\"")->assertSeeHtml("x-bind:aria-pressed=\"view === 'grid'\"")
+        ->assertSeeHtml("x-show=\"tab === 'athletes' ||")->assertSeeHtml("x-show=\"tab === 'officials' ||");
+});
+
+it('draws team officials like athletes in List and Grid', function () {
+    $this->coach->update(['function' => 'Head Coach', 'phone_cc' => '+973', 'phone' => '3644 7712']);
+    Submission::for($this->game, $this->assoc, 3)->entries()->create(['person_id' => $this->coach->id, 'game_event_id' => null, 'game_sport_id' => $this->judo->id]);
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->assertSeeHtml('aria-label="Team officials" data-view="list"')->assertSeeHtml('aria-label="Team officials" data-view="grid"')
+        ->assertSeeHtmlInOrder(['data-view="list"', 'Team official', 'Function', 'Mobile', 'Scans', 'Warning',
+            'class="sta-avatar">CK', 'Coach Karim', $this->coach->code, 'Head Coach', '+973 3644 7712',
+            'data-view="grid"', 'sta-avatar sta-avatar-lg', 'Coach Karim', 'Function', 'Head Coach', 'Passport scan'])
+        ->assertDontSeeHtml('min-width: 720px'); // the old plain Name / Function / Mobile / Email / Passport table
+});

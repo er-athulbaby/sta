@@ -126,9 +126,20 @@ it('gives STA the Short List meters and the justification card', function () {
 
     livewire(StaPhase4Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $p4])
         ->assertSee('Judo · ticked vs maximum')->assertSee('Over a maximum')->assertSee('Justification needed')
-        ->assertSeeHtml('<span aria-hidden="true" style="width: 34px')
+        ->assertSeeHtml('<span aria-hidden="true" class="sta-avatar">')
         ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])->set('justification', 'Kept for the record')->call('save')->assertHasNoErrors()
         ->assertSee('Within all maximums — no justification needed.')->assertSee('Justification')->assertDontSee('Justification needed');
 
     expect($p4->fresh()->justification)->toBe('Kept for the record');
+});
+
+it('has a List / Grid choice and draws team officials like athletes', function () {
+    $this->coach->update(['function' => 'Head Coach', 'phone_cc' => '+973', 'phone' => '3644 7712']);
+
+    livewire(Phase4Entry::class, ['game' => $this->game->id])
+        ->assertSeeHtml("localStorage.getItem('longListView.".auth()->id()."')")
+        ->assertSeeHtml("x-bind:aria-pressed=\"view === 'grid'\"")
+        ->assertSeeHtmlInOrder(['Athletes', 'data-view="list"', 'Ali Hasan', 'data-view="grid"', 'Ali Hasan', 'Men -60kg',
+            'Team officials', 'data-view="list"', 'Function', 'Mobile', 'class="sta-avatar">CK</span>', 'Coach Karim', $this->coach->code, 'Head Coach', '+973 3644 7712',
+            'data-view="grid"', 'Coach Karim', 'Head Coach']);
 });

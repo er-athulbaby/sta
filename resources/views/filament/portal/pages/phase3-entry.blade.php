@@ -74,10 +74,8 @@
         $warnText = fn ($r) => implode(' ', $r['warnings']);
         $incomplete = '<span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412); font-weight: 700; font-size: 12px">Incomplete</span>';
     @endphp
-    {{-- Tabs and the List / Grid choice are browser-only; the view is remembered per user (localStorage), never sent to the server. --}}
-    <div style="display: flex; flex-direction: column; gap: 20px"
-        x-data="{ tab: 'athletes', view: (() => { try { return localStorage.getItem('longListView.{{ auth()->id() }}') || 'list' } catch (e) { return 'list' } })() }"
-        x-init="$watch('view', v => { try { localStorage.setItem('longListView.{{ auth()->id() }}', v) } catch (e) {} })">
+    {{-- Tabs and the List / Grid choice are browser-only; the view is remembered per user (localStorage, shared with the Short List), never sent to the server. --}}
+    <div style="display: flex; flex-direction: column; gap: 20px" x-data="{ tab: 'athletes', @include('filament.portal.partials.view-state') }">
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
             <div role="tablist" aria-label="List sections" style="display: flex; flex-wrap: wrap; gap: 4px">
                 @foreach (['athletes' => 'Athletes ('.$athleteRows->count().')', 'officials' => 'Team officials ('.$officialRows->count().')', 'warnings' => 'Warnings ('.$rows->filter($flagged)->count().')'] as $key => $label)
@@ -92,175 +90,145 @@
                     <button type="button" wire:click="openPanel('athlete')" style="{{ $outline }}">{!! $plus !!}Add athlete</button>
                     <button type="button" wire:click="openPanel('official')" style="{{ $outline }}">{!! $plus !!}Add team official</button>
                 @endif
-                <div class="sta-seg" role="group" aria-label="View">
-                    <button type="button" x-on:click="view = 'list'" x-bind:aria-pressed="view === 'list'" style="padding: 0 12px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>List</button>
-                    <button type="button" x-on:click="view = 'grid'" x-bind:aria-pressed="view === 'grid'" style="padding: 0 12px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Grid</button>
-                </div>
+                @include('filament.portal.partials.view-toggle')
             </div>
         </div>
 
-        {{-- x-show on wrappers only: Alpine drops an inline display value when it shows an element again. --}}
+        {{-- x-show on wrappers only: Alpine drops an inline display value when it shows an element again.
+             Athletes and team officials share one design (List rows and Grid cards); each tab shows only its own group. --}}
         @if ($athFlagged + $offFlagged === 0)
             <p x-show="tab === 'warnings'" style="margin: 0; color: var(--sta-fg-muted, #475569)">No warnings.</p>
         @endif
-        <div x-show="tab === 'athletes' || (tab === 'warnings' && {{ $athFlagged ? 'true' : 'false' }})"><div style="display: flex; flex-direction: column; gap: 20px">
-            <section x-show="view === 'list'" aria-label="Athletes" style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; overflow-x: auto">
-                @if ($athleteRows->isEmpty())
-                    <p style="margin: 0; padding: 16px 20px; color: var(--sta-fg-muted, #475569)">No athletes on the list yet.</p>
-                @else
-                    <table style="width: 100%; min-width: 980px; border-collapse: collapse">
-                        <thead>
-                            <tr style="{{ $headRow }}">
-                                <th scope="col" style="{{ $thEdge }}">Athlete</th>
-                                <th scope="col" style="{{ $th }}">Gender</th>
-                                <th scope="col" style="{{ $th }}">Born · age</th>
-                                <th scope="col" style="{{ $th }}">Event</th>
-                                @foreach ($athleteItems as $item)<th scope="col" style="{{ $th }}">{{ $item->name }}</th>@endforeach
-                                <th scope="col" style="{{ $th }}">Scans</th>
-                                <th scope="col" style="{{ $thEdge }}">Warning</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($athleteRows as $row)
-                                @php $p = $row['person']; $d = $row['detail']; @endphp
-                                <tr wire:key="person-{{ $p->id }}" @unless ($flagged($row)) x-show="tab !== 'warnings'" @endunless style="border-top: 1px solid var(--sta-bd-row, #EEF2F6); vertical-align: middle">
-                                    <td style="padding: 10px 20px">
-                                        <div style="display: flex; align-items: center; gap: 10px">
-                                            <div role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar">{{ \App\Support\Sta::initials($p->fullName()) }}</div>
-                                            <div style="display: flex; flex-direction: column">
-                                                <x-sta.person-link :person="$p" style="font-weight: 600" />
-                                                <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span>
+        @foreach ([
+            ['key' => 'athletes', 'title' => 'Athletes', 'one' => 'Athlete', 'rows' => $athleteRows, 'items' => $athleteItems, 'flagged' => $athFlagged, 'empty' => 'No athletes on the list yet.'],
+            ['key' => 'officials', 'title' => 'Team officials', 'one' => 'Team official', 'rows' => $officialRows, 'items' => $officialItems, 'flagged' => $offFlagged, 'empty' => 'No team officials on the list yet.'],
+        ] as $g)
+            @php $athletesGroup = $g['key'] === 'athletes'; @endphp
+            <div wire:key="group-{{ $g['key'] }}" x-show="tab === '{{ $g['key'] }}' || (tab === 'warnings' && {{ $g['flagged'] ? 'true' : 'false' }})"><div style="display: flex; flex-direction: column; gap: 12px">
+                <h2 x-show="tab === 'warnings'" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">{{ $g['title'] }}</h2>
+                <section x-show="view === 'list'" aria-label="{{ $g['title'] }}" data-view="list" style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; overflow-x: auto">
+                    @if ($g['rows']->isEmpty())
+                        <p style="margin: 0; padding: 16px 20px; color: var(--sta-fg-muted, #475569)">{{ $g['empty'] }}</p>
+                    @else
+                        <table style="width: 100%; min-width: 980px; border-collapse: collapse">
+                            <thead>
+                                <tr style="{{ $headRow }}">
+                                    <th scope="col" style="{{ $thEdge }}">{{ $g['one'] }}</th>
+                                    @if ($athletesGroup)
+                                        <th scope="col" style="{{ $th }}">Gender</th>
+                                        <th scope="col" style="{{ $th }}">Born · age</th>
+                                        <th scope="col" style="{{ $th }}">Event</th>
+                                    @else
+                                        <th scope="col" style="{{ $th }}">Function</th>
+                                        <th scope="col" style="{{ $th }}">Mobile</th>
+                                    @endif
+                                    @foreach ($g['items'] as $item)<th scope="col" style="{{ $th }}">{{ $item->name }}</th>@endforeach
+                                    <th scope="col" style="{{ $th }}">Scans</th>
+                                    <th scope="col" style="{{ $thEdge }}">Warning</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($g['rows'] as $row)
+                                    @php $p = $row['person']; $d = $row['detail']; @endphp
+                                    <tr wire:key="person-{{ $p->id }}" @unless ($flagged($row)) x-show="tab !== 'warnings'" @endunless style="border-top: 1px solid var(--sta-bd-row, #EEF2F6); vertical-align: middle">
+                                        <td style="padding: 10px 20px">
+                                            <div style="display: flex; align-items: center; gap: 10px">
+                                                <div role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar">{{ \App\Support\Sta::initials($p->fullName()) }}</div>
+                                                <div style="display: flex; flex-direction: column">
+                                                    <x-sta.person-link :person="$p" style="font-weight: 600" />
+                                                    <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td style="padding: 10px 12px">{{ $p->gender?->label() }}</td>
-                                    <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}</td>
-                                    <td style="padding: 10px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">@foreach ($eventsOf($row) as $e)<a href="{{ $e['url'] }}" style="color: var(--sta-fg-brand, #1F3A5F); text-decoration: none">{{ $e['label'] }}</a>@if (! $loop->last), @endif @endforeach</td>
-                                    @foreach ($athleteItems as $item)
-                                        @php $size = $sizeOf($row, $item); @endphp
-                                        <td style="padding: 10px 12px; font-weight: 700; color: {{ filled($size) ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-orange-800, #9A3412)' }}">{{ filled($size) ? $size : 'Missing' }}</td>
-                                    @endforeach
-                                    <td style="padding: 10px 12px">
-                                        <div style="display: flex; flex-direction: column; font-size: 13px">
-                                            @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport" />@else<span style="{{ $missingStyle }}">Passport missing</span>@endif
-                                            @if ($p->cpr_front_path)<span>CPR · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR missing</span>@endif
-                                            @include('filament.portal.partials.travel-cell')
-                                        </div>
-                                    </td>
-                                    <td style="padding: 10px 20px; font-size: 13px; color: var(--sta-fg-orange-800, #9A3412); max-width: 240px; line-height: 1.4">
-                                        @if ($row['missing'])<div>{!! $incomplete !!} Missing: {{ implode(', ', $row['missing']) }}</div>@endif
-                                        {{ $warnText($row) }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endif
-            </section>
-
-            {{-- Rendered only in Grid view so List view does not fetch every photo on each Livewire render. --}}
-            <template x-if="view === 'grid'">
-                <section aria-label="Athletes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px">
-                    @forelse ($athleteRows as $row)
-                        @php $p = $row['person']; $d = $row['detail']; @endphp
-                        <div wire:key="card-{{ $p->id }}" @unless ($flagged($row)) x-show="tab !== 'warnings'" @endunless><article style="height: 100%; box-sizing: border-box; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
-                            <div style="display: flex; gap: 14px; align-items: center">
-                                @if ($p->photo_path)
-                                    <img loading="lazy" src="{{ $url($p->photo_path) }}" alt="Photo of {{ $p->fullName() }}" class="sta-avatar sta-avatar-lg" style="object-fit: cover">
-                                @else
-                                    <div role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar sta-avatar-lg">{{ \App\Support\Sta::initials($p->fullName()) }}</div>
-                                @endif
-                                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
-                                    <x-sta.person-link :person="$p" style="font-weight: 600; font-size: 15px" />
-                                    <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $p->code }} · {{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}@if ($startDay) on {{ $startDay }}@endif</span>
-                                </div>
-                                <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 8px; border-radius: 8px; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-strong, #334155); font-size: 12px; font-weight: 700">{{ $p->gender?->label() }}</span>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 6px">
-                                <span style="font-size: 12px; font-weight: 600; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em">Event</span>
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px">
-                                    @foreach ($eventsOf($row) as $e)
-                                        <a href="{{ $e['url'] }}" style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; background: var(--sta-bg-selected, #E8EEF6); color: var(--sta-fg-brand, #1F3A5F); font-weight: 600; font-size: 13px; text-decoration: none">{{ $e['label'] }}</a>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @if ($athleteItems->isNotEmpty())
-                                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
-                                    @foreach ($athleteItems as $item)
-                                        @php $size = $sizeOf($row, $item); @endphp
-                                        <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; {{ filled($size) ? 'background: var(--sta-bg-surface-alt, #F8FAFC); box-shadow: inset 0 0 0 1px var(--sta-bd-line, #E2E8F0)' : 'background: var(--sta-bg-orange-50, #FFF7ED); box-shadow: inset 0 0 0 1px var(--sta-bd-orange-200, #FED7AA)' }}">
-                                            <span style="font-size: 11px; color: var(--sta-fg-muted, #475569)">{{ $item->name }}</span>
-                                            <span style="font-weight: 700; font-size: 14px; color: {{ filled($size) ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-orange-800, #9A3412)' }}">{{ filled($size) ? $size : 'Missing' }}</span>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px">
-                                @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport scan" />@else<span style="{{ $missingStyle }}">Passport scan missing</span>@endif
-                                @if ($p->cpr_front_path)<span>CPR scan · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR scan missing</span>@endif
-                                @include('filament.portal.partials.travel-cell')
-                            </div>
-                            @if ($flagged($row))
-                                <div style="display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--sta-bg-orange-50, #FFF7ED); color: var(--sta-fg-orange-800, #9A3412); font-size: 13px; line-height: 1.45">
-                                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 2px"><path d="M12 3 2 21h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
-                                    <span>@if ($row['missing'])Incomplete — missing: {{ implode(', ', $row['missing']) }}. @endif{{ $warnText($row) }}</span>
-                                </div>
-                            @endif
-                        </article></div>
-                    @empty
-                        <p style="margin: 0; color: var(--sta-fg-muted, #475569)">No athletes on the list yet.</p>
-                    @endforelse
-                </section>
-            </template>
-        </div></div>
-
-        <div x-show="tab !== 'warnings' || {{ $offFlagged ? 'true' : 'false' }}"><section aria-labelledby="officials-title" style="display: flex; flex-direction: column; gap: 12px">
-            <h2 id="officials-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 600">Team officials</h2>
-            <div style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; overflow-x: auto">
-                @if ($officialRows->isEmpty())
-                    <p style="margin: 0; padding: 16px 20px; color: var(--sta-fg-muted, #475569)">No team officials on the list yet.</p>
-                @else
-                    <table style="width: 100%; min-width: 720px; border-collapse: collapse">
-                        <thead>
-                            <tr style="{{ $headRow }}">
-                                <th scope="col" style="{{ $thEdge }}">Name</th>
-                                <th scope="col" style="{{ $th }}">Function</th>
-                                <th scope="col" style="{{ $th }}">Mobile</th>
-                                <th scope="col" style="{{ $th }}">Email</th>
-                                @foreach ($officialItems as $item)<th scope="col" style="{{ $th }}">{{ $item->name }}</th>@endforeach
-                                <th scope="col" style="{{ $thEdge }}">Passport</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($officialRows as $row)
-                                @php $p = $row['person']; $d = $row['detail']; @endphp
-                                <tr wire:key="person-{{ $p->id }}" @unless ($flagged($row)) x-show="tab !== 'warnings'" @endunless style="border-top: 1px solid var(--sta-bd-row, #EEF2F6)">
-                                    <td style="padding: 14px 20px">
-                                        <x-sta.person-link :person="$p" style="font-weight: 600" />
-                                        @if ($flagged($row))
-                                            <div style="font-size: 12px; color: var(--sta-fg-orange-800, #9A3412); max-width: 260px; line-height: 1.4">@if ($row['missing']){!! $incomplete !!} Missing: {{ implode(', ', $row['missing']) }}. @endif{{ $warnText($row) }}</div>
+                                        </td>
+                                        @if ($athletesGroup)
+                                            <td style="padding: 10px 12px">{{ $p->gender?->label() }}</td>
+                                            <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}</td>
+                                            <td style="padding: 10px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">@foreach ($eventsOf($row) as $e)<a href="{{ $e['url'] }}" style="color: var(--sta-fg-brand, #1F3A5F); text-decoration: none">{{ $e['label'] }}</a>@if (! $loop->last), @endif @endforeach</td>
+                                        @else
+                                            <td style="padding: 10px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">{{ $p->function }}</td>
+                                            <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155); white-space: nowrap">{{ filled($p->phone) ? trim($p->phone_cc.' '.$p->phone) : '' }}</td>
                                         @endif
-                                    </td>
-                                    <td style="padding: 14px 12px">{{ $p->function }}</td>
-                                    <td style="padding: 14px 12px; color: var(--sta-fg-strong, #334155)">{{ filled($p->phone) ? trim($p->phone_cc.' '.$p->phone) : '' }}</td>
-                                    <td style="padding: 14px 12px; color: var(--sta-fg-strong, #334155)">{{ $p->email }}</td>
-                                    @foreach ($officialItems as $item)
-                                        @php $size = $sizeOf($row, $item); @endphp
-                                        <td style="padding: 14px 12px; font-weight: 600; color: {{ filled($size) ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-orange-800, #9A3412)' }}">{{ filled($size) ? $size : 'Missing' }}</td>
-                                    @endforeach
-                                    <td style="padding: 14px 20px">
-                                        <div style="display: flex; flex-direction: column; font-size: 13px">
-                                            @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" />@else<span style="{{ $missingStyle }}">Missing</span>@endif
-                                            @include('filament.portal.partials.travel-cell')
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endif
-            </div>
-        </section></div>
+                                        @foreach ($g['items'] as $item)
+                                            @php $size = $sizeOf($row, $item); @endphp
+                                            <td style="padding: 10px 12px; font-weight: 700; color: {{ filled($size) ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-orange-800, #9A3412)' }}">{{ filled($size) ? $size : 'Missing' }}</td>
+                                        @endforeach
+                                        <td style="padding: 10px 12px">
+                                            <div style="display: flex; flex-direction: column; font-size: 13px">
+                                                @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport" />@else<span style="{{ $missingStyle }}">Passport missing</span>@endif
+                                                @if ($p->cpr_front_path)<span>CPR · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR missing</span>@endif
+                                                @include('filament.portal.partials.travel-cell')
+                                            </div>
+                                        </td>
+                                        <td style="padding: 10px 20px; font-size: 13px; color: var(--sta-fg-orange-800, #9A3412); max-width: 240px; line-height: 1.4">
+                                            @if ($row['missing'])<div>{!! $incomplete !!} Missing: {{ implode(', ', $row['missing']) }}</div>@endif
+                                            {{ $warnText($row) }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </section>
+
+                {{-- Rendered only in Grid view so List view does not fetch every photo on each Livewire render. --}}
+                <template x-if="view === 'grid'">
+                    <section aria-label="{{ $g['title'] }}" data-view="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px">
+                        @forelse ($g['rows'] as $row)
+                            @php $p = $row['person']; $d = $row['detail']; @endphp
+                            <div wire:key="card-{{ $p->id }}" @unless ($flagged($row)) x-show="tab !== 'warnings'" @endunless><article style="height: 100%; box-sizing: border-box; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+                                <div style="display: flex; gap: 14px; align-items: center">
+                                    @if ($p->photo_path)
+                                        <img loading="lazy" src="{{ $url($p->photo_path) }}" alt="Photo of {{ $p->fullName() }}" class="sta-avatar sta-avatar-lg" style="object-fit: cover">
+                                    @else
+                                        <div role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar sta-avatar-lg">{{ \App\Support\Sta::initials($p->fullName()) }}</div>
+                                    @endif
+                                    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+                                        <x-sta.person-link :person="$p" style="font-weight: 600; font-size: 15px" />
+                                        <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}@if ($athletesGroup) · {{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}@if ($startDay) on {{ $startDay }}@endif @elseif (filled($p->phone)) · {{ trim($p->phone_cc.' '.$p->phone) }}@endif</span>
+                                    </div>
+                                    <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 8px; border-radius: 8px; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-strong, #334155); font-size: 12px; font-weight: 700">{{ $p->gender?->label() }}</span>
+                                </div>
+                                @php $chip = 'display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; background: var(--sta-bg-selected, #E8EEF6); color: var(--sta-fg-brand, #1F3A5F); font-weight: 600; font-size: 13px; text-decoration: none'; @endphp
+                                <div style="display: flex; flex-direction: column; gap: 6px">
+                                    <span style="font-size: 12px; font-weight: 600; color: var(--sta-fg-muted, #475569); text-transform: uppercase; letter-spacing: 0.05em">{{ $athletesGroup ? 'Event' : 'Function' }}</span>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                                        @if ($athletesGroup)
+                                            @foreach ($eventsOf($row) as $e)<a href="{{ $e['url'] }}" style="{{ $chip }}">{{ $e['label'] }}</a>@endforeach
+                                        @elseif (filled($p->function))
+                                            <span style="{{ $chip }}">{{ $p->function }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if ($g['items']->isNotEmpty())
+                                    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+                                        @foreach ($g['items'] as $item)
+                                            @php $size = $sizeOf($row, $item); @endphp
+                                            <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; {{ filled($size) ? 'background: var(--sta-bg-surface-alt, #F8FAFC); box-shadow: inset 0 0 0 1px var(--sta-bd-line, #E2E8F0)' : 'background: var(--sta-bg-orange-50, #FFF7ED); box-shadow: inset 0 0 0 1px var(--sta-bd-orange-200, #FED7AA)' }}">
+                                                <span style="font-size: 11px; color: var(--sta-fg-muted, #475569)">{{ $item->name }}</span>
+                                                <span style="font-weight: 700; font-size: 14px; color: {{ filled($size) ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-orange-800, #9A3412)' }}">{{ filled($size) ? $size : 'Missing' }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px">
+                                    @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport scan" />@else<span style="{{ $missingStyle }}">Passport scan missing</span>@endif
+                                    @if ($p->cpr_front_path)<span>CPR scan · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR scan missing</span>@endif
+                                    @include('filament.portal.partials.travel-cell')
+                                </div>
+                                @if ($flagged($row))
+                                    <div style="display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--sta-bg-orange-50, #FFF7ED); color: var(--sta-fg-orange-800, #9A3412); font-size: 13px; line-height: 1.45">
+                                        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 2px"><path d="M12 3 2 21h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
+                                        <span>@if ($row['missing'])Incomplete — missing: {{ implode(', ', $row['missing']) }}. @endif{{ $warnText($row) }}</span>
+                                    </div>
+                                @endif
+                            </article></div>
+                        @empty
+                            <p style="margin: 0; color: var(--sta-fg-muted, #475569)">{{ $g['empty'] }}</p>
+                        @endforelse
+                    </section>
+                </template>
+            </div></div>
+        @endforeach
     </div>
 
     @include('filament.portal.partials.person-panel')

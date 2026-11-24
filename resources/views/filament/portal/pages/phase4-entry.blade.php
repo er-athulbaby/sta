@@ -37,9 +37,27 @@
         </div>
 
         <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
-            <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+            {{-- List / Grid: the same browser-only choice as the Long List (partials.view-state). Athletes and team officials share one design. --}}
+            <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px" x-data="{ @include('filament.portal.partials.view-state') }">
+                <div style="display: flex; justify-content: flex-end">@include('filament.portal.partials.view-toggle')</div>
                 @foreach ($sports as $s)
-                    @php $gs = $s['gs']; $t = $s['ticked']; @endphp
+                    @php
+                        $gs = $s['gs']; $t = $s['ticked'];
+                        $tickedOfficials = array_map('intval', (array) ($officials[$gs->id] ?? []));
+                        // One entry per checkbox: athletes per event (a person can be in several events), team officials per sport.
+                        $groups = [
+                            ['key' => 'a', 'title' => 'Athletes', 'errors' => $s['events']->map(fn ($ge) => 'athletes.'.$ge->id)->all(),
+                                'entries' => $s['events']->flatMap(function ($ge) use ($athletes, $slotAthletes, $ids, $people) {
+                                    $ticked = array_map('intval', (array) ($athletes[$ge->id] ?? []));
+
+                                    return collect($ids($slotAthletes[$ge->id]))->map(fn ($id) => ['p' => $people[$id], 'id' => $id, 'slot' => $ge->id,
+                                        'on' => in_array($id, $ticked, true), 'model' => 'athletes.'.$ge->id, 'detail' => \App\Support\Sta::eventLabel($ge->event)]);
+                                })],
+                            ['key' => 'o', 'title' => 'Team officials', 'errors' => ['officials.'.$gs->id],
+                                'entries' => collect($s['officials'])->map(fn ($id) => ['p' => $people[$id], 'id' => $id, 'slot' => $gs->id,
+                                    'on' => in_array($id, $tickedOfficials, true), 'model' => 'officials.'.$gs->id, 'detail' => $people[$id]->function])],
+                        ];
+                    @endphp
                     <section aria-labelledby="sport-title-{{ $gs->id }}" wire:key="sport-{{ $gs->id }}" style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px">
                         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
                             <div style="display: flex; flex-direction: column; gap: 2px">
@@ -49,72 +67,43 @@
                             <span style="{{ $pill }}{{ $sportOver($s) ? 'background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412)' : 'background: var(--sta-bg-green-100, #DCFCE7); color: var(--sta-fg-green-800, #166534)' }}">{{ $sportOver($s) ? 'Over a maximum' : 'Within maximums' }}</span>
                         </div>
 
-                        @if ($s['events']->isNotEmpty())
-                            <h3 style="{{ $subhead }}; padding: 14px 20px 6px">Athletes</h3>
-                            <div style="overflow-x: auto">
+                        @foreach ($groups as $g)
+                            @continue($g['entries']->isEmpty())
+                            @php $isA = $g['key'] === 'a'; @endphp
+                            <h3 style="{{ $subhead }}; padding: {{ $isA ? '14px' : '18px' }} 20px 6px{{ $isA ? '' : '; border-top: 1px solid var(--sta-bd-line, #E2E8F0)' }}">{{ $g['title'] }}</h3>
+                            <div x-show="view === 'list'" data-view="list" style="overflow-x: auto">
                                 <table style="width: 100%; min-width: 620px; border-collapse: collapse">
                                     <thead>
                                         <tr style="{{ $headRow }}">
                                             <th scope="col" style="padding: 8px 20px; font-weight: 600">On Short List</th>
-                                            <th scope="col" style="padding: 8px 12px; font-weight: 600">Gender</th>
-                                            <th scope="col" style="padding: 8px 12px; font-weight: 600">Event</th>
+                                            @if ($isA)
+                                                <th scope="col" style="padding: 8px 12px; font-weight: 600">Gender</th>
+                                                <th scope="col" style="padding: 8px 12px; font-weight: 600">Event</th>
+                                            @else
+                                                <th scope="col" style="padding: 8px 12px; font-weight: 600">Function</th>
+                                                <th scope="col" style="padding: 8px 12px; font-weight: 600">Mobile</th>
+                                            @endif
                                             <th scope="col" style="padding: 8px 20px; font-weight: 600">Passport</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($s['events'] as $ge)
-                                            @php $ticked = array_map('intval', (array) ($athletes[$ge->id] ?? [])); @endphp
-                                            @foreach ($ids($slotAthletes[$ge->id]) as $id)
-                                                @php $p = $people[$id]; $on = in_array($id, $ticked, true); @endphp
-                                                <tr wire:key="a-{{ $ge->id }}-{{ $id }}" style="border-top: 1px solid var(--sta-bd-row, #EEF2F6); background: {{ $on ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-surface-alt, #F8FAFC)' }}">
-                                                    <td style="padding: 4px 20px">
-                                                        <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
-                                                            <input type="checkbox" value="{{ $id }}" wire:model.live="athletes.{{ $ge->id }}" @disabled($readOnlyReason) style="width: 22px; height: 22px; accent-color: var(--sta-bd-violet-700, #6D28D9); flex-shrink: 0">
-                                                            <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; background: var(--sta-bg-avatar, #2B4C7E); color: var(--sta-fg-on-brand, #FFFFFF); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0">{{ \App\Support\Sta::initials($p->fullName()) }}</span>
-                                                            <span style="display: flex; flex-direction: column"><x-sta.person-link :person="$p" style="font-weight: 600; color: {{ $on ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}" /><span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span></span>
-                                                        </label>
-                                                    </td>
-                                                    <td style="padding: 4px 12px">{{ $p->gender?->label() }}</td>
-                                                    <td style="padding: 4px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">{{ \App\Support\Sta::eventLabel($ge->event) }}</td>
-                                                    <td style="padding: 4px 20px">
-                                                        @if ($p->passport_scan_path)
-                                                            <x-sta.passport-links :person="$p" :link-style="$view" />
-                                                        @else
-                                                            <span style="color: var(--sta-fg-orange-800, #9A3412); font-weight: 600">Missing</span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                            @error('athletes.'.$ge->id)<tr><td colspan="4" style="padding: 4px 20px 10px"><p role="alert" style="margin: 0; font-size: 13px; color: var(--sta-fg-red-700, #B91C1C); font-weight: 600">{{ $message }}</p></td></tr>@enderror
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
-
-                        @if ($s['officials'] !== [])
-                            @php $ticked = array_map('intval', (array) ($officials[$gs->id] ?? [])); @endphp
-                            <h3 style="{{ $subhead }}; padding: 18px 20px 6px; border-top: 1px solid var(--sta-bd-line, #E2E8F0)">Team officials</h3>
-                            <div style="overflow-x: auto">
-                                <table style="width: 100%; min-width: 620px; border-collapse: collapse">
-                                    <thead>
-                                        <tr style="{{ $headRow }}">
-                                            <th scope="col" style="padding: 8px 20px; font-weight: 600">On Short List</th>
-                                            <th scope="col" style="padding: 8px 12px; font-weight: 600">Function</th>
-                                            <th scope="col" style="padding: 8px 20px; font-weight: 600">Passport</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($s['officials'] as $id)
-                                            @php $p = $people[$id]; $on = in_array($id, $ticked, true); @endphp
-                                            <tr wire:key="o-{{ $gs->id }}-{{ $id }}" style="border-top: 1px solid var(--sta-bd-row, #EEF2F6); background: {{ $on ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-surface-alt, #F8FAFC)' }}">
+                                        @foreach ($g['entries'] as $e)
+                                            @php $p = $e['p']; @endphp
+                                            <tr wire:key="{{ $g['key'] }}-{{ $e['slot'] }}-{{ $e['id'] }}" style="border-top: 1px solid var(--sta-bd-row, #EEF2F6); background: {{ $e['on'] ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-surface-alt, #F8FAFC)' }}">
                                                 <td style="padding: 4px 20px">
                                                     <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; cursor: pointer">
-                                                        <input type="checkbox" value="{{ $id }}" wire:model.live="officials.{{ $gs->id }}" @disabled($readOnlyReason) style="width: 22px; height: 22px; accent-color: var(--sta-bd-violet-700, #6D28D9); flex-shrink: 0">
-                                                        <x-sta.person-link :person="$p" style="font-weight: 600; color: {{ $on ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}" />
+                                                        <input type="checkbox" value="{{ $e['id'] }}" wire:model.live="{{ $e['model'] }}" @disabled($readOnlyReason) style="width: 22px; height: 22px; accent-color: var(--sta-bd-violet-700, #6D28D9); flex-shrink: 0">
+                                                        <span aria-hidden="true" class="sta-avatar">{{ \App\Support\Sta::initials($p->fullName()) }}</span>
+                                                        <span style="display: flex; flex-direction: column"><x-sta.person-link :person="$p" style="font-weight: 600; color: {{ $e['on'] ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}" /><span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}</span></span>
                                                     </label>
                                                 </td>
-                                                <td style="padding: 4px 12px">{{ $p->function }}</td>
+                                                @if ($isA)
+                                                    <td style="padding: 4px 12px">{{ $p->gender?->label() }}</td>
+                                                    <td style="padding: 4px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">{{ $e['detail'] }}</td>
+                                                @else
+                                                    <td style="padding: 4px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">{{ $e['detail'] }}</td>
+                                                    <td style="padding: 4px 12px; color: var(--sta-fg-strong, #334155); white-space: nowrap">{{ filled($p->phone) ? trim($p->phone_cc.' '.$p->phone) : '' }}</td>
+                                                @endif
                                                 <td style="padding: 4px 20px">
                                                     @if ($p->passport_scan_path)
                                                         <x-sta.passport-links :person="$p" :link-style="$view" />
@@ -124,11 +113,42 @@
                                                 </td>
                                             </tr>
                                         @endforeach
-                                        @error('officials.'.$gs->id)<tr><td colspan="3" style="padding: 4px 20px 10px"><p role="alert" style="margin: 0; font-size: 13px; color: var(--sta-fg-red-700, #B91C1C); font-weight: 600">{{ $message }}</p></td></tr>@enderror
                                     </tbody>
                                 </table>
                             </div>
-                        @endif
+                            {{-- Grid: the same checkboxes as cards with the photo; rendered only in Grid view so List view fetches no photos. --}}
+                            <template x-if="view === 'grid'">
+                                <div data-view="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 12px; padding: 4px 20px 16px">
+                                    @foreach ($g['entries'] as $e)
+                                        @php $p = $e['p']; @endphp
+                                        <label wire:key="card-{{ $g['key'] }}-{{ $e['slot'] }}-{{ $e['id'] }}" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; cursor: pointer; border: {{ $e['on'] ? '2px solid var(--sta-bd-violet-700, #6D28D9)' : '1px solid var(--sta-bd-line, #E2E8F0)' }}; background: {{ $e['on'] ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-surface-alt, #F8FAFC)' }}">
+                                            <span style="display: flex; gap: 12px; align-items: center">
+                                                <input type="checkbox" value="{{ $e['id'] }}" wire:model.live="{{ $e['model'] }}" @disabled($readOnlyReason) aria-label="{{ $p->fullName() }} on the Short List" style="width: 22px; height: 22px; accent-color: var(--sta-bd-violet-700, #6D28D9); flex-shrink: 0">
+                                                @if ($p->photo_path)
+                                                    <img loading="lazy" src="{{ \App\Filament\Shared\AttachmentActions::url($p->photo_path) }}" alt="Photo of {{ $p->fullName() }}" class="sta-avatar sta-avatar-lg" style="object-fit: cover">
+                                                @else
+                                                    <span role="img" aria-label="Photo of {{ $p->fullName() }}" class="sta-avatar sta-avatar-lg">{{ \App\Support\Sta::initials($p->fullName()) }}</span>
+                                                @endif
+                                                <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+                                                    <x-sta.person-link :person="$p" style="font-weight: 600; font-size: 15px; color: {{ $e['on'] ? 'var(--sta-fg-text, #0F172A)' : 'var(--sta-fg-muted, #475569)' }}" />
+                                                    <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $p->code }}@if (! $isA && filled($p->phone)) · {{ trim($p->phone_cc.' '.$p->phone) }}@endif</span>
+                                                </span>
+                                            </span>
+                                            <span style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+                                                <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 8px; border-radius: 8px; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-strong, #334155); font-size: 12px; font-weight: 700">{{ $p->gender?->label() }}</span>
+                                                @if (filled($e['detail']))<span style="display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 8px; background: var(--sta-bg-selected, #E8EEF6); color: var(--sta-fg-brand, #1F3A5F); font-size: 13px; font-weight: 600">{{ $e['detail'] }}</span>@endif
+                                            </span>
+                                            <span style="font-size: 13px">
+                                                @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport" />@else<span style="color: var(--sta-fg-orange-800, #9A3412); font-weight: 600">Passport missing</span>@endif
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </template>
+                            @foreach ($g['errors'] as $key)
+                                @error($key)<p role="alert" style="margin: 0; padding: 4px 20px 10px; font-size: 13px; color: var(--sta-fg-red-700, #B91C1C); font-weight: 600">{{ $message }}</p>@enderror
+                            @endforeach
+                        @endforeach
                     </section>
                 @endforeach
             </div>
