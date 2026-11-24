@@ -65,7 +65,7 @@ class GenerateLongListPdf implements ShouldQueue
                     'name' => $p->full_name ?: $p->fullName(),
                     'sport' => $gs->sport->name,
                     'events' => $gs->gameEvents->whereIn('id', $group->pluck('game_event_id')->all())->map(fn ($ge) => $ge->event->name)->sort()->implode(', '),
-                    'dob' => $p->dob->format('d M Y'),
+                    'dob' => $p->dob?->format('d M Y') ?? '',
                     'sizes' => $athleteItems->map(fn ($i) => $sizes->get($i->id, ''))->all(),
                     'passport' => filled($p->passport_scan_path),
                 ];
@@ -81,7 +81,7 @@ class GenerateLongListPdf implements ShouldQueue
                     'photo' => GenerateEntryByEventPdfs::dataUri($p->photo_path),
                     'name' => $p->full_name ?: $p->fullName(),
                     'function' => $p->function,
-                    'dob' => $p->dob->format('d M Y'),
+                    'dob' => $p->dob?->format('d M Y') ?? '',
                     'phone' => filled($p->phone) ? $p->phone_cc.' '.$p->phone : '',
                     'email' => $p->email ?? '',
                     'sizes' => $officialItems->map(fn ($i) => $sizes->get($i->id, ''))->all(),

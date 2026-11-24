@@ -57,6 +57,8 @@ final class PersonForm
     {
         $isOfficial = fn (Get $get) => $get('type') === PersonType::Official->value;
         $isAthlete = fn (Get $get) => $get('type') !== PersonType::Official->value;
+        // "Save as draft" (PersonPageChrome::saveDraft) needs only the names; the final Save checks the rest.
+        $final = fn ($livewire) => ! (method_exists($livewire, 'isSavingDraft') && $livewire->isSavingDraft());
         $medical = fn () => Person::canViewMedical(auth()->user());
         $countries = array_combine(array_values(config('countries')), array_values(config('countries')));
         $scanTypes = self::SCAN_TYPES;
@@ -96,11 +98,11 @@ final class PersonForm
                         TextInput::make('second_name')->maxLength(100),
                         TextInput::make('third_name')->maxLength(100),
                         TextInput::make('last_name')->required()->maxLength(100),
-                        DatePicker::make('dob')->label('Date of birth')->required()->maxDate(now())->live(),
+                        DatePicker::make('dob')->label('Date of birth')->required($final)->maxDate(now())->live(),
                         Placeholder::make('age')->label('Age')->extraAttributes(['class' => 'sta-output'])
                             ->content(fn (Get $get) => self::age($get('dob')) !== null ? self::age($get('dob')).' years · from date of birth' : 'From date of birth'),
-                        Select::make('gender')->options(self::options(PersonGender::cases()))->placeholder('Select')->required(),
-                        Select::make('nationality')->options($countries)->placeholder('Select country')->required(),
+                        Select::make('gender')->options(self::options(PersonGender::cases()))->placeholder('Select')->required($final),
+                        Select::make('nationality')->options($countries)->placeholder('Select country')->required($final),
                         TextInput::make('height_cm')->label('Height (cm)')->numeric()->minValue(50)->maxValue(250),
                         TextInput::make('weight_kg')->label('Weight (kg)')->numeric()->minValue(20)->maxValue(250),
                         Toggle::make('is_active')->label('Active')->default(true)->view('filament.people.switch-field'),
@@ -109,22 +111,22 @@ final class PersonForm
             ]),
             $section('role')->visible($isOfficial)->schema([
                 $grid([
-                    Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->placeholder('Select')->required($isOfficial),
+                    Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->placeholder('Select')->required(fn (Get $get, $livewire) => $isOfficial($get) && $final($livewire)),
                     TextInput::make('languages')->label('Languages spoken')->maxLength(255),
                 ], 260),
             ]),
             $section('passport')->schema([
                 Flex::make([
                     $grid([
-                        TextInput::make('passport_no')->label('Passport number')->required()->maxLength(30)
+                        TextInput::make('passport_no')->label('Passport number')->required($final)->maxLength(30)
                             ->rule(fn (?Model $record) => self::uniqueDocument('passport_no_hash', 'passport', $record)),
                         self::need(Select::make('passport_issuing_country')->label('Issuing country')->options($countries)->placeholder('Select country'), 'passport_issuing_country'),
                         self::need(DatePicker::make('passport_issue_date')->label('Issue date')->maxDate(now()), 'passport_issue_date'),
-                        DatePicker::make('passport_expiry')->label('Expiry date')->required(),
+                        DatePicker::make('passport_expiry')->label('Expiry date')->required($final),
                     ])->grow(),
                 ])->from('md'),
-                // Required on every save and never filled (not a column): SavesPersonSizes stamps checked_by / checked_at.
-                Checkbox::make('cross_checked')->label(Person::CROSS_CHECK_LABEL)->accepted()->markAsRequired()->dehydrated(false)
+                // Required on every final Save (not on Save as draft) and never filled (not a column): SavesPersonSizes stamps checked_by / checked_at.
+                Checkbox::make('cross_checked')->label(Person::CROSS_CHECK_LABEL)->accepted($final)->markAsRequired()->dehydrated(false)
                     ->validationMessages(['accepted' => Person::CROSS_CHECK_MESSAGE])->extraFieldWrapperAttributes(['class' => 'sta-cross-check']),
             ]),
             $section('cpr')->schema([
@@ -250,7 +252,7 @@ final class PersonForm
 
     /** Which section each completeness field lives in (jump-link "N missing" badges). */
     public const FIELD_SECTIONS = ['full_name' => 'person', 'photo_path' => 'person', 'passport_issuing_country' => 'passport',
-        'passport_issue_date' => 'passport', 'passport_scan_path' => 'passport', 'cpr_no' => 'cpr', 'phone' => 'contact',
+        'passport_issue_date' => 'passport', 'passport_scan_path' => 'passport', 'passport_no' => 'passport', 'passport_expiry' => 'passport', 'function' => 'role', 'cpr_no' => 'cpr', 'phone' => 'contact',
         'whatsapp' => 'contact', 'email' => 'contact', 'emergency_name' => 'contact', 'emergency_relationship' => 'contact', 'emergency_phone' => 'contact'];
 
     /** @return list<string> the anchors shown for a type, in canvas order (Medical / Health only with view_medical; extra fields last) */

@@ -12,7 +12,7 @@ it('lists what an athlete still needs', function () {
     $p = Person::factory()->create(['full_name' => null, 'photo_path' => null, 'passport_issuing_country' => null,
         'passport_issue_date' => null, 'passport_scan_path' => null, 'cpr_no' => null]);
 
-    expect($p->missingFields())->toBe(['Full name', 'Photo', 'Passport issuing country', 'Passport issue date', 'Passport scan', 'CPR number'])
+    expect($p->missingFields())->toBe(['Full name', 'Photo', 'Passport issuing country', 'Passport issue date', 'Passport scan'])
         ->and($p->isComplete())->toBeFalse();
 });
 

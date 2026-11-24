@@ -131,7 +131,7 @@ it('numbers the athlete form sections and jump links as drawn', function () {
     livewire(PortalEditPerson::class, ['record' => $p->getRouteKey()])
         ->assertSeeInOrder(['Athletes &amp; officials', 'Edit athlete', e($p->fullName()), $p->code, 'Incomplete', 'Missing: ',
             'Cancel', 'Save as draft', 'Save'], false)
-        ->assertSee('Required to save. Fields marked “needed for Long List” can stay empty for now, but the athlete stays Incomplete')
+        ->assertSee('Required to save (Save as draft needs only the first and last name). Fields marked “needed for Long List” can stay empty for now, but the athlete stays Incomplete')
         ->assertSeeHtml('href="#passport"')->assertSeeHtml('id="passport"')->assertSeeHtml('id="consents"')
         ->assertSeeInOrder(['1 Person', '2 Passport', 'missing', '3 CPR', '4 Contact', '5 Guardian', '6 Clothing', '7 Medical', '8 Consents'])
         ->assertSeeInOrder(['1 · Person', 'Passport scan', 'Photo', 'Type', 'Full name (as in passport)', 'First name', 'Second name', 'Third name', 'Last name',
@@ -258,7 +258,7 @@ it('treats an official\'s CPR as optional: no "needed for Long List", no CPR war
     expect($html)->toMatch('#CPR number.{0,2500}?<span class="sta-need">optional</span>.{0,4000}?CPR expiry#s')
         ->not->toMatch('#CPR number.{0,2500}?needed for Long List.{0,4000}?CPR expiry#s');
     $athlete = livewire(PortalCreatePerson::class)->fillForm(['type' => 'athlete'])->html();
-    expect($athlete)->toMatch('#CPR number.{0,2500}?needed for Long List.{0,4000}?CPR expiry#s');
+    expect($athlete)->toMatch('#CPR number.{0,2500}?<span class="sta-need">optional</span>.{0,4000}?CPR expiry#s'); // optional for athletes too (M6 follow-up)
 
     $official = Person::factory()->official()->create(['association_id' => $this->assoc->id, 'cpr_no' => null, 'cpr_front_path' => null]);
     expect($official->missingFields())->not->toContain('CPR number')

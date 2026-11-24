@@ -46,7 +46,7 @@
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: 12px">
         <a href="{{ $resource::getUrl('index') }}" style="{{ $secondary }}">Cancel</a>
-        <button type="button" wire:click="{{ $this->personSubmitMethod() }}" wire:loading.attr="disabled" style="{{ $secondary }}">Save as draft</button>
+        <button type="button" wire:click="saveDraft" wire:loading.attr="disabled" style="{{ $secondary }}">Save as draft</button>
         <button type="button" wire:click="saveAndClose" wire:loading.attr="disabled" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 14px Inter, sans-serif; cursor: pointer">Save</button>
     </div>
 </header>

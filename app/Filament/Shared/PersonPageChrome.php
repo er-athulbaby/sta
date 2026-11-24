@@ -52,6 +52,26 @@ trait PersonPageChrome
         return $this instanceof CreateRecord ? 'create' : 'save';
     }
 
+    /** Set only while saveDraft() runs (not a Livewire property, so the browser can't switch it on). */
+    private bool $savingDraft = false;
+
+    #[Unexposed]
+    public function isSavingDraft(): bool
+    {
+        return $this->savingDraft;
+    }
+
+    /** "Save as draft": saves with only the names required and stays; the final Save checks everything else (PersonForm $final). */
+    public function saveDraft(): void
+    {
+        $this->savingDraft = true;
+        try {
+            $this->{$this->personSubmitMethod()}();
+        } finally {
+            $this->savingDraft = false;
+        }
+    }
+
     public function saveAndClose(): void
     {
         $this->{$this->personSubmitMethod()}();

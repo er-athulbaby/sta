@@ -41,10 +41,16 @@ class Person extends Model
 
     public const CONSENTS = ['consent_data', 'consent_media', 'consent_medical', 'decl_conduct', 'decl_antidoping', 'decl_data_sharing'];
 
+    /** Columns the final Save requires; "Save as draft" may leave them empty (so they also count in missingFields()). */
+    public const SAVE_REQUIRED = ['dob', 'gender', 'nationality', 'passport_no', 'passport_expiry', 'function'];
+
     public const REQUIRED_FOR_COMPLETE = [
-        'athlete' => ['full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
-            'passport_issue_date' => 'Passport issue date', 'passport_scan_path' => 'Passport scan', 'cpr_no' => 'CPR number'],
-        'official' => ['full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
+        // The fields before full_name are required by the final Save, but a person saved as a draft may still lack them.
+        'athlete' => ['dob' => 'Date of birth', 'gender' => 'Gender', 'nationality' => 'Nationality', 'passport_no' => 'Passport number',
+            'passport_expiry' => 'Passport expiry', 'full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
+            'passport_issue_date' => 'Passport issue date', 'passport_scan_path' => 'Passport scan'],
+        'official' => ['dob' => 'Date of birth', 'gender' => 'Gender', 'nationality' => 'Nationality', 'passport_no' => 'Passport number',
+            'passport_expiry' => 'Passport expiry', 'function' => 'Function', 'full_name' => 'Full name', 'photo_path' => 'Photo', 'passport_issuing_country' => 'Passport issuing country',
             'passport_issue_date' => 'Passport issue date', 'passport_scan_path' => 'Passport scan', 'phone' => 'Mobile',
             'whatsapp' => 'WhatsApp', 'email' => 'Email', 'emergency_name' => 'Emergency contact name',
             'emergency_relationship' => 'Emergency contact relationship', 'emergency_phone' => 'Emergency phone'],
@@ -102,7 +108,7 @@ class Person extends Model
     protected static function booted(): void
     {
         static::saving(function (Person $person) {
-            $person->passport_no_hash = self::blindIndex($person->passport_no);
+            $person->passport_no_hash = filled($person->passport_no) ? self::blindIndex($person->passport_no) : null;
             $person->cpr_no_hash = filled($person->cpr_no) ? self::blindIndex($person->cpr_no) : null;
             $clear = $person->type === PersonType::Athlete ? self::OFFICIAL_ONLY : self::ATHLETE_ONLY;
             foreach ($clear as $column) {
@@ -213,9 +219,10 @@ class Person extends Model
         return collect([$this->first_name, $this->second_name, $this->third_name, $this->last_name])->filter()->implode(' ');
     }
 
-    public function age(?CarbonInterface $on = null): int
+    /** null for a draft saved without a date of birth */
+    public function age(?CarbonInterface $on = null): ?int
     {
-        return (int) $this->dob->diffInYears($on ?? now());
+        return $this->dob === null ? null : (int) $this->dob->diffInYears($on ?? now());
     }
 
     /** @return array<int, string> clothing_item_id => size */

@@ -196,7 +196,7 @@ final class GameReports
             foreach ($this->visibleEntries($game, $s) as $e) {
                 $p = $e->person;
                 $rows[] = [$s->association->name, $p->code, $this->name($p), $p->type->label(), $e->gameSport->sport->name,
-                    $e->gameEvent?->event->name ?? 'Official', $p->gender->label(), $p->dob->toDateString(),
+                    $e->gameEvent?->event->name ?? 'Official', $p->gender?->label(), $p->dob?->toDateString(),
                     $p->age($game->start_date), $p->nationality, $p->passport_expiry?->toDateString()];
             }
         }

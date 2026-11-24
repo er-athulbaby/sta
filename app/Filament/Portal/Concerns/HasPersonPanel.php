@@ -114,15 +114,21 @@ trait HasPersonPanel
             ->values();
     }
 
-    /** @return list<string> gaps the short form itself can fill (its Person::missingFields columns, CPR scan, empty sizes), for the canvas banner */
+    /** @return list<string> missingFields() less the ones the short form requires anyway (its own validation names those) */
+    private function shortFormGaps(): array
+    {
+        return array_values(array_diff($this->shortFormPerson()->missingFields(), Arr::only(Person::REQUIRED_FOR_COMPLETE[$this->panelType()->value], Person::SAVE_REQUIRED)));
+    }
+
+    /** @return list<string> gaps the short form itself can fill (its Person::missingFields columns, empty sizes), for the canvas banner */
     public function shortFormMissing(): array
     {
         $type = $this->panelType();
         $labels = Person::REQUIRED_FOR_COMPLETE[$type->value];
-        $own = $this->shortFormPerson()->missingFields();
+        $own = $this->shortFormGaps();
         $sizes = PersonForm::sizeItems($type)->filter(fn ($item) => blank($this->newPerson['sizes'][$item->id] ?? null))->map(fn ($item) => $item->name.' size');
 
-        return [...array_values(array_intersect($own, Arr::only($labels, self::SHORT_FORM_GAPS))), ...($this->newPersonCprScan || $type === PersonType::Official ? [] : ['CPR scan']), ...$sizes];
+        return [...array_values(array_intersect($own, Arr::only($labels, self::SHORT_FORM_GAPS))), ...$sizes];
     }
 
     /** True when the person would still miss something only the full registry form has (e.g. full name, issue date, extra fields). */
@@ -130,7 +136,7 @@ trait HasPersonPanel
     {
         $labels = Person::REQUIRED_FOR_COMPLETE[$this->panelType()->value];
 
-        return array_diff($this->shortFormPerson()->missingFields(), Arr::only($labels, self::SHORT_FORM_GAPS)) !== [];
+        return array_diff($this->shortFormGaps(), Arr::only($labels, self::SHORT_FORM_GAPS)) !== [];
     }
 
     private function shortFormPerson(): Person

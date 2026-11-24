@@ -328,9 +328,9 @@ it('names only the gaps the short form can fill, sends the rest to the registry,
     Storage::fake(config('filesystems.private'));
     $page = livewire(Phase3Entry::class, ['game' => $this->game->id])->call('openPanel', 'athlete');
 
-    expect($page->instance()->shortFormMissing())->toBe(['Photo', 'Passport scan', 'CPR number', 'CPR scan'])
+    expect($page->instance()->shortFormMissing())->toBe(['Photo', 'Passport scan'])
         ->and($page->instance()->shortFormLeavesRest())->toBeTrue();
-    $page->assertSee('Photo, Passport scan, CPR number and CPR scan missing — you can still save as draft. Complete the rest in the registry.')
+    $page->assertSee('Photo and Passport scan missing — you can still save as draft. Complete the rest in the registry.')
         ->assertDontSee('Passport issuing country')
         ->set('newPersonPhoto', UploadedFile::fake()->image('me.jpg'))
         ->assertSee('me.jpg')->assertSeeHtml('aria-label="View the photo"')->assertDontSeeHtml('aria-label="Remove the photo"')

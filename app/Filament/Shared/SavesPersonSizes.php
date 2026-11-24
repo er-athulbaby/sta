@@ -73,7 +73,7 @@ trait SavesPersonSizes
         $this->pendingExtra = $data['extra'] ?? [];
         unset($data['sizes'], $data['extra'], $data['cross_checked']);
 
-        // The form only saves with the cross-check ticked (PersonForm), so every save records who ticked it and when.
-        return [...$data, ...Person::crossCheckStamp()];
+        // A final Save only passes with the cross-check ticked (PersonForm), so it records who ticked it and when; a draft doesn't.
+        return method_exists($this, 'isSavingDraft') && $this->isSavingDraft() ? $data : [...$data, ...Person::crossCheckStamp()];
     }
 }

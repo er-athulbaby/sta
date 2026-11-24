@@ -317,7 +317,7 @@ it('lists what the entered person still misses in the Incomplete banner', functi
     $page = livewire(Phase3Entry::class, ['game' => $this->game->id])->call('openPanel', 'athlete')
         ->set('newPerson.cpr_no', '040917333');
 
-    expect($page->instance()->shortFormMissing())->toContain('Photo', 'Passport scan', 'CPR scan')->not->toContain('CPR number');
+    expect($page->instance()->shortFormMissing())->toContain('Photo', 'Passport scan')->not->toContain('CPR number')->not->toContain('CPR scan');
     $page->assertSee('Incomplete')->assertSeeText('Passport scan')->assertSee('missing — you can still save as draft.');
 });
 

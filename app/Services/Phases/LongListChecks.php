@@ -18,8 +18,12 @@ use Illuminate\Support\Collection;
 /** Phase 3 (Long List) rules: hard errors block save and submit, warnings never block. */
 final class LongListChecks
 {
-    public static function genderMatches(PersonGender $person, EventGender $event): bool
+    public static function genderMatches(?PersonGender $person, EventGender $event): bool
     {
+        if ($person === null) {
+            return false; // a draft saved without a gender
+        }
+
         return match ($event) {
             EventGender::Mixed => true,
             EventGender::Men => $person === PersonGender::Male,
@@ -90,7 +94,7 @@ final class LongListChecks
                 $p = $people->get((int) $id);
                 $msg = $this->personError($s, $p, PersonType::Athlete)
                     ?? (self::genderMatches($p->gender, $ge->event->gender) ? null
-                        : "{$p->fullName()} ({$p->gender->label()}) cannot enter a {$ge->event->gender->label()} event.");
+                        : "{$p->fullName()} (".($p->gender?->label() ?? 'no gender').") cannot enter a {$ge->event->gender->label()} event.");
                 if ($msg) {
                     $errors["athletes.$geId"] = "{$ge->event->name}: $msg";
                     break;
@@ -185,7 +189,7 @@ final class LongListChecks
         }
         if ($p->type === PersonType::Athlete) {
             foreach ($gameSports as $gs) {
-                if (($gs->dob_from && $p->dob->lt($gs->dob_from)) || ($gs->dob_to && $p->dob->gt($gs->dob_to))) {
+                if ($p->dob && (($gs->dob_from && $p->dob->lt($gs->dob_from)) || ($gs->dob_to && $p->dob->gt($gs->dob_to)))) {
                     $w[] = "Date of birth is outside the {$gs->sport->name} age range.";
                 }
             }

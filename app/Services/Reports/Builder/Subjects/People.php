@@ -64,7 +64,7 @@ final class People extends Subject
     public static function completeSql(): string
     {
         $complete = fn (string $type) => implode(' AND ', array_filter([
-            ...array_map(fn (string $c) => Sql::filled("people.{$c}", $c === 'passport_issue_date'), array_keys(Person::REQUIRED_FOR_COMPLETE[$type])),
+            ...array_map(fn (string $c) => Sql::filled("people.{$c}", in_array($c, ['passport_issue_date', 'passport_expiry', 'dob'], true)), array_keys(Person::REQUIRED_FOR_COMPLETE[$type])),
             ExtraFields::completeSql(PersonType::from($type)),
         ]));
 
