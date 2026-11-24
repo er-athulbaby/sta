@@ -585,7 +585,7 @@ textarea.sta-input { padding: 10px 12px; min-height: 96px; line-height: 1.5; wid
 .sta-auto-grid > .fi-grid > .fi-grid-col.fi-hidden { display: none; }
 .sta-phone > .fi-grid { grid-template-columns: 92px minmax(0, 1fr) !important; gap: 8px; align-items: end; }
 .sta-form-band .fi-sc-flex { flex-wrap: wrap; gap: 24px; align-items: flex-start; }
-.sta-form-band .fi-sc-flex > :has(.sta-photo-field) { flex: 0 1 200px; }
+.sta-form-band .fi-sc-flex > :has(.sta-photo-field) { flex: 0 1 260px; min-width: 0; }
 .sta-form-band .fi-sc-flex > :has(.sta-flex-320) { flex: 1 1 320px; min-width: 0; }
 .sta-form-band .fi-sc-flex > :has(> .fi-sc-component > .sta-auto-grid), .sta-form-band .fi-sc-flex > :has(.sta-auto-grid) { flex: 999 1 420px; min-width: 0; }
 .sta-person-page .fi-fo-field { row-gap: 6px; }

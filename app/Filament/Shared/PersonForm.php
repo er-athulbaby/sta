@@ -67,37 +67,27 @@ final class PersonForm
         $grid = fn (array $fields, int $min = 200) => Grid::make(1)->schema($fields)->extraAttributes(['class' => 'sta-auto-grid', 'style' => "--sta-min: {$min}px"]);
 
         return $schema->columns(1)->components([
-            // Passport first: upload the scan and "Read details from passport" before typing anything (M6 feedback).
-            $section('passport')->schema([
-                Flex::make([
-                    self::need(self::upload('passport_scan_path', 'Passport scan', 'scans', $scanTypes, 5120), 'passport_scan_path')
-                        // A new or removed scan makes the last "Read details from passport" result stale.
-                        ->afterStateUpdated(function ($livewire) {
-                            if (property_exists($livewire, 'passportRead')) {
-                                $livewire->passportRead = null;
-                            }
-                        })
-                        ->extraFieldWrapperAttributes(['class' => 'sta-flex-320'], merge: true)
-                        ->belowContent([
-                            $scanHelp,
-                            ReadPassportAction::make(),
-                            Text::make('Reads names, passport number, nationality, date of birth, gender and expiry date from the machine-readable lines at the bottom of the photo page. Check every value before saving. Enter the issue date by hand.')
-                                ->extraAttributes(['class' => 'sta-help']),
-                            View::make('filament.people.passport-read'),
-                        ]),
-                    $grid([
-                        TextInput::make('passport_no')->label('Passport number')->required()->maxLength(30)
-                            ->rule(fn (?Model $record) => self::uniqueDocument('passport_no_hash', 'passport', $record)),
-                        self::need(Select::make('passport_issuing_country')->label('Issuing country')->options($countries)->placeholder('Select country'), 'passport_issuing_country'),
-                        self::need(DatePicker::make('passport_issue_date')->label('Issue date')->maxDate(now()), 'passport_issue_date'),
-                        DatePicker::make('passport_expiry')->label('Expiry date')->required(),
-                    ])->grow(),
-                ])->from('md'),
-            ]),
             $section('person')->schema([
                 Flex::make([
-                    self::need(self::upload('photo_path', 'Photo', 'photos', self::PHOTO_TYPES, 2048, 'photo'), 'photo_path')
-                        ->helperText('JPG or PNG, up to 2 MB')->grow(false)->extraFieldWrapperAttributes(['class' => 'sta-photo-field'], merge: true),
+                    // Left column: the passport scan first, so "Read details from passport" fills the fields before anyone types (M6).
+                    Grid::make(1)->grow(false)->extraAttributes(['class' => 'sta-person-left'])->schema([
+                        self::need(self::upload('passport_scan_path', 'Passport scan', 'scans', $scanTypes, 5120), 'passport_scan_path')
+                            // A new or removed scan makes the last "Read details from passport" result stale.
+                            ->afterStateUpdated(function ($livewire) {
+                                if (property_exists($livewire, 'passportRead')) {
+                                    $livewire->passportRead = null;
+                                }
+                            })
+                            ->belowContent([
+                                $scanHelp,
+                                ReadPassportAction::make(),
+                                Text::make('Reads names, passport number, nationality, date of birth, gender and expiry date from the machine-readable lines at the bottom of the photo page. Check every value before saving. Enter the issue date by hand.')
+                                    ->extraAttributes(['class' => 'sta-help']),
+                                View::make('filament.people.passport-read'),
+                            ]),
+                        self::need(self::upload('photo_path', 'Photo', 'photos', self::PHOTO_TYPES, 2048, 'photo'), 'photo_path')
+                            ->helperText('JPG or PNG, up to 2 MB')->extraFieldWrapperAttributes(['class' => 'sta-photo-field'], merge: true),
+                    ]),
                     $grid([
                         ...($withAssociation ? [Select::make('association_id')->relationship('association', 'name')->required()] : []),
                         Select::make('type')->options(self::options(PersonType::cases()))->required()->live()->default($type->value)->disabled($lockType)->dehydrated()->selectablePlaceholder(false),
@@ -116,15 +106,26 @@ final class PersonForm
                         Toggle::make('is_active')->label('Active')->default(true)->view('filament.people.switch-field'),
                     ]),
                 ])->from('md'),
-                // Required on every save and never filled (not a column): SavesPersonSizes stamps checked_by / checked_at.
-                Checkbox::make('cross_checked')->label(Person::CROSS_CHECK_LABEL)->accepted()->markAsRequired()->dehydrated(false)
-                    ->validationMessages(['accepted' => Person::CROSS_CHECK_MESSAGE])->extraFieldWrapperAttributes(['class' => 'sta-cross-check']),
             ]),
             $section('role')->visible($isOfficial)->schema([
                 $grid([
                     Select::make('function')->options(array_combine(self::FUNCTIONS, self::FUNCTIONS))->placeholder('Select')->required($isOfficial),
                     TextInput::make('languages')->label('Languages spoken')->maxLength(255),
                 ], 260),
+            ]),
+            $section('passport')->schema([
+                Flex::make([
+                    $grid([
+                        TextInput::make('passport_no')->label('Passport number')->required()->maxLength(30)
+                            ->rule(fn (?Model $record) => self::uniqueDocument('passport_no_hash', 'passport', $record)),
+                        self::need(Select::make('passport_issuing_country')->label('Issuing country')->options($countries)->placeholder('Select country'), 'passport_issuing_country'),
+                        self::need(DatePicker::make('passport_issue_date')->label('Issue date')->maxDate(now()), 'passport_issue_date'),
+                        DatePicker::make('passport_expiry')->label('Expiry date')->required(),
+                    ])->grow(),
+                ])->from('md'),
+                // Required on every save and never filled (not a column): SavesPersonSizes stamps checked_by / checked_at.
+                Checkbox::make('cross_checked')->label(Person::CROSS_CHECK_LABEL)->accepted()->markAsRequired()->dehydrated(false)
+                    ->validationMessages(['accepted' => Person::CROSS_CHECK_MESSAGE])->extraFieldWrapperAttributes(['class' => 'sta-cross-check']),
             ]),
             $section('cpr')->schema([
                 $grid([
@@ -256,8 +257,8 @@ final class PersonForm
     public static function sectionKeys(PersonType $type, bool $medical, bool $extra): array
     {
         $keys = $type === PersonType::Official
-            ? ['passport', 'person', 'role', 'cpr', 'contact', 'visas', 'clothing', 'health', 'declarations', 'extra']
-            : ['passport', 'person', 'cpr', 'contact', 'guardian', 'clothing', 'medical', 'consents', 'extra'];
+            ? ['person', 'role', 'passport', 'cpr', 'contact', 'visas', 'clothing', 'health', 'declarations', 'extra']
+            : ['person', 'passport', 'cpr', 'contact', 'guardian', 'clothing', 'medical', 'consents', 'extra'];
 
         return array_values(array_filter($keys, fn (string $k) => ($medical || ! in_array($k, ['medical', 'health'], true)) && ($extra || $k !== 'extra')));
     }
