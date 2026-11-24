@@ -108,6 +108,21 @@ trait EditsPhase3
         $this->officials[$gameSportId] = $this->withoutPerson($this->officials[$gameSportId] ?? [], $personId);
     }
 
+    /** Long List "Remove": takes the person off every event (athletes) or sport (officials) of this game, then saves like the chips do. */
+    public function removeFromList(int|string $personId): void
+    {
+        if ($this->readOnlyReason !== null) {
+            return;
+        }
+        foreach (array_keys($this->athletes) as $gameEventId) {
+            $this->removeAthleteChip($gameEventId, $personId);
+        }
+        foreach (array_keys($this->officials) as $gameSportId) {
+            $this->removeOfficialChip($gameSportId, $personId);
+        }
+        $this->save();
+    }
+
     /** @return list<string> */
     private function withPerson(array|string $ids, int|string $personId, PersonType $type): array
     {

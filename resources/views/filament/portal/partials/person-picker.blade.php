@@ -25,7 +25,7 @@
                 <span style="font-weight: 600">{{ $c['person']->fullName() }}</span>
                 <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $c['sub'] }}</span>
                 @unless ($readOnlyReason)
-                    <button type="button" wire:click="{{ $remove }}({{ $arg }}, {{ $c['person']->id }})" aria-label="{{ $c['removeLabel'] }}" style="width: 44px; height: 44px; margin: -4px -4px -4px -8px; border: 0; border-radius: 6px; background: transparent; color: var(--sta-fg-muted, #475569); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
+                    <button type="button" wire:click="{{ $remove }}({{ $arg }}, {{ $c['person']->id }})" aria-label="{{ $c['removeLabel'] }}" style="width: 44px; height: 44px; margin: -4px -4px -4px -8px; border: 0; border-radius: 6px; background: transparent; color: var(--sta-fg-red-700, #B91C1C); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer"><span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 50%; background: var(--sta-bg-surface, #FFFFFF); box-shadow: inset 0 0 0 1px var(--sta-bd-red-200, #FECACA); display: inline-flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></span></button>
                 @endunless
             </span>
         @endforeach

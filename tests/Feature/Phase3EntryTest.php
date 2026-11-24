@@ -340,3 +340,42 @@ it('refuses the Long List short form until the cross-check is ticked and stamps 
     $page->set('newPerson.cross_checked', true)->call('createPerson', false)->assertHasNoErrors();
     expect(Person::where('first_name', 'Hamad')->sole())->checked_by->toBe($this->admin->id)->checked_at->not->toBeNull();
 });
+
+it('removes an athlete from every event of the game with Remove, leaving the registry alone', function () {
+    $m66 = GameEvent::factory()->create(['game_id' => $this->game->id, 'game_sport_id' => $this->judo->id,
+        'event_id' => Event::factory()->create(['sport_id' => $this->judo->sport_id, 'name' => 'Men -66kg', 'gender' => EventGender::Men])->id]);
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id, (string) $this->omar->id])
+        ->set("athletes.{$m66->id}", [(string) $this->ali->id])->call('save')->assertHasNoErrors();
+    expect(Entry::where('person_id', $this->ali->id)->count())->toBe(2);
+
+    $page->assertSeeHtml("removeFromList({$this->ali->id})")
+        ->assertSeeHtml('Remove Ali Hasan from the '.e($this->game->name).' Long List? Their registry profile is not changed.')
+        ->call('removeFromList', $this->ali->id)->assertHasNoErrors();
+
+    expect(Entry::where('person_id', $this->ali->id)->exists())->toBeFalse()
+        ->and(Entry::where('person_id', $this->omar->id)->count())->toBe(1)
+        ->and($this->ali->fresh()->exists)->toBeTrue();
+});
+
+it('removes a team official from the game with Remove', function () {
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->set("athletes.{$this->m60->id}", [(string) $this->ali->id])
+        ->set("officials.{$this->judo->id}", [(string) $this->coach->id])->call('save')->assertHasNoErrors();
+
+    $page->call('removeFromList', $this->coach->id)->assertHasNoErrors();
+
+    expect(Entry::where('person_id', $this->coach->id)->exists())->toBeFalse()->and(Entry::count())->toBe(1);
+});
+
+it('has no Remove and refuses it while the Long List is read-only', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $s->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+    $this->game->phase(3)->update(['status' => PhaseStatus::Closed]);
+
+    livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->assertSee('Ali Hasan')->assertDontSeeHtml('removeFromList(')
+        ->call('removeFromList', $this->ali->id);
+
+    expect(Entry::where('person_id', $this->ali->id)->exists())->toBeTrue();
+});

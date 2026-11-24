@@ -72,6 +72,9 @@
         $showTravel = ! $readOnlyReason;
         $url = fn ($path) => \App\Filament\Shared\AttachmentActions::url($path);
         $warnText = fn ($r) => implode(' ', $r['warnings']);
+        // Remove: off this game's Long List entirely (every event / sport entry), confirmed first; hidden when read-only.
+        $removeStyle = 'min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--sta-bd-red-200, #FECACA); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-red-700, #B91C1C); font: 600 13px Inter, sans-serif; cursor: pointer; white-space: nowrap';
+        $removeConfirm = fn ($p) => 'Remove '.$p->fullName().' from the '.$this->gameModel->name.' Long List? Their registry profile is not changed.';
         $incomplete = '<span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412); font-weight: 700; font-size: 12px">Incomplete</span>';
     @endphp
     {{-- Tabs and the List / Grid choice are browser-only; the view is remembered per user (localStorage, shared with the Short List), never sent to the server. --}}
@@ -125,6 +128,7 @@
                                     @foreach ($g['items'] as $item)<th scope="col" style="{{ $th }}">{{ $item->name }}</th>@endforeach
                                     <th scope="col" style="{{ $th }}">Scans</th>
                                     <th scope="col" style="{{ $thEdge }}">Warning</th>
+                                    @unless ($readOnlyReason)<th scope="col" style="{{ $thEdge }}"><span class="sta-sr-only">Actions</span></th>@endunless
                                 </tr>
                             </thead>
                             <tbody>
@@ -163,6 +167,9 @@
                                             @if ($row['missing'])<div>{!! $incomplete !!} Missing: {{ implode(', ', $row['missing']) }}</div>@endif
                                             {{ $warnText($row) }}
                                         </td>
+                                        @unless ($readOnlyReason)
+                                            <td style="padding: 10px 20px; text-align: right"><button type="button" wire:click="removeFromList({{ $p->id }})" wire:confirm="{{ $removeConfirm($p) }}" aria-label="Remove {{ $p->fullName() }} from the Long List" style="{{ $removeStyle }}">Remove</button></td>
+                                        @endunless
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -170,8 +177,9 @@
                     @endif
                 </section>
 
-                {{-- Rendered only in Grid view so List view does not fetch every photo on each Livewire render. --}}
-                <template x-if="view === 'grid'">
+                {{-- Rendered only in Grid view so List view does not fetch every photo on each Livewire render.
+                     Keyed by the saved version: Livewire does not morph <template> content, so a save (e.g. Remove in List view) would leave a stale Grid. --}}
+                <template x-if="view === 'grid'" wire:key="grid-{{ $g['key'] }}-{{ $this->loadedVersion }}">
                     <section aria-label="{{ $g['title'] }}" data-view="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px">
                         @forelse ($g['rows'] as $row)
                             @php $p = $row['person']; $d = $row['detail']; @endphp
@@ -221,6 +229,9 @@
                                         <span>@if ($row['missing'])Incomplete — missing: {{ implode(', ', $row['missing']) }}. @endif{{ $warnText($row) }}</span>
                                     </div>
                                 @endif
+                                @unless ($readOnlyReason)
+                                    <div style="margin-top: auto; display: flex; justify-content: flex-end"><button type="button" wire:click="removeFromList({{ $p->id }})" wire:confirm="{{ $removeConfirm($p) }}" aria-label="Remove {{ $p->fullName() }} from the Long List" style="{{ $removeStyle }}">Remove</button></div>
+                                @endunless
                             </article></div>
                         @empty
                             <p style="margin: 0; color: var(--sta-fg-muted, #475569)">{{ $g['empty'] }}</p>

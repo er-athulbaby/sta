@@ -222,3 +222,17 @@ it('saves STA edits in every phase of a submitted entry in a closed phase past i
     'phase 2' => [2, StaPhase2Edit::class, Phase2Entry::class, 'counts.{m60}', 1, fn ($t) => NumberEntry::where('count', 1)->exists()],
     'phase 3' => [3, StaPhase3Edit::class, Phase3Entry::class, 'athletes.{m60}', 'ali', fn ($t) => Entry::where('person_id', $t->ali->id)->exists()],
 ]);
+
+it('lets STA remove a person from a submitted Long List, audited, and regenerates its PDF', function () {
+    $s = Submission::for($this->game, $this->assoc, 3);
+    $s->update(['status' => SubmissionStatus::Submitted, 'reference_no' => 'BJF-G001-P3-R1', 'revision' => 1]);
+    $s->entries()->create(['person_id' => $this->ali->id, 'game_event_id' => $this->m60->id, 'game_sport_id' => $this->judo->id]);
+
+    livewire(StaPhase3Edit::class, ['record' => $this->game->getRouteKey(), 'submission' => $s])
+        ->assertSeeHtml("removeFromList({$this->ali->id})")
+        ->call('removeFromList', $this->ali->id)->assertHasNoErrors();
+
+    expect(Entry::count())->toBe(0)->and($s->fresh()->status)->toBe(SubmissionStatus::Submitted)
+        ->and(Activity::where('log_name', 'submission-'.$s->id)->where('subject_type', Entry::class)->where('event', 'deleted')->sole()->causer_id)->toBe($this->sta->id);
+    Bus::assertDispatched(GenerateLongListPdf::class);
+});
