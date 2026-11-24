@@ -9,7 +9,7 @@
     $portal = filament()->getId() === 'portal';
     $crumbs = $this->getBreadcrumbs();
     $deadline = $this->submission->gamePhase()->effectiveDeadline($this->submission);
-    $line = [$deadline ? 'Deadline '.$deadline->format('j M Y') : 'No deadline set', \App\Support\Sta::daysLeft($deadline)];
+    $line = [$deadline ? 'Deadline '.\App\Support\Sta::date($deadline) : 'No deadline set', \App\Support\Sta::daysLeft($deadline)];
     if ($eventsScreen ?? false) {
         $line[] = 'Only sports you entered in Phase 1 are shown';
     } elseif ($p === 3) {

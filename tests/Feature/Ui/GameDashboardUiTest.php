@@ -73,7 +73,7 @@ it('lists an association under All only when no phase is open (ruling U4)', func
     $this->game->phase(3)->update(['enabled' => true]);
     livewire(GameDashboard::class, ['record' => $this->game->getRouteKey()])
         ->assertSee('All 2')->assertSee('Pending 0')->assertSee('Submitted 0')
-        ->assertSee('Closed '.now('Asia/Bahrain')->format('j M').' · 1 of 2 submitted')->assertSee('Opens after Phase 2 closes')
+        ->assertSee('Closed '.Sta::date(now('Asia/Bahrain')).' · 1 of 2 submitted')->assertSee('Opens after Phase 2 closes')
         ->assertDontSee('Remind pending')
         ->set('show', 'submitted')->assertDontSee('Done Fed')->assertDontSee('Late Fed');
 });
@@ -145,7 +145,7 @@ it('formats last activity like the canvas', function () {
     $this->travelTo(now('Asia/Bahrain')->setTime(12, 0));
     expect(Sta::when(now()->subHour()))->toStartWith('Today, ')
         ->and(Sta::when(now()->subDay()))->toBe('Yesterday')
-        ->and(Sta::when(now()->subDays(5)))->toBe(now()->subDays(5)->timezone('Asia/Bahrain')->format('j M'));
+        ->and(Sta::when(now()->subDays(5)))->toBe(now()->subDays(5)->timezone('Asia/Bahrain')->format('d M Y'));
 });
 
 /** One association with a sport, an event, a submitted Phase 2 number and $entries Phase 3 (and Phase 4) athletes. */

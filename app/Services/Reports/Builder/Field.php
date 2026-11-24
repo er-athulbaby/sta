@@ -2,7 +2,9 @@
 
 namespace App\Services\Reports\Builder;
 
+use App\Support\Sta;
 use BackedEnum;
+use Illuminate\Support\Carbon;
 
 /**
  * One reportable field. `sql` is an expression over the subject's base query, written in code and never built from
@@ -72,6 +74,7 @@ final readonly class Field
             FieldType::Enum => $this->options[(string) $raw] ?? (string) $raw,
             FieldType::Boolean => (int) $raw === 1 ? 'Yes' : 'No',
             FieldType::Number => is_numeric($raw) ? $raw + 0 : (string) $raw,
+            FieldType::Date => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $raw) === 1 ? Sta::date(Carbon::parse($raw)) : (string) $raw,
             default => (string) $raw,
         };
     }

@@ -74,7 +74,7 @@
     <td style="width: 12px; padding: 0"></td>
     <td class="pbox" style="width: 194px">
         <div class="cap" style="padding-bottom: 4px">Age eligibility</div>
-        <div style="font-size: 12px; line-height: 1.5em">Born from: {{ $gameSport->dob_from?->format('j M Y') ?? 'no lower limit' }}<br>Born to: {{ $gameSport->dob_to?->format('j M Y') ?? 'no upper limit' }}</div>
+        <div style="font-size: 12px; line-height: 1.5em">Born from: {{ \App\Support\Sta::date($gameSport->dob_from) ?: 'no lower limit' }}<br>Born to: {{ \App\Support\Sta::date($gameSport->dob_to) ?: 'no upper limit' }}</div>
     </td>
 </tr></table>
 @include('pdf.partials.signoff', ['boxHeight' => 40])

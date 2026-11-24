@@ -61,7 +61,7 @@
                                 </span>
                             </td>
                             <td style="padding: 8px 12px; color: var(--sta-fg-strong, #334155)">{{ $typeLabel($p) }}</td>
-                            <td style="padding: 8px 12px; font-weight: 600; color: {{ $p->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-strong, #334155)' }}">{{ $p->passport_expiry?->format('d M Y') }}</td>
+                            <td style="padding: 8px 12px; font-weight: 600; color: {{ $p->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-strong, #334155)' }}">{{ \App\Support\Sta::date($p->passport_expiry) }}</td>
                             <td style="padding: 8px 20px"><span style="{{ $n === 2 ? $pill('var(--sta-bg-green-100, #DCFCE7)', 'var(--sta-fg-green-800, #166534)') : ($n === 1 ? $pill('var(--sta-bg-amber-100, #FEF3C7)', 'var(--sta-fg-amber-800, #92400E)') : $pill('var(--sta-bg-surface, #FFFFFF)', 'var(--sta-fg-orange-800, #9A3412)', 'var(--sta-bd-orange-300, #FDBA74)')) }}">{{ $n === 2 ? 'Both' : ($n === 1 ? '1 of 2' : 'None') }}</span></td>
                             <td style="padding: 8px 20px 8px 0; text-align: right">
                                 @if (\App\Filament\Resources\People\PersonResource::canEdit($p))
@@ -86,11 +86,11 @@
             $have = $person->sizes->pluck('size', 'clothing_item_id');
             $sizes = \App\Filament\Shared\PersonForm::sizeItems($person->type)->map(fn ($i) => $i->name.' '.($have->get($i->id) ?: '—'))->implode(' · ');
             $facts = [
-                ['Date of birth', $person->dob?->format('d M Y') ?? '—', 'var(--sta-fg-text, #0F172A)'],
+                ['Date of birth', \App\Support\Sta::date($person->dob) ?: '—', 'var(--sta-fg-text, #0F172A)'],
                 ['Gender', $person->gender?->label() ?? '—', 'var(--sta-fg-text, #0F172A)'],
                 ['Nationality', $person->nationality ?? '—', 'var(--sta-fg-text, #0F172A)'],
                 ['Passport number', $last4($person->passport_no), 'var(--sta-fg-text, #0F172A)'],
-                ['Passport expiry', $person->passport_expiry?->format('d M Y') ?? '—', $person->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-text, #0F172A)'],
+                ['Passport expiry', \App\Support\Sta::date($person->passport_expiry) ?: '—', $person->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-text, #0F172A)'],
                 ['CPR number', $last4($person->cpr_no), 'var(--sta-fg-text, #0F172A)'],
                 ['Scans uploaded', $n.' of 2', $n === 2 ? 'var(--sta-fg-green-800, #166534)' : 'var(--sta-fg-orange-800, #9A3412)'],
                 ['Clothing sizes', $sizes ?: '—', 'var(--sta-fg-text, #0F172A)'],

@@ -7,6 +7,7 @@ use App\Exports\LiteralRow;
 use App\Filament\Resources\People\PersonResource;
 use App\Models\Association;
 use App\Models\Person;
+use App\Support\Sta;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
@@ -98,7 +99,7 @@ class ListPeople extends ListRecords
     {
         $a = Activity::query()->where('subject_type', $person->getMorphClass())->where('subject_id', $person->id)->latest('id')->with('causer')->first();
 
-        return $a ? trim(($a->causer?->name ?? 'System').', '.$a->created_at->format('j M')) : null;
+        return $a ? trim(($a->causer?->name ?? 'System').', '.Sta::date($a->created_at)) : null;
     }
 
     /** Export Excel: the rows of the current search, filters and sort (no document numbers or medical data). */
@@ -113,7 +114,7 @@ class ListPeople extends ListRecords
             $writer->addRow(LiteralRow::from(['Code', 'Name', 'Association', 'Type', 'Function', 'Gender', 'Date of birth', 'Nationality', 'Passport expiry', 'Passport scan', 'CPR scan', 'Complete']));
             foreach ($people as $p) {
                 $writer->addRow(LiteralRow::from([$p->code, $p->fullName(), $p->association?->name ?? '', $p->type->label(), $p->function ?? '',
-                    $p->gender?->label() ?? '', $p->dob?->toDateString() ?? '', $p->nationality ?? '', $p->passport_expiry?->toDateString() ?? '',
+                    $p->gender?->label() ?? '', Sta::date($p->dob), $p->nationality ?? '', Sta::date($p->passport_expiry),
                     filled($p->passport_scan_path) ? 'Yes' : 'No', filled($p->cpr_front_path) ? 'Yes' : 'No', $p->isComplete() ? 'Yes' : 'No']));
             }
             $writer->close();

@@ -116,7 +116,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
                             <span style="display: flex; flex-direction: column">
                                 <span style="font-weight: 600">{{ $inv->email }}</span>
-                                <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $roleLabel($inv->role) }} · expires {{ $inv->expires_at->format('j M Y') }}</span>
+                                <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $roleLabel($inv->role) }} · expires {{ \App\Support\Sta::date($inv->expires_at) }}</span>
                             </span>
                             <span style="{{ $pills['pending'] }}">Pending</span>
                         </div>

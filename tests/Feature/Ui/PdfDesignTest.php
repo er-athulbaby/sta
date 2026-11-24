@@ -15,7 +15,6 @@ use App\Models\Sport;
 use App\Models\Submission;
 use App\Models\User;
 use App\Support\PdfContext;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /** Positions of each needle in $html, to assert the sample's section order. */
@@ -96,19 +95,12 @@ it('builds the PDF context from the submission', function () {
     $ctx = PdfContext::for($s->fresh());
 
     expect($ctx['phase'])->toBe(1)
-        ->and($ctx['preparedBy'])->toBe('Mariam Khalil, Association Editor · 2 Sep 2026')
-        ->and($ctx['approvedBy'])->toBe('Ahmed Saleh, Association Admin · 3 Sep 2026')
-        ->and($ctx['deadline'])->toBe('5 Sep 2026')
-        ->and($ctx['submittedLine'])->toBe('Submitted 2 Sep 2026 by Mariam Khalil, Association Editor')
+        ->and($ctx['preparedBy'])->toBe('Mariam Khalil, Association Editor · 02 Sep 2026')
+        ->and($ctx['approvedBy'])->toBe('Ahmed Saleh, Association Admin · 03 Sep 2026')
+        ->and($ctx['deadline'])->toBe('05 Sep 2026')
+        ->and($ctx['submittedLine'])->toBe('Submitted 02 Sep 2026 by Mariam Khalil, Association Editor')
         ->and($ctx['assocLogo'])->toBeNull()
         ->and($ctx['nocLogo'])->toStartWith('data:image/png;base64,');
-});
-
-it('formats the header dates as on the samples', function () {
-    expect(PdfContext::dates(Carbon::parse('2026-11-20'), Carbon::parse('2026-11-30')))->toBe('20 – 30 Nov 2026')
-        ->and(PdfContext::dates(Carbon::parse('2026-11-28'), Carbon::parse('2026-12-03')))->toBe('28 Nov – 3 Dec 2026')
-        ->and(PdfContext::dates(Carbon::parse('2026-12-30'), Carbon::parse('2027-01-02')))->toBe('30 Dec 2026 – 2 Jan 2027')
-        ->and(PdfContext::dates(null, null))->toBe('');
 });
 
 it('passes the exceeded limits to the Short List PDF', function () {

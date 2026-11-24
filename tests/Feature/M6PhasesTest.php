@@ -87,7 +87,7 @@ it('re-opens a closed phase for one association that never started it, while oth
         ->and(app(PhaseGate::class)->denialReason(Submission::for($this->game, $this->done, 2)))->toBe('This phase is closed.');
     Notification::assertSentTo($this->lateAdmin, DeadlineChanged::class);
 
-    $page = m6Dashboard($this->game)->assertSee('Re-opened · until '.Carbon::createFromFormat('Y-m-d H:i', $deadline)->format('j M Y H:i'));
+    $page = m6Dashboard($this->game)->assertSee('Re-opened · until '.Carbon::createFromFormat('Y-m-d H:i', $deadline)->format('d M Y H:i'));
     expect(cellMenuLabels($page, $this->late, 2))->toContain('Extend deadline')->not->toContain('Re-open');
 
     // The association sees the phase open (only for them) and can edit it.

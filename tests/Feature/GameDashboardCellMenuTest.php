@@ -85,8 +85,8 @@ it('shows the special line only for re-opened or extended entries', function () 
         ->call('reopen', $this->late->id, 2, now()->addDays(5)->timezone('Asia/Bahrain')->format('Y-m-d H:i'));
 
     cellMenuDashboard($this->game)
-        ->assertSee('Deadline extended to '.now()->addDays(6)->timezone('Asia/Bahrain')->format('j M Y'))
-        ->assertSee('Re-opened · until '.now()->addDays(5)->timezone('Asia/Bahrain')->format('j M Y'));
+        ->assertSee('Deadline extended to '.now()->addDays(6)->timezone('Asia/Bahrain')->format('d M Y'))
+        ->assertSee('Re-opened · until '.now()->addDays(5)->timezone('Asia/Bahrain')->format('d M Y'));
 });
 
 it('says a re-open or extension ended once its own deadline has passed', function () {

@@ -60,11 +60,11 @@
       @endif
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px">
         <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Born on or after (optional)
-          <input type="date" wire:model="dobFrom" style="{{ $inputStyle }}">
+          <x-sta.date-input wire:model="dobFrom" style="{{ $inputStyle }}" />
           @error('dobFrom') <span role="alert" style="font-weight: 400; color: var(--sta-fg-red-800, #991B1B)">{{ $message }}</span> @enderror
         </label>
         <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Born on or before
-          <input type="date" wire:model="dobTo" style="{{ $inputStyle }}">
+          <x-sta.date-input wire:model="dobTo" style="{{ $inputStyle }}" />
           @error('dobTo') <span role="alert" style="font-weight: 400; color: var(--sta-fg-red-800, #991B1B)">{{ $message }}</span> @enderror
         </label>
       </div>

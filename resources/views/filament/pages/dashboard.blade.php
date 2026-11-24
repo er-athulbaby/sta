@@ -46,7 +46,7 @@
                             $c['no_response'] ? $c['no_response'].' not started' : null,
                         ])->filter()->implode(' · ') : '';
                         $meta = collect([
-                            $game->start_date ? $game->start_date->format('j M').' – '.$game->end_date?->format('j M Y') : null,
+                            $game->start_date ? \App\Support\Sta::dateRange($game->start_date, $game->end_date) : null,
                             $game->associations->count().' '.str('association')->plural($game->associations->count()),
                             $game->game_sports_count.' '.str('sport')->plural($game->game_sports_count),
                         ])->filter()->implode(' · ');
@@ -71,7 +71,7 @@
                                 @if ($phase && $phase->deadline)
                                     <div style="display: flex; flex-direction: column; gap: 2px">
                                         <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">Deadline</span>
-                                        <span style="font-weight: 600">{{ $phase->deadline->timezone('Asia/Bahrain')->format('D j M Y') }}</span>
+                                        <span style="font-weight: 600">{{ \App\Support\Sta::date($phase->deadline->timezone('Asia/Bahrain')) }}</span>
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 2px">
                                         <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">Time left</span>
@@ -81,7 +81,7 @@
                                 @if ($closed = $g['closed'])
                                     <div style="display: flex; flex-direction: column; gap: 2px">
                                         {!! $chip($closed->phase, 'Phase '.$closed->phase) !!}
-                                        <span style="font-weight: 600">Closed{{ $closed->deadline ? ' '.$closed->deadline->timezone('Asia/Bahrain')->format('j M') : '' }}</span>
+                                        <span style="font-weight: 600">Closed{{ $closed->deadline ? ' '.\App\Support\Sta::date($closed->deadline->timezone('Asia/Bahrain')) : '' }}</span>
                                     </div>
                                 @endif
                             </div>

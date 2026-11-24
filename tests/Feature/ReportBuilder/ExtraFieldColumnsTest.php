@@ -76,8 +76,8 @@ it('shows, filters (numbers and dates compared as such) and checks completeness 
     $columns = ['code', 'extra_shirt_name', 'extra_weight_class', 'extra_vegan', 'extra_arrival', 'extra_donor_type', 'complete'];
 
     expect(shownExtra(runExtra($this->admin, 'people', $columns)))->toBe([
-        ['BJF-AT-0001', 'ALI', 100.0, 'Yes', '2026-12-01', 'B', 'Yes'],
-        ['BJF-AT-0002', null, 65.0, 'No', '2025-11-20', null, 'No'], // required "Shirt name" missing
+        ['BJF-AT-0001', 'ALI', 100.0, 'Yes', '01 Dec 2026', 'B', 'Yes'],
+        ['BJF-AT-0002', null, 65.0, 'No', '20 Nov 2025', null, 'No'], // required "Shirt name" missing
     ])->and(shownExtra(runExtra($this->admin, 'people', ['code'], [['field' => 'extra_weight_class', 'op' => 'gt', 'value' => 70]])))->toBe([['BJF-AT-0001']])
         ->and(shownExtra(runExtra($this->admin, 'people', ['code'], [['field' => 'extra_weight_class', 'op' => 'lt', 'value' => 70]])))->toBe([['BJF-AT-0002']])
         ->and(shownExtra(runExtra($this->admin, 'people', ['code'], [['field' => 'extra_arrival', 'op' => 'after', 'value' => '2026-11-25']])))->toBe([['BJF-AT-0001']])

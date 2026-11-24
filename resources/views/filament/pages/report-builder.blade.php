@@ -119,11 +119,11 @@
                                     @endforeach
                                 </select>
                             @elseif ($op === 'between')
-                                <input type="{{ $type }}" wire:model.live.debounce.500ms="def.filters.{{ $i }}.value.0" aria-label="Rule {{ $i + 1 }} from" style="{{ $chipInput }}">
+                                @if ($type === 'date') <x-sta.date-input wire:model.live.debounce.500ms="def.filters.{{ $i }}.value.0" aria-label="Rule {{ $i + 1 }} from" style="{{ $chipInput }}" /> @else <input type="{{ $type }}" wire:model.live.debounce.500ms="def.filters.{{ $i }}.value.0" aria-label="Rule {{ $i + 1 }} from" style="{{ $chipInput }}"> @endif
                                 <span style="color: var(--sta-fg-muted, #475569)">and</span>
-                                <input type="{{ $type }}" wire:model.live.debounce.500ms="def.filters.{{ $i }}.value.1" aria-label="Rule {{ $i + 1 }} to" style="{{ $chipInput }}">
+                                @if ($type === 'date') <x-sta.date-input wire:model.live.debounce.500ms="def.filters.{{ $i }}.value.1" aria-label="Rule {{ $i + 1 }} to" style="{{ $chipInput }}" /> @else <input type="{{ $type }}" wire:model.live.debounce.500ms="def.filters.{{ $i }}.value.1" aria-label="Rule {{ $i + 1 }} to" style="{{ $chipInput }}"> @endif
                             @elseif (! in_array($op, $noValue, true))
-                                <input type="{{ $type }}" wire:model.live.debounce.500ms="def.filters.{{ $i }}.value" aria-label="Rule {{ $i + 1 }} value" style="{{ $chipInput }}">
+                                @if ($type === 'date') <x-sta.date-input wire:model.live.debounce.500ms="def.filters.{{ $i }}.value" aria-label="Rule {{ $i + 1 }} value" style="{{ $chipInput }}" /> @else <input type="{{ $type }}" wire:model.live.debounce.500ms="def.filters.{{ $i }}.value" aria-label="Rule {{ $i + 1 }} value" style="{{ $chipInput }}"> @endif
                             @else
                                 <span style="flex: 1 1 auto"></span>
                             @endif

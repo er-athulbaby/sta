@@ -38,7 +38,7 @@
             <span style="display: inline-block; width: 14px"></span>
             <h1 style="display: inline; vertical-align: middle">{{ $title }}</h1>
         </td>
-        <td style="width: 330px; text-align: right"><span class="name">{{ $game->name }}</span><br><span class="sub">{{ \App\Support\PdfContext::dates($game->start_date, $game->end_date) }}</span></td>
+        <td style="width: 330px; text-align: right"><span class="name">{{ $game->name }}</span><br><span class="sub">{{ \App\Support\Sta::dateRange($game->start_date, $game->end_date) }}</span></td>
         @if(! empty($gameLogo))<td style="width: 46px; padding-left: 10px; text-align: right"><img src="{{ $gameLogo }}" alt="Game logo" style="max-width:46px;max-height:46px"></td>@endif
     </tr>
 </table>

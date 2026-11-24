@@ -55,7 +55,7 @@ class Dashboard extends BaseDashboard
 
     public function getSubheading(): ?string
     {
-        return now('Asia/Bahrain')->format('l, j F Y').' · all games and associations';
+        return now('Asia/Bahrain')->format('l, '.Sta::DATE).' · all games and associations';
     }
 
     #[Unexposed]
@@ -112,7 +112,7 @@ class Dashboard extends BaseDashboard
             $items[] = ['icon' => 'clock', 'tone' => 'warn',
                 'title' => $soon->count().' phase '.str('deadline')->plural($soon->count()).' this week',
                 'text' => $soon->map(fn ($g) => $g['game']->name.' Phase '.$g['phase']->phase.' '.GamePhase::NAMES[$g['phase']->phase]
-                    .' closes '.$g['phase']->deadline->timezone('Asia/Bahrain')->format('D j M'))->implode(' · '),
+                    .' closes '.Sta::date($g['phase']->deadline->timezone('Asia/Bahrain')))->implode(' · '),
                 'pill' => null, 'url' => $dashboard($soon->first()['game']), 'link' => 'Open', 'remind' => null];
         }
 

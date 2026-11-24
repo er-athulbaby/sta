@@ -51,10 +51,10 @@
       @if ($on)
         <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--sta-bd-row, #EEF2F6)">
           <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Opens
-            <input type="date" value="{{ $p->opens_at?->timezone($tz)->format('Y-m-d') }}" wire:change="setDate({{ $p->phase }}, 'opens_at', $event.target.value)" style="{{ $dateStyle }}">
+            <x-sta.date-input value="{{ $p->opens_at?->timezone($tz)->format('Y-m-d') }}" wire:change="setDate({{ $p->phase }}, 'opens_at', $event.target.value)" style="{{ $dateStyle }}" />
           </label>
           <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Deadline
-            <input type="date" value="{{ $p->deadline?->timezone($tz)->format('Y-m-d') }}" wire:change="setDate({{ $p->phase }}, 'deadline', $event.target.value)" style="{{ $dateStyle }}">
+            <x-sta.date-input value="{{ $p->deadline?->timezone($tz)->format('Y-m-d') }}" wire:change="setDate({{ $p->phase }}, 'deadline', $event.target.value)" style="{{ $dateStyle }}" />
           </label>
           <div style="flex: 1 1 200px"></div>
           <span style="font-size: 13px; color: var(--sta-fg-muted, #475569); align-self: center">{{ $b['hint'] }}</span>
@@ -103,7 +103,7 @@
               <td style="padding: 14px 20px; font-weight: 600">{{ $s->association->name }}</td>
               <td style="padding: 14px 12px"><x-sta.phase-chip :phase="$s->phase" :label="$s->phase.' · '.\App\Models\GamePhase::NAMES[$s->phase]" /></td>
               <td style="padding: 14px 12px">
-                @if ($s->deadline_change === 'reopened')Re-opened → @elseif ($phaseDeadline)<span style="color: var(--sta-fg-muted, #475569); text-decoration: line-through">{{ $phaseDeadline->timezone($tz)->format('d M') }}</span> → @endif<strong>{{ $s->deadline_override->timezone($tz)->format('d M') }}</strong>
+                @if ($s->deadline_change === 'reopened')Re-opened → @elseif ($phaseDeadline)<span style="color: var(--sta-fg-muted, #475569); text-decoration: line-through">{{ \App\Support\Sta::date($phaseDeadline->timezone($tz)) }}</span> → @endif<strong>{{ \App\Support\Sta::date($s->deadline_override->timezone($tz)) }}</strong>
               </td>
               <td style="padding: 14px 20px; color: var(--sta-fg-strong, #334155)">{{ $s->deadline_note }}</td>
             </tr>

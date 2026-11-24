@@ -90,7 +90,29 @@ final class Sta
         };
     }
 
-    /** "Today, 10:42", "Yesterday" or "7 Oct" (canvas Last activity). */
+    /** The one date format of the app: "05 Nov 2026" (empty for null). Filament pickers and columns use it too (AppServiceProvider). */
+    public const DATE = 'd M Y';
+
+    public const DATE_TIME = 'd M Y H:i';
+
+    public static function date(?CarbonInterface $d): string
+    {
+        return $d?->format(self::DATE) ?? '';
+    }
+
+    /** "05 Nov 2026 23:59" (empty for null); the caller converts a UTC instant to Asia/Bahrain first, as before. */
+    public static function dateTime(?CarbonInterface $d): string
+    {
+        return $d?->format(self::DATE_TIME) ?? '';
+    }
+
+    /** "20 Nov 2026 – 30 Nov 2026", or the one date given. */
+    public static function dateRange(?CarbonInterface $from, ?CarbonInterface $to): string
+    {
+        return implode(' – ', array_filter([self::date($from), self::date($to)]));
+    }
+
+    /** "Today, 10:42", "Yesterday" or "07 Oct 2026" (canvas Last activity). */
     public static function when(CarbonInterface $t): string
     {
         $t = $t->copy()->timezone('Asia/Bahrain');
@@ -99,7 +121,7 @@ final class Sta
         return match (true) {
             $t->isSameDay($today) => 'Today, '.$t->format('H:i'),
             $t->isSameDay($today->copy()->subDay()) => 'Yesterday',
-            default => $t->format('j M'),
+            default => self::date($t),
         };
     }
 

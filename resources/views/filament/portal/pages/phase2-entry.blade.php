@@ -142,9 +142,9 @@
                     @if ($gs->entry_policy)<p style="margin: 0; line-height: 1.55; color: var(--sta-fg-strong, #334155)">{{ $gs->entry_policy }}</p>@endif
                     @if ($gs->dob_from || $gs->dob_to)
                         <div style="margin-top: 4px; padding: 10px 12px; border-radius: 10px; background: var(--sta-bg-subtle, #F1F5F9); font-size: 13px; color: var(--sta-fg-strong, #334155)"><strong>Age eligibility:</strong>
-                            @if ($gs->dob_from && $gs->dob_to) born between {{ $gs->dob_from->format('j M Y') }} and {{ $gs->dob_to->format('j M Y') }}
-                            @elseif ($gs->dob_to) born on or before {{ $gs->dob_to->format('j M Y') }}
-                            @else born on or after {{ $gs->dob_from->format('j M Y') }}
+                            @if ($gs->dob_from && $gs->dob_to) born between {{ \App\Support\Sta::date($gs->dob_from) }} and {{ \App\Support\Sta::date($gs->dob_to) }}
+                            @elseif ($gs->dob_to) born on or before {{ \App\Support\Sta::date($gs->dob_to) }}
+                            @else born on or after {{ \App\Support\Sta::date($gs->dob_from) }}
                             @endif
                         </div>
                     @endif

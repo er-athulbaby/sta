@@ -20,7 +20,7 @@
         $disk = $field->getDisk();
         try {
             $size = $disk->size($value);
-            $date = \Illuminate\Support\Carbon::createFromTimestamp($disk->lastModified($value))->format('j M Y');
+            $date = \App\Support\Sta::date(\Illuminate\Support\Carbon::createFromTimestamp($disk->lastModified($value)));
         } catch (\Throwable) {
             $size = $date = null;
         }

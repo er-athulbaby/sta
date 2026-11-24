@@ -89,7 +89,7 @@ class GameDashboard extends Page
     public function getSubheading(): ?string
     {
         $game = $this->progress()->game;
-        $dates = $game->start_date ? $game->start_date->format('j M').' – '.$game->end_date?->format('j M Y') : null;
+        $dates = $game->start_date ? Sta::dateRange($game->start_date, $game->end_date) : null;
 
         return collect([$dates, $game->associations->count().' associations invited', $game->gameSports->count().' sports'])->filter()->implode(' · ');
     }
@@ -219,7 +219,7 @@ class GameDashboard extends Page
         if (! $s?->deadline_override) {
             return null;
         }
-        $when = $s->deadline_override->timezone('Asia/Bahrain')->format('j M Y H:i');
+        $when = Sta::dateTime($s->deadline_override->timezone('Asia/Bahrain'));
 
         if ($s->deadline_override->isPast()) {
             return $s->deadline_change === 'reopened' ? "Re-open ended {$when}" : "Extended deadline ended {$when}";
@@ -269,16 +269,16 @@ class GameDashboard extends Page
         }
 
         return match ($p->status) {
-            PhaseStatus::Open => $p->deadline ? 'Deadline '.$p->deadline->timezone('Asia/Bahrain')->format('j M Y').' · '.Sta::daysLeft($p->deadline) : 'Open · no deadline',
+            PhaseStatus::Open => $p->deadline ? 'Deadline '.Sta::date($p->deadline->timezone('Asia/Bahrain')).' · '.Sta::daysLeft($p->deadline) : 'Open · no deadline',
             PhaseStatus::Closed => (function () use ($p) {
                 $c = $this->progress()->counts($p->phase);
                 $closed = Activity::query()->where('subject_type', $p->getMorphClass())->where('subject_id', $p->id)
                     ->where('properties->attributes->status', PhaseStatus::Closed->value)->latest('id')->value('created_at');
 
-                return 'Closed'.($closed ? ' '.Carbon::parse($closed)->timezone('Asia/Bahrain')->format('j M') : '')." · {$c['submitted']} of {$c['total']} submitted";
+                return 'Closed'.($closed ? ' '.Sta::date(Carbon::parse($closed)->timezone('Asia/Bahrain')) : '')." · {$c['submitted']} of {$c['total']} submitted";
             })(),
             PhaseStatus::Draft => match (true) {
-                $p->opens_at !== null => 'Opens '.$p->opens_at->timezone('Asia/Bahrain')->format('j M Y'),
+                $p->opens_at !== null => 'Opens '.Sta::date($p->opens_at->timezone('Asia/Bahrain')),
                 ($prev = $this->phases()->where('phase', '<', $p->phase)->last()) !== null => "Opens after Phase {$prev->phase} closes",
                 default => 'Not opened yet',
             },
@@ -456,7 +456,7 @@ class GameDashboard extends Page
             return [$a->name, $a->code ?? '', $this->sportsOf($a),
                 ...$phases->map(fn ($p) => $this->cell($a, $p->phase)['label'])->all(),
                 ($focus ? $progress->flags($a, $focus->phase) : null) ?? 'None',
-                $last ? $last->copy()->timezone('Asia/Bahrain')->format('Y-m-d H:i') : ''];
+                Sta::dateTime($last?->copy()->timezone('Asia/Bahrain'))];
         });
         $head = ['Association', 'Code', 'Sports', ...$phases->map(fn ($p) => "Phase {$p->phase}")->all(), 'Flags', 'Last activity'];
 

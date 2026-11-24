@@ -5,6 +5,9 @@ use App\Enums\SubmissionStatus;
 use App\Models\Association;
 use App\Models\Game;
 use App\Support\Sta;
+use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Illuminate\Support\Facades\Blade;
 
 it('renders the phase chip, pill, KPI tile and meter with the canvas classes', function () {
@@ -113,4 +116,29 @@ it('draws an uploaded association logo on the invite list as the 54 x 34 canvas 
 
     expect(Blade::render('<x-sta.assoc-avatar :association="$a" size="invite" />', ['a' => $a]))->toContain('sta-logo sta-logo-invite')
         ->and(file_get_contents(resource_path('css/filament/sta/theme.css')))->toContain('.sta-logo-invite { width: 54px; height: 34px; }');
+});
+
+it('formats every date as day, short month, year', function () {
+    expect(Sta::date(Carbon::parse('2026-11-05')))->toBe('05 Nov 2026')
+        ->and(Sta::date(null))->toBe('')
+        ->and(Sta::dateTime(Carbon::parse('2026-11-24 23:59')))->toBe('24 Nov 2026 23:59')
+        ->and(Sta::dateRange(Carbon::parse('2026-11-28'), Carbon::parse('2026-12-03')))->toBe('28 Nov 2026 – 03 Dec 2026')
+        ->and(Sta::dateRange(Carbon::parse('2026-11-28'), null))->toBe('28 Nov 2026')
+        ->and(Sta::dateRange(null, null))->toBe('');
+});
+
+it('makes every Filament date picker non-native with the app format, keeping Y-m-d state', function () {
+    $date = DatePicker::make('dob');
+    $time = DateTimePicker::make('deadline')->seconds(false);
+
+    expect($date->isNative())->toBeFalse()->and($date->getDisplayFormat())->toBe('d M Y')->and($date->getFormat())->toBe('Y-m-d')
+        ->and($time->isNative())->toBeFalse()->and($time->getDisplayFormat())->toBe('d M Y H:i');
+});
+
+it('renders the date input as a text box over a native Y-m-d input that keeps the wire binding', function () {
+    $html = Blade::render('<x-sta.date-input wire:model.blur="newPerson.dob" max="2026-11-24" aria-label="Date of birth" style="min-height: 44px" />');
+
+    expect($html)->toContain('type="date" wire:model.blur="newPerson.dob" max="2026-11-24"')
+        ->toContain('type="text"')->toContain('aria-label="Date of birth"')->toContain('min-height: 44px; width: 100%')
+        ->toContain('aria-label="Open calendar"');
 });

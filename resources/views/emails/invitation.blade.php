@@ -5,5 +5,5 @@ You have been invited to join **{{ $invitation->association->name }}** on the Sp
 
 <x-mail::button :url="$url">Accept invitation</x-mail::button>
 
-This link can be used once and expires on {{ $invitation->expires_at->format('d M Y') }}.
+This link can be used once and expires on {{ \App\Support\Sta::date($invitation->expires_at) }}.
 </x-mail::message>

@@ -68,7 +68,7 @@
         $athFlagged = $athleteRows->filter($flagged)->count();
         $offFlagged = $officialRows->filter($flagged)->count();
         $sizeOf = fn ($r, $item) => $r['person']->sizes->firstWhere('clothing_item_id', $item->id)?->size;
-        $startDay = $this->gameModel->start_date?->format('j M');
+        $startDay = \App\Support\Sta::date($this->gameModel->start_date);
         $showTravel = ! $readOnlyReason;
         $url = fn ($path) => \App\Filament\Shared\AttachmentActions::url($path);
         $warnText = fn ($r) => implode(' ', $r['warnings']);
@@ -134,7 +134,7 @@
                                         </div>
                                     </td>
                                     <td style="padding: 10px 12px">{{ $p->gender?->label() }}</td>
-                                    <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ $p->dob?->format('d M Y') }} · {{ $row['age'] }}</td>
+                                    <td style="padding: 10px 12px; color: var(--sta-fg-strong, #334155)">{{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}</td>
                                     <td style="padding: 10px 12px; font-weight: 600; color: var(--sta-fg-brand, #1F3A5F)">@foreach ($eventsOf($row) as $e)<a href="{{ $e['url'] }}" style="color: var(--sta-fg-brand, #1F3A5F); text-decoration: none">{{ $e['label'] }}</a>@if (! $loop->last), @endif @endforeach</td>
                                     @foreach ($athleteItems as $item)
                                         @php $size = $sizeOf($row, $item); @endphp
@@ -172,7 +172,7 @@
                                 @endif
                                 <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
                                     <span style="font-weight: 600; font-size: 15px">{{ $p->fullName() }}</span>
-                                    <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $p->code }} · {{ $p->dob?->format('d M Y') }} · {{ $row['age'] }}@if ($startDay) on {{ $startDay }}@endif</span>
+                                    <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $p->code }} · {{ \App\Support\Sta::date($p->dob) }} · {{ $row['age'] }}@if ($startDay) on {{ $startDay }}@endif</span>
                                 </div>
                                 <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 8px; border-radius: 8px; background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-strong, #334155); font-size: 12px; font-weight: 700">{{ $p->gender?->label() }}</span>
                             </div>

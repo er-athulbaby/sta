@@ -60,7 +60,7 @@ it('never pre-ticks the cross-check on edit, needs it on every save and shows wh
     $p = Person::factory()->create(['association_id' => $this->assoc->id, 'checked_by' => $first->id, 'checked_at' => '2026-11-01 09:00']);
 
     $page = livewire(EditPerson::class, ['record' => $p->getRouteKey()])
-        ->assertFormSet(['cross_checked' => null])->assertSee('Cross-checked by Ahmed First on 1 Nov 2026');
+        ->assertFormSet(['cross_checked' => null])->assertSee('Cross-checked by Ahmed First on 01 Nov 2026');
 
     $page->fillForm(['first_name' => 'Changed'])->call('save')->assertHasFormErrors(['cross_checked' => 'accepted']);
     expect($p->fresh()->first_name)->not->toBe('Changed');
@@ -95,7 +95,7 @@ it('needs the cross-check in the registry aside and resets it after saving', fun
     expect($p->fresh()->checked_at)->toBeNull();
 
     $page->set('panel.cross_checked', true)->call('savePanel')->assertHasNoErrors()
-        ->assertSet('panel.cross_checked', null)->assertSee('Cross-checked by Mona Editor on '.now()->format('j M Y'));
+        ->assertSet('panel.cross_checked', null)->assertSee('Cross-checked by Mona Editor on '.now()->format('d M Y'));
     expect($p->fresh())->passport_no->toBe('NEW55555')->checked_by->toBe($editor->id);
 });
 

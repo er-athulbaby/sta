@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\GamePhase;
+use App\Support\Sta;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -27,7 +28,7 @@ class PhaseOpened extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject("{$name} is open for {$p->game->name}")
             ->line("{$name} of {$p->game->name} is now open for entries.")
-            ->line('Deadline: '.$p->deadline->timezone('Asia/Bahrain')->format('d M Y H:i'))
+            ->line('Deadline: '.Sta::dateTime($p->deadline->timezone('Asia/Bahrain')))
             ->action('Open the portal', url('/portal'));
     }
 }

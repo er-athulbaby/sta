@@ -126,12 +126,12 @@ it('reports submissions with the effective deadline', function () {
     expect($run())->toBe([
         ['Phase 1 – Entry by Sport', 'Draft', null, null, null, null],
         ['Phase 2 – Entry by Number', 'Draft', null, null, null, null],
-        ['Phase 3 – Long List', 'Submitted', 'BJF-G001-P3-R1', '2026-11-05', null, null],
-        ['Phase 4 – Short List', 'Draft', null, null, '2026-11-20', 'Both can medal'],
+        ['Phase 3 – Long List', 'Submitted', 'BJF-G001-P3-R1', '05 Nov 2026', null, null],
+        ['Phase 4 – Short List', 'Draft', null, null, '20 Nov 2026', 'Both can medal'],
     ])->and(Registry::get('submissions')->fields())->not->toHaveKey('over_limit');
 
     $this->p4->update(['deadline_override' => null]);
-    expect($run()[3][4])->toBe('2026-11-15');
+    expect($run()[3][4])->toBe('15 Nov 2026');
 });
 
 it('reports phase 1 answers, phase 2 numbers and phase 2 sport totals', function () {

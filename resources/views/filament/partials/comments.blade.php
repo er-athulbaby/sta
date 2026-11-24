@@ -5,7 +5,7 @@
         <ul class="sta-list">
             @foreach ($comments as $c)
                 <li class="sta-list-item" style="flex-direction: column; align-items: flex-start; gap: 4px">
-                    <span class="sta-who-sub">{{ $c->user?->name ?? ($c->from_association ? 'Association' : 'STA') }} · {{ $c->from_association ? ($c->user?->association?->name ?? 'Association') : 'STA' }} · {{ $c->created_at->timezone('Asia/Bahrain')->format('j M Y H:i') }}</span>
+                    <span class="sta-who-sub">{{ $c->user?->name ?? ($c->from_association ? 'Association' : 'STA') }} · {{ $c->from_association ? ($c->user?->association?->name ?? 'Association') : 'STA' }} · {{ \App\Support\Sta::dateTime($c->created_at->timezone('Asia/Bahrain')) }}</span>
                     <p class="whitespace-pre-line" style="margin: 0; line-height: 1.55">{{ $c->body }}</p>
                 </li>
             @endforeach

@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Association;
 use App\Models\GamePhase;
+use App\Support\Sta;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -31,10 +32,10 @@ class PhaseReminder extends Notification implements ShouldQueue
 
         $mail = (new MailMessage)->subject($this->overdue
             ? "Overdue: Phase {$p->phase} – {$name} for {$game}"
-            : "Reminder: Phase {$p->phase} – {$name} for {$game} is due ".($deadline?->format('d M Y') ?? 'soon'))
+            : "Reminder: Phase {$p->phase} – {$name} for {$game} is due ".(Sta::date($deadline) ?: 'soon'))
             ->line("Phase {$p->phase} ({$name}) of {$game} has not yet been submitted for {$this->association->name}.");
         if ($deadline) {
-            $mail->line('Deadline: '.$deadline->format('d M Y H:i'));
+            $mail->line('Deadline: '.Sta::dateTime($deadline));
         }
 
         return $mail->action('Open games', url('/portal'));

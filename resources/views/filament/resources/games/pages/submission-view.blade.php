@@ -13,7 +13,7 @@
             <div><dt class="sta-muted">Phase</dt><dd style="margin: 4px 0 0"><x-sta.phase-chip :phase="$s->phase" :label="'Phase '.$s->phase.' · '.\App\Models\GamePhase::NAMES[$s->phase]" /></dd></div>
             <div><dt class="sta-muted">Status</dt><dd style="margin: 4px 0 0"><x-sta.pill :status="\App\Support\Sta::submissionPill($s->status)">{{ $s->status->label() }}</x-sta.pill></dd></div>
             <div><dt class="sta-muted">Reference</dt><dd style="margin: 4px 0 0; font-weight: 600">{{ $s->reference_no ?? '–' }}</dd></div>
-            <div><dt class="sta-muted">Deadline</dt><dd style="margin: 4px 0 0; font-weight: 600">{{ $deadline?->format('j M Y H:i') ?? 'none' }}</dd></div>
+            <div><dt class="sta-muted">Deadline</dt><dd style="margin: 4px 0 0; font-weight: 600">{{ \App\Support\Sta::dateTime($deadline) ?: 'none' }}</dd></div>
             <div><dt class="sta-muted">PDFs</dt><dd style="margin: 4px 0 0">
                 @forelse ($links as $link)
                     <a href="{{ $link['url'] }}" target="_blank" rel="noopener" class="block" style="font-weight: 600">{{ $link['name'] }}</a>
@@ -102,7 +102,7 @@
                 <tbody>
                     @forelse ($this->auditTrail() as $a)
                         <tr class="align-top">
-                            <td class="py-1" style="white-space: nowrap; color: var(--sta-fg-muted, #475569)">{{ $a->created_at->format('j M Y H:i') }}</td>
+                            <td class="py-1" style="white-space: nowrap; color: var(--sta-fg-muted, #475569)">{{ \App\Support\Sta::dateTime($a->created_at) }}</td>
                             <td class="py-1" style="font-weight: 600">{{ $a->causer?->name ?? 'System' }}</td>
                             <td class="py-1">{{ class_basename($a->subject_type) }} {{ $a->event }}</td>
                             <td class="py-1 text-xs">{{ implode(', ', array_keys($a->properties->get('attributes', $a->properties->get('old', [])))) }}</td>

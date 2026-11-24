@@ -5,7 +5,7 @@
     $labelId = $getId().'-label';
     $saved = $field->getRecord()?->{$field->getName().'_at'};
 @endphp
-<div x-data="{ state: $wire.{{ $applyStateBindingModifiers("\$entangle('{$statePath}')") }}, saved: @js($saved?->format('j M Y')), today: @js(now()->format('j M Y')) }"
+<div x-data="{ state: $wire.{{ $applyStateBindingModifiers("\$entangle('{$statePath}')") }}, saved: @js(\App\Support\Sta::date($saved)), today: @js(\App\Support\Sta::date(now())) }"
     class="sta-consent-row" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 14px 0">
     <div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 2px">
         <span id="{{ $labelId }}" style="font-weight: 600">{{ $getLabel() }}</span>

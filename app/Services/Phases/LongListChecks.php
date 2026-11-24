@@ -13,6 +13,7 @@ use App\Models\GameSport;
 use App\Models\LongListDetail;
 use App\Models\Person;
 use App\Models\Submission;
+use App\Support\Sta;
 use Illuminate\Support\Collection;
 
 /** Phase 3 (Long List) rules: hard errors block save and submit, warnings never block. */
@@ -175,10 +176,10 @@ final class LongListChecks
     {
         $w = [];
         if ($p->passport_expiry && $p->passport_expiry->lt($game->end_date)) {
-            $w[] = 'Passport expires before the games end ('.$p->passport_expiry->format('j M Y').').';
+            $w[] = 'Passport expires before the games end ('.Sta::date($p->passport_expiry).').';
         }
         if ($p->cpr_expiry && $p->cpr_expiry->lt($game->end_date)) {
-            $w[] = 'CPR expires before the games end ('.$p->cpr_expiry->format('j M Y').').';
+            $w[] = 'CPR expires before the games end ('.Sta::date($p->cpr_expiry).').';
         }
         if (blank($p->passport_scan_path)) {
             $w[] = 'Passport scan missing.';

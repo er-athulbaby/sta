@@ -17,11 +17,11 @@
     </label>
     <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
       <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Start date
-        <input type="date" wire:model="start_date" style="{{ $inputStyle }}">
+        <x-sta.date-input wire:model="start_date" style="{{ $inputStyle }}" />
         @error('start_date') <span role="alert" style="font-weight: 400; color: var(--sta-fg-red-800, #991B1B)">{{ $message }}</span> @enderror
       </label>
       <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">End date
-        <input type="date" wire:model="end_date" style="{{ $inputStyle }}">
+        <x-sta.date-input wire:model="end_date" style="{{ $inputStyle }}" />
         @error('end_date') <span role="alert" style="font-weight: 400; color: var(--sta-fg-red-800, #991B1B)">{{ $message }}</span> @enderror
       </label>
     </div>

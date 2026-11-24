@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Submission;
+use App\Support\Sta;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -31,7 +32,7 @@ class DeadlineChanged extends Notification implements ShouldQueue
                 : "Phase {$s->phase} deadline for {$game} extended")
             ->line("Phase {$s->phase} of {$game} for {$s->association->name} ".($this->reopened ? 'has been re-opened.' : 'has a new deadline.'));
         if ($deadline) {
-            $mail->line('New deadline: '.$deadline->format('d M Y H:i'));
+            $mail->line('New deadline: '.Sta::dateTime($deadline));
         }
 
         return $mail->action('Open games', url('/portal'));

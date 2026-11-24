@@ -45,8 +45,8 @@
                                 </div>
                             </td>
                             <td style="padding: 12px; color: var(--sta-fg-strong, #334155)">{{ $p->type === \App\Enums\PersonType::Official && filled($p->function) ? $p->function : $p->type->label() }}</td>
-                            <td style="padding: 12px; color: var(--sta-fg-strong, #334155)">{{ $p->dob?->format('d M Y') }}</td>
-                            <td style="padding: 12px; font-weight: 600; color: {{ $p->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-strong, #334155)' }}">{{ $p->passport_expiry?->format('d M Y') }}</td>
+                            <td style="padding: 12px; color: var(--sta-fg-strong, #334155)">{{ \App\Support\Sta::date($p->dob) }}</td>
+                            <td style="padding: 12px; font-weight: 600; color: {{ $p->passport_expiry?->lt($soon) ? 'var(--sta-fg-orange-800, #9A3412)' : 'var(--sta-fg-strong, #334155)' }}">{{ \App\Support\Sta::date($p->passport_expiry) }}</td>
                             <td style="padding: 12px 20px"><span style="{{ $missing ? $pillGap : $pillDone }}">{{ $missing ? $missing.' missing' : 'Complete' }}</span></td>
                             <td style="padding: 6px 20px 6px 0; text-align: right">
                                 @if (\App\Filament\Portal\Resources\People\PersonResource::canEdit($p))

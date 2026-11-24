@@ -8,6 +8,7 @@ use App\Enums\PersonType;
 use App\Enums\StaPermission;
 use App\Models\Concerns\BelongsToAssociation;
 use App\Models\Concerns\RenamesAttachments;
+use App\Support\Sta;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -217,7 +218,7 @@ class Person extends Model
     /** "Cross-checked by {name} on {date}"; null for people never saved through a form (e.g. imported). */
     public function crossCheckNote(): ?string
     {
-        return $this->checked_at ? 'Cross-checked by '.($this->checkedBy?->name ?? 'a removed user').' on '.$this->checked_at->format('j M Y') : null;
+        return $this->checked_at ? 'Cross-checked by '.($this->checkedBy?->name ?? 'a removed user').' on '.Sta::date($this->checked_at) : null;
     }
 
     public function visas(): HasMany

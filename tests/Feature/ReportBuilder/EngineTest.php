@@ -39,7 +39,7 @@ it('runs the default people report sorted by name', function () {
 
     expect($r->rowCount)->toBe(4)
         ->and(peopleNames($r))->toBe(['Ali Hasan', 'Coach Karim', 'Mariam Ahmed', 'Omar Saleh Al-Bahraini'])
-        ->and($r->lines()[0])->toBe(['kind' => 'row', 'cells' => ['Ali Hasan', 'BJF-AT-0001', 'Athlete', 'Male', '2005-12-05', 'Bahrain Judo Federation']])
+        ->and($r->lines()[0])->toBe(['kind' => 'row', 'cells' => ['Ali Hasan', 'BJF-AT-0001', 'Athlete', 'Male', '05 Dec 2005', 'Bahrain Judo Federation']])
         ->and($r->lines()[4])->toBe(['kind' => 'total', 'cells' => ['Total (4)', '', '', '', '', '']]);
 });
 
@@ -115,8 +115,8 @@ it('groups dates by year and by month', function () {
         array_filter(runPeople(['columns' => ['full_name', 'passport_expiry'], 'totals' => ['passport_expiry' => 'min'],
             'groups' => [['field' => 'passport_expiry', 'bucket' => $bucket]]])->lines(), fn ($l) => $l['kind'] === 'group')));
 
-    expect($groupLines('year'))->toBe([['2027 (3)', '2027-01-15'], ['2028 (1)', '2028-06-30']])
-        ->and($groupLines('month'))->toBe([['2027-01 (2)', '2027-01-15'], ['2027-03 (1)', '2027-03-01'], ['2028-06 (1)', '2028-06-30']]);
+    expect($groupLines('year'))->toBe([['2027 (3)', '15 Jan 2027'], ['2028 (1)', '30 Jun 2028']])
+        ->and($groupLines('month'))->toBe([['2027-01 (2)', '15 Jan 2027'], ['2027-03 (1)', '01 Mar 2027'], ['2028-06 (1)', '30 Jun 2028']]);
 });
 
 it('totals numbers and dates over all rows', function () {

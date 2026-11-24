@@ -65,8 +65,8 @@ class Games extends Page
                 $before = $g->phases->where('enabled', true)->where('phase', '<', $p->phase)->sortBy('phase')->last();
                 // Main.dc.html phase-card meta wording.
                 $meta = match ($p->isOpenFor($sub) ? PhaseStatus::Open : $p->status) {
-                    PhaseStatus::Open => $deadline ? 'Deadline '.$deadline->format('j M Y').' · '.Sta::daysLeft($deadline) : 'Open',
-                    PhaseStatus::Closed => 'Closed'.($deadline ? ' '.$deadline->format('j M') : ''),
+                    PhaseStatus::Open => $deadline ? 'Deadline '.Sta::date($deadline).' · '.Sta::daysLeft($deadline) : 'Open',
+                    PhaseStatus::Closed => 'Closed'.($deadline ? ' '.Sta::date($deadline) : ''),
                     PhaseStatus::Draft => $before && $before->status !== PhaseStatus::Closed ? "Opens after Phase {$before->phase} closes" : 'Not opened',
                 };
 

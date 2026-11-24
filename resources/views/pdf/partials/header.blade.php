@@ -3,7 +3,7 @@
     <tr>
         <td style="width: 48px; height: 66px; padding-right: 12px; text-align: center">@if(! empty($nocLogo))<img src="{{ $nocLogo }}" alt="Bahrain Olympic Committee logo" style="max-width:40px;max-height:60px">@endif</td>
         <td><span class="name">Bahrain Olympic Committee</span><br><span class="sub">National Olympic Committee of Bahrain</span></td>
-        <td style="text-align: right"><span class="name">{{ $game->name }}</span><br><span class="sub">{{ \App\Support\PdfContext::dates($game->start_date, $game->end_date) }}</span></td>
+        <td style="text-align: right"><span class="name">{{ $game->name }}</span><br><span class="sub">{{ \App\Support\Sta::dateRange($game->start_date, $game->end_date) }}</span></td>
         @if(! empty($gameLogo))<td style="width: 60px; padding-left: 12px; text-align: right"><img src="{{ $gameLogo }}" alt="Game logo" style="max-width:60px;max-height:60px"></td>@endif
     </tr>
 </table>

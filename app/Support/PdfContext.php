@@ -21,7 +21,7 @@ final class PdfContext
         $who = function (?int $id, ?CarbonInterface $at): ?string {
             $u = $id ? User::find($id) : null;
 
-            return $u ? $u->name.', '.$u->role->label().($at ? ' · '.$at->format('j M Y') : '') : null;
+            return $u ? $u->name.', '.$u->role->label().($at ? ' · '.Sta::date($at) : '') : null;
         };
 
         return [
@@ -31,10 +31,10 @@ final class PdfContext
             'assocLogo' => GenerateEntryByEventPdfs::dataUri($s->association->logo_path),
             'preparedBy' => $who($s->submitted_by, $s->submitted_at),
             'approvedBy' => $who($s->approved_by, $s->approved_at),
-            'deadline' => $s->gamePhase()->effectiveDeadline($s)?->format('j M Y'),
+            'deadline' => Sta::date($s->gamePhase()->effectiveDeadline($s)),
             // Phase 3/4 sample: "Submitted 14 Oct 2026 by Mariam Khalil, Association Editor".
             'submittedLine' => ($u = $s->submitted_by ? User::find($s->submitted_by) : null)
-                ? 'Submitted '.($s->submitted_at ? $s->submitted_at->format('j M Y').' ' : '').'by '.$u->name.', '.$u->role->label() : null,
+                ? 'Submitted '.($s->submitted_at ? Sta::date($s->submitted_at).' ' : '').'by '.$u->name.', '.$u->role->label() : null,
         ];
     }
 
@@ -65,20 +65,5 @@ final class PdfContext
         });
 
         return $pdf->output();
-    }
-
-    /** Header dates as on the samples: "20 – 30 Nov 2026", "28 Nov – 3 Dec 2026", or one date. */
-    public static function dates(?CarbonInterface $from, ?CarbonInterface $to): string
-    {
-        if (! $from || ! $to) {
-            return ($from ?? $to)?->format('j M Y') ?? '';
-        }
-        $start = match (true) {
-            $from->format('Y-m') === $to->format('Y-m') => $from->format('j'),
-            $from->year === $to->year => $from->format('j M'),
-            default => $from->format('j M Y'),
-        };
-
-        return $start.' – '.$to->format('j M Y');
     }
 }

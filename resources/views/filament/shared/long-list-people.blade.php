@@ -34,7 +34,7 @@
                         <td class="sta-who-sub">
                             @if (($showDetails ?? false) && ($d = $row['detail']))
                                 <div>{{ $d->insurance_company ?? '–' }}@if ($showMedical ?? false) · Policy {{ $d->insurance_policy_no ?? '–' }}@endif</div>
-                                <div>Valid until {{ $d->insurance_valid_until?->format('j M Y') ?? '–' }}</div>
+                                <div>Valid until {{ \App\Support\Sta::date($d->insurance_valid_until) ?: '–' }}</div>
                                 @if ($d->insurance_certificate_path)
                                     <a href="{{ \App\Filament\Shared\AttachmentActions::url($d->insurance_certificate_path) }}" target="_blank">View certificate</a>
                                 @endif

@@ -124,7 +124,7 @@
                     @if ($m = $err('newPerson.gender'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 </fieldset>
                 <label style="{{ $lbl }}">Date of birth
-                    <input type="date" wire:model.blur="newPerson.dob" max="{{ now()->toDateString() }}" style="{{ $field }}">
+                    <x-sta.date-input wire:model.blur="newPerson.dob" max="{{ now()->toDateString() }}" style="{{ $field }}" />
                     @if ($m = $err('newPerson.dob'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 </label>
                 {{-- Not on the canvas, required by the registry to save: drawn as the same grid fields after Date of birth. --}}
@@ -169,7 +169,7 @@
                     @if ($m = $err('newPerson.passport_no'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 </label>
                 <label style="{{ $lbl }}">Passport expiry
-                    <input type="date" wire:model.blur="newPerson.passport_expiry" style="{{ $field }}">
+                    <x-sta.date-input wire:model.blur="newPerson.passport_expiry" style="{{ $field }}" />
                     @if ($m = $err('newPerson.passport_expiry'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 </label>
                 <label style="{{ $lbl }}">CPR number
@@ -178,7 +178,7 @@
                 </label>
                 @if (filled($newPerson['cpr_no'] ?? null) || $err('newPerson.cpr_expiry'))
                     <label style="{{ $lbl }}">CPR expiry
-                        <input type="date" wire:model.blur="newPerson.cpr_expiry" style="{{ $field }}">
+                        <x-sta.date-input wire:model.blur="newPerson.cpr_expiry" style="{{ $field }}" />
                         @if ($m = $err('newPerson.cpr_expiry'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                     </label>
                 @endif

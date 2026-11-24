@@ -84,8 +84,8 @@ it('warns about expiring documents, missing scans, age range and missing sizes',
         'passport_expiry' => '2027-03-05', 'cpr_expiry' => '2027-03-09']);
 
     expect($this->checks->warnings($this->game->fresh(), $p, [$this->judo]))->toBe([
-        'Passport expires before the games end (5 Mar 2027).',
-        'CPR expires before the games end (9 Mar 2027).',
+        'Passport expires before the games end (05 Mar 2027).',
+        'CPR expires before the games end (09 Mar 2027).',
         'Passport scan missing.',
         'CPR scan missing.',
         'Date of birth is outside the Judo age range.',

@@ -7,6 +7,7 @@ use App\Models\Game;
 use App\Models\Person;
 use App\Models\Submission;
 use App\Services\Phases\ShortListChecks;
+use App\Support\Sta;
 use Illuminate\Support\Collection;
 
 /**
@@ -138,7 +139,7 @@ final class GameReports
         foreach ($this->people($game) as [$s, $p]) {
             foreach (['Passport' => $p->passport_expiry, 'CPR' => $p->cpr_expiry] as $document => $expiry) {
                 if ($expiry && $expiry->lt($game->end_date)) {
-                    $rows[] = [$s->association->name, $p->code, $this->name($p), $document, $expiry->toDateString()];
+                    $rows[] = [$s->association->name, $p->code, $this->name($p), $document, Sta::date($expiry)];
                 }
             }
         }
@@ -196,8 +197,8 @@ final class GameReports
             foreach ($this->visibleEntries($game, $s) as $e) {
                 $p = $e->person;
                 $rows[] = [$s->association->name, $p->code, $this->name($p), $p->type->label(), $e->gameSport->sport->name,
-                    $e->gameEvent?->event->name ?? 'Official', $p->gender?->label(), $p->dob?->toDateString(),
-                    $p->age($game->start_date), $p->nationality, $p->passport_expiry?->toDateString()];
+                    $e->gameEvent?->event->name ?? 'Official', $p->gender?->label(), Sta::date($p->dob),
+                    $p->age($game->start_date), $p->nationality, Sta::date($p->passport_expiry)];
             }
         }
 

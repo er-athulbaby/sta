@@ -105,7 +105,7 @@ it('lists the Long List and the Short List one row per entry', function () {
 
     expect($long['headings'])->toBe(GameReports::PERSON_HEADINGS)
         ->and($long['rows'][0])->toBe(['Bahrain Judo Federation', $this->ali->code, 'Ali Hasan', 'Athlete', 'Judo', 'Men -60kg', 'Male',
-            '2005-03-10', 21, 'Bahrain', '2026-12-05'])
+            '10 Mar 2005', 21, 'Bahrain', '05 Dec 2026'])
         ->and(array_column($long['rows'], 2))->toBe(['Ali Hasan', 'Omar Saleh', 'Coach Karim'])
         ->and($long['rows'][2][3])->toBe('Team official')->and($long['rows'][2][5])->toBe('Official')
         ->and(array_column($this->reports->shortList($this->game)['rows'], 2))->toBe(['Ali Hasan', 'Omar Saleh']);
@@ -121,13 +121,13 @@ it('lists Short Lists over a limit with their justification', function () {
 it('lists documents expiring before the games end, from the Short List when Phase 4 is submitted', function () {
     expect($this->reports->expiringDocuments($this->game))->toBe([
         'headings' => ['Association', 'Code', 'Name', 'Document', 'Expiry'],
-        'rows' => [['Bahrain Judo Federation', $this->ali->code, 'Ali Hasan', 'Passport', '2026-12-05']],
+        'rows' => [['Bahrain Judo Federation', $this->ali->code, 'Ali Hasan', 'Passport', '05 Dec 2026']],
     ]);
 
     $this->p4->update(['status' => SubmissionStatus::Draft]); // falls back to the Long List, which has the coach
     expect($this->reports->expiringDocuments($this->game)['rows'])->toBe([
-        ['Bahrain Judo Federation', $this->ali->code, 'Ali Hasan', 'Passport', '2026-12-05'],
-        ['Bahrain Judo Federation', $this->coach->code, 'Coach Karim', 'CPR', '2026-11-30'],
+        ['Bahrain Judo Federation', $this->ali->code, 'Ali Hasan', 'Passport', '05 Dec 2026'],
+        ['Bahrain Judo Federation', $this->coach->code, 'Coach Karim', 'CPR', '30 Nov 2026'],
     ]);
 });
 
