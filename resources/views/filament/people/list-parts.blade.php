@@ -17,6 +17,16 @@
             @endforeach
         </div>
         @break
+    @case('status')
+        <label style="display: flex; align-items: center">
+            <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Status</span>
+            <select wire:model.live="tableFilters.status.value" style="min-height: 44px; padding: 0 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; font: 14px Inter, sans-serif; background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A)">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="">All</option>
+            </select>
+        </label>
+        @break
     @case('name-th')
         @php $sorted = $this->getTableSortColumn() === 'last_name' ? $this->getTableSortDirection() : null; @endphp
         <th scope="col" @if ($sorted) aria-sort="{{ $sorted === 'asc' ? 'ascending' : 'descending' }}" @endif style="padding: 12px 20px; font-weight: 600">

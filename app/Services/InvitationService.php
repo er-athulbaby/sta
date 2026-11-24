@@ -20,8 +20,9 @@ final class InvitationService
     public function __construct(private readonly AssociationMembership $membership) {}
 
     /** Creates an invitation, emails it and returns the accept URL (also shown to the admin for copying). */
-    public function invite(Association $association, string $email, Role $role, ?User $invitedBy): string
+    public function invite(Association $association, string $email, Role $role, ?User $invitedBy, ?string $name = null): string
     {
+        $name = filled($name) ? trim($name) : null;
         if (! $role->isAssociationRole()) {
             throw new InvalidArgumentException('Only association roles can be invited.');
         }
@@ -34,7 +35,7 @@ final class InvitationService
             throw ValidationException::withMessages(['email' => 'A user with this email already exists.']);
         }
 
-        return DB::transaction(function () use ($association, $email, $role, $invitedBy) {
+        return DB::transaction(function () use ($association, $email, $role, $invitedBy, $name) {
             Invitation::pending()->where('association_id', $association->id)->where('email', $email)
                 ->update(['revoked_at' => now()]);
 
@@ -46,6 +47,7 @@ final class InvitationService
             $invitation = Invitation::create([
                 'association_id' => $association->id,
                 'email' => $email,
+                'name' => $name,
                 'role' => $role,
                 'token_hash' => hash('sha256', $token),
                 'invited_by' => $invitedBy?->id,

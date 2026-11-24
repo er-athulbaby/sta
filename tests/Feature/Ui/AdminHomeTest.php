@@ -41,7 +41,7 @@ it('shows the canvas home sections, in order, to a super admin', function () {
             'Associations submitted', '0 of 1', '1 not started', 'Open game dashboard',
             'Needs your attention', 'Across the active game · next 7 days', '1 phase deadline this week', 'Open',
             '1 association hasn’t submitted the Long List', '1 not started: Bahrain Weightlifting Federation', 'Remind 1',
-            'Registry health', 'Permanent registry of all associations', 'Athletes', 'Team officials', 'Complete', 'Incomplete',
+            'Registry status', 'Permanent registry of all associations', 'Athletes', 'Team officials', 'Complete', 'Incomplete',
             'By association', 'BWF', 'Incomplete = missing any Long List field',
             'Associations', 'each has 1 admin and up to 2 editors', 'All associations',
             'Association', 'Code', 'Admin', 'Editors', 'People', 'Complete', 'Last activity', 'Active',
@@ -54,7 +54,7 @@ it('hides the sections a user may not see', function () {
 
     livewire(Dashboard::class)->assertOk()->assertSee('Dashboard')
         ->assertDontSee('Active games')->assertDontSee('Asian Indoor Games')->assertDontSee('Needs your attention')
-        ->assertDontSee('Registry health')->assertDontSee('All associations')->assertDontSee('Recent activity')->assertDontSee('New game');
+        ->assertDontSee('Registry status')->assertDontSee('All associations')->assertDontSee('Recent activity')->assertDontSee('New game');
 });
 
 it('hides the registry columns of the associations table without manage_people (ruling U6)', function () {
@@ -63,7 +63,7 @@ it('hides the registry columns of the associations table without manage_people (
     actingInAdmin($sta);
 
     livewire(Dashboard::class)->assertSee('All associations')->assertSee('Needs your attention')
-        ->assertDontSee('Last activity')->assertDontSee('Registry health')->assertDontSee('Active games');
+        ->assertDontSee('Last activity')->assertDontSee('Registry status')->assertDontSee('Active games');
 });
 
 it('counts the registry in SQL with the Person::isComplete rule and passports expiring within 6 months', function () {

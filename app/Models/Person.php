@@ -9,6 +9,7 @@ use App\Enums\StaPermission;
 use App\Models\Concerns\BelongsToAssociation;
 use App\Models\Concerns\RenamesAttachments;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -171,6 +172,26 @@ class Person extends Model
     public static function blindIndex(string $number): string
     {
         return hash_hmac('sha256', strtoupper(preg_replace('/\s+/', '', $number)), config('app.key'));
+    }
+
+    /**
+     * The one people search (registry lists, Long List picker): every word partly matches a name part, the full name or the
+     * code (any case); a CPR or passport number matches exactly, spaces and case ignored (blind index).
+     */
+    public function scopeSearchTerm(Builder $query, string $term): void
+    {
+        $term = trim($term);
+        if ($term === '') {
+            return;
+        }
+        $hash = self::blindIndex($term);
+        $query->where(fn (Builder $q) => $q
+            ->where(function (Builder $q) use ($term) {
+                foreach (preg_split('/\s+/', $term) as $word) {
+                    $q->whereAny(['first_name', 'second_name', 'third_name', 'last_name', 'full_name', 'code'], 'like', "%{$word}%");
+                }
+            })
+            ->orWhere('passport_no_hash', $hash)->orWhere('cpr_no_hash', $hash));
     }
 
     /** System-wide check (bypasses the association scope and Filament's tenant scope) used by form validation. */

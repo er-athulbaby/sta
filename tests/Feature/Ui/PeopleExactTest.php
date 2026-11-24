@@ -52,7 +52,7 @@ it('draws the registry list and edit aside in the canvas order', function () {
 
     livewire(PortalListPeople::class)
         ->assertSeeInOrder(['Athletes &amp; officials', 'Your permanent registry', 'Download template', 'Import Excel', 'Add person'], false)
-        ->assertSeeInOrder(['Search by name or passport', 'All', 'Athletes', 'Officials', 'Name', 'Type', 'Date of birth', 'Passport expiry', 'Sizes'])
+        ->assertSeeInOrder(['Search by name, code, CPR or passport', 'All', 'Athletes', 'Officials', 'Name', 'Type', 'Date of birth', 'Passport expiry', 'Sizes'])
         ->assertSee('Showing 1 of 1 · passport dates in orange expire within 6 months')
         ->assertSeeInOrder(['Hamad Buali', 'Documents', 'Passport number', 'Passport expiry', 'CPR number', 'CPR expiry', 'Upload passport scan',
             'Clothing sizes', 'T-Shirt', 'Required for this game', 'Save changes', 'Save as draft', 'Cancel'])
@@ -101,7 +101,7 @@ it('draws the admin People list with its filters and the person aside', function
 
     $page = livewire(AdminListPeople::class)
         ->assertSeeInOrder(['People', 'Export Excel', 'Athletes', 'Team officials', 'Passport expired or expires within 6 months', 'Missing passport scan'])
-        ->assertSeeInOrder(['Name, passport or CPR', 'All associations', 'All', 'Athletes', 'Officials', 'Expiring passports',
+        ->assertSeeInOrder(['Name, code, CPR or passport', 'All associations', 'All', 'Athletes', 'Officials', 'Expiring passports',
             'Name', 'Association', 'Type', 'Passport expiry', 'Scans'])
         ->call('selectPerson', $soon->id);
     expectInOrder($page->html(), ['Ali Soon', 'Date of birth', 'Gender', 'Nationality', 'Passport number', '•••• 4567', 'Passport expiry', 'CPR number',

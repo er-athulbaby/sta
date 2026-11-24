@@ -27,16 +27,14 @@ final class PersonTable
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['fieldValues', 'sizes', ...($withAssociation ? ['association'] : [])])) // missingFields() and sizes per row
             ->deferFilters(false) // the canvas list applies its association select and "Expiring passports" toggle at once
             ->description('Passport dates in orange expire within 6 months.')
+            ->searchUsing(fn (Builder $query, string $search) => $query->searchTerm($search)) // the whole term, not word by word: names, code, CPR or passport (Person::scopeSearchTerm)
             ->columns([
                 ImageColumn::make('photo_path')->label('Photo')->circular()->disk(config('filesystems.private'))->visibility('private')
                     ->extraImgAttributes(fn (Person $record) => ['alt' => 'Photo of '.$record->fullName()])
                     ->defaultImageUrl(fn (Person $record) => InitialsAvatarProvider::svg(Sta::initials($record->fullName()))),
                 TextColumn::make('last_name')->label('Name')->formatStateUsing(fn (Person $record) => $record->fullName())
                     ->description(fn (Person $record) => $record->code)->weight(FontWeight::SemiBold)
-                    // Canvas "Search by name or passport" / "Name, passport or CPR": document numbers match exactly (blind index).
-                    ->searchable(query: fn (Builder $query, string $search) => $query->where(fn (Builder $q) => $q
-                        ->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('passport_no_hash', Person::blindIndex($search))->orWhere('cpr_no_hash', Person::blindIndex($search))))
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('code')->searchable()->sortable()->toggleable(isToggledHiddenByDefault: true),
                 ...($withAssociation ? [TextColumn::make('association.name')->searchable()] : []),
@@ -56,6 +54,8 @@ final class PersonTable
             ])
             ->filters([
                 SelectFilter::make('type')->options(collect(PersonType::cases())->mapWithKeys(fn ($t) => [$t->value => $t->label()])),
+                SelectFilter::make('status')->options(['active' => 'Active', 'inactive' => 'Inactive'])->default('active')
+                    ->query(fn (Builder $query, array $data) => filled($data['value'] ?? null) ? $query->where('is_active', $data['value'] === 'active') : $query),
                 ...($withAssociation ? [
                     SelectFilter::make('association')->relationship('association', 'name'),
                     Filter::make('expiring')->label('Expiring passports')

@@ -13,7 +13,7 @@
 
     <section aria-label="People list" style="flex: 999 1 560px; min-width: 0; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px">
         <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
-            @include('filament.people.list-parts', ['part' => 'search', 'basis' => '200px', 'label' => 'Search people', 'placeholder' => 'Name, passport or CPR'])
+            @include('filament.people.list-parts', ['part' => 'search', 'basis' => '200px', 'label' => 'Search people', 'placeholder' => 'Name, code, CPR or passport'])
             <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600">
                 <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Association</span>
                 <select wire:model.live="tableFilters.association.value" style="min-height: 44px; padding: 0 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; font: 14px Inter, sans-serif; background: var(--sta-bg-surface, #FFFFFF)">
@@ -24,6 +24,7 @@
                 </select>
             </label>
             @include('filament.people.list-parts', ['part' => 'type'])
+            @include('filament.people.list-parts', ['part' => 'status'])
             <button type="button" aria-pressed="{{ $expiring ? 'true' : 'false' }}" wire:click="$set('tableFilters.expiring.isActive', {{ $expiring ? 'false' : 'true' }})"
                 style="min-height: 44px; padding: 0 14px; border-radius: 10px; font: 600 13px Inter, sans-serif; cursor: pointer; {{ $expiring ? 'border: 0; background: var(--sta-bg-orange-800, #9A3412); color: var(--sta-fg-on-brand, #FFFFFF)' : 'border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-strong, #334155)' }}">Expiring passports</button>
         </div>

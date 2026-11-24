@@ -13,7 +13,7 @@
         @csrf
         @error('email')<p class="error">{{ $message }}</p>@enderror
         <label for="name">Your full name</label>
-        <input id="name" name="name" value="{{ old('name') }}" required autocomplete="name">
+        <input id="name" name="name" value="{{ old('name', $invitation->name) }}" required autocomplete="name">
         @error('name')<p class="error">{{ $message }}</p>@enderror
         <label for="password">Password (at least 12 characters)</label>
         <input id="password" type="password" name="password" required autocomplete="new-password">

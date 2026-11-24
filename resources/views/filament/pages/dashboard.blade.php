@@ -1,4 +1,4 @@
-{{-- Canvas AdminDashboard.dc.html (admin home): Active games, Needs your attention, Registry health, Associations, Recent activity.
+{{-- Canvas AdminDashboard.dc.html (admin home): Active games, Needs your attention, Registry status, Associations, Recent activity.
      A band the user may not see is left out. --}}
 @use(App\Enums\StaPermission)
 @use(App\Filament\Resources\Associations\AssociationResource)
@@ -153,7 +153,7 @@
                 @php $max = max(1, $registry['top']->max('total') ?? 1); @endphp
                 <section aria-labelledby="health-title" style="flex: 1 1 380px; min-width: 0; background: var(--sta-bg-teal-25, #F7FEFC); border: 1px solid var(--sta-bd-teal-200, #99F6E4); border-radius: 14px; display: flex; flex-direction: column">
                     <div style="padding: 18px 20px; border-bottom: 1px solid var(--sta-bd-teal-200, #99F6E4); background: var(--sta-bg-teal-50, #F0FDFA); border-radius: 13px 13px 0 0; display: flex; flex-direction: column; gap: 2px">
-                        <h2 id="health-title" style="{{ $bandHead }}; color: var(--sta-fg-teal-800, #115E59)"><span aria-hidden="true" style="{{ $bandIcon }}; background: var(--sta-bg-teal-800, #115E59)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span>Registry health</h2>
+                        <h2 id="health-title" style="{{ $bandHead }}; color: var(--sta-fg-teal-800, #115E59)"><span aria-hidden="true" style="{{ $bandIcon }}; background: var(--sta-bg-teal-800, #115E59)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span>Registry status</h2>
                         <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">Permanent registry of all associations</span>
                     </div>
                     <div style="padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 14px">
@@ -192,7 +192,8 @@
                             </li>
                         @endforeach
                     </ul>
-                    <p style="margin: 0; padding: 12px 20px 16px; border-top: 1px solid var(--sta-bd-line, #E2E8F0); font-size: 12px; color: var(--sta-fg-muted, #475569); line-height: 1.5">Incomplete = missing any Long List field: full name, photo, passport scan, issuing country or issue date, CPR number.</p>
+                    <p style="margin: 0; padding: 12px 20px 16px; border-top: 1px solid var(--sta-bd-line, #E2E8F0); font-size: 12px; color: var(--sta-fg-muted, #475569); line-height: 1.5">@php [$athleteFields, $officialFields] = [\App\Models\Person::REQUIRED_FOR_COMPLETE['athlete'], \App\Models\Person::REQUIRED_FOR_COMPLETE['official']]; @endphp
+                        Incomplete = missing any Long List field: {{ implode(', ', $athleteFields) }}{{ ($more = array_diff($officialFields, $athleteFields)) ? '; team officials also '.implode(', ', $more) : '' }}, or a required extra field.</p>
                 </section>
             @endif
         </div>

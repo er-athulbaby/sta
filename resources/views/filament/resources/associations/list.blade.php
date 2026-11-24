@@ -80,6 +80,7 @@
                 <div style="display: flex; flex-wrap: wrap; gap: 8px">
                     <a href="{{ \App\Filament\Resources\Associations\AssociationResource::getUrl('edit', ['record' => $sel]) }}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box">Edit details</a>
                     <button type="button" wire:click="mountTableAction('invite', '{{ $sel->getKey() }}')" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF); font: 600 13px Inter, sans-serif; cursor: pointer">Invite admin</button>
+                    <button type="button" wire:click="mountTableAction('inviteEditor', '{{ $sel->getKey() }}')" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--sta-bd-brand, #1F3A5F); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-brand, #1F3A5F); font: 600 13px Inter, sans-serif; cursor: pointer">Invite editor</button>
                 </div>
             </section>
 
@@ -105,7 +106,10 @@
             </section>
 
             <section aria-labelledby="inv-title" style="background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px">
-                <h3 id="inv-title" style="margin: 0; padding: 14px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0); font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Invitations</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px 8px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
+                    <h3 id="inv-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600">Invitations</h3>
+                    <button type="button" wire:click="mountTableAction('inviteUser', '{{ $sel->getKey() }}')" aria-label="Invite a user to {{ $sel->name }}" title="Invite admin or editor" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
+                </div>
                 @forelse ($sel->invitations as $inv)
                     @php $link = $this->inviteLinks[$sel->id.':'.mb_strtolower($inv->email)] ?? null; @endphp
                     <div wire:key="assoc-inv-{{ $inv->id }}" style="padding: 14px 20px; display: flex; flex-direction: column; gap: 10px{{ $loop->first ? '' : '; border-top: 1px solid var(--sta-bd-row, #EEF2F6)' }}">

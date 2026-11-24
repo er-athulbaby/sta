@@ -12,6 +12,7 @@ use Closure;
 use Filament\Actions\Action;
 use Filament\Auth\Notifications\ResetPassword as ResetPasswordNotification;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Password;
@@ -20,17 +21,27 @@ use Illuminate\Validation\ValidationException;
 
 final class InvitationActions
 {
-    /** @param Closure(?Association): Association $association resolves the target association */
-    public static function invite(string $name, Role $role, Closure $association, ?Closure $defaultEmail = null): Action
+    /**
+     * @param  ?Role  $role  null: the form asks for the role (admin or editor)
+     * @param  Closure(?Association): Association  $association  resolves the target association
+     */
+    public static function invite(string $name, ?Role $role, Closure $association, ?Closure $defaultEmail = null): Action
     {
         return Action::make($name)
-            ->label($role === Role::AssocAdmin ? 'Invite admin' : 'Invite editor')
+            ->label(match ($role) {
+                Role::AssocAdmin => 'Invite admin', Role::AssocEditor => 'Invite editor', default => 'Invite user'
+            })
             ->icon('heroicon-o-envelope')
-            ->schema([TextInput::make('email')->email()->required()->default($defaultEmail)])
+            ->schema([
+                ...($role ? [] : [Select::make('role')->options([Role::AssocAdmin->value => Role::AssocAdmin->label(), Role::AssocEditor->value => Role::AssocEditor->label()])
+                    ->default(Role::AssocEditor->value)->required()]),
+                TextInput::make('name')->maxLength(255)->helperText('Pre-fills the name on the invitation page.'),
+                TextInput::make('email')->email()->required()->default($defaultEmail),
+            ])
             ->action(function (array $data, ?Association $record, $livewire) use ($role, $association) {
                 self::guard(function () use ($data, $record, $role, $association, $livewire) {
                     $target = $association($record);
-                    $url = app(InvitationService::class)->invite($target, $data['email'], $role, auth()->user());
+                    $url = app(InvitationService::class)->invite($target, $data['email'], $role ?? Role::from($data['role']), auth()->user(), $data['name'] ?? null);
                     self::linkNotification($url, $livewire, $target->id, $data['email']);
                 });
             });
@@ -41,7 +52,7 @@ final class InvitationActions
         return Action::make('resend')->icon('heroicon-o-arrow-path')
             ->visible(fn (Invitation $record) => in_array($record->status(), ['pending', 'expired'], true))
             ->action(fn (Invitation $record, $livewire) => self::guard(function () use ($record, $livewire) {
-                self::linkNotification(app(InvitationService::class)->invite($record->association, $record->email, $record->role, auth()->user()), $livewire, $record->association_id, $record->email);
+                self::linkNotification(app(InvitationService::class)->invite($record->association, $record->email, $record->role, auth()->user(), $record->name), $livewire, $record->association_id, $record->email);
             }));
     }
 

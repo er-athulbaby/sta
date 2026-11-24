@@ -13,8 +13,9 @@
 
     <section aria-label="People" style="flex: 999 1 560px; min-width: 0; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0); border-radius: 14px">
         <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
-            @include('filament.people.list-parts', ['part' => 'search', 'basis' => '220px', 'label' => 'Search by name or passport', 'placeholder' => 'Search by name or passport'])
+            @include('filament.people.list-parts', ['part' => 'search', 'basis' => '220px', 'label' => 'Search by name, code, CPR or passport', 'placeholder' => 'Search by name, code, CPR or passport'])
             @include('filament.people.list-parts', ['part' => 'type'])
+            @include('filament.people.list-parts', ['part' => 'status'])
         </div>
         <div style="overflow-x: auto">
             <table style="width: 100%; min-width: 680px; border-collapse: collapse">

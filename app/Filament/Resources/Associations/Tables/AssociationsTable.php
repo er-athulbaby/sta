@@ -31,6 +31,8 @@ class AssociationsTable
                 InvitationActions::invite('invite', Role::AssocAdmin,
                     association: fn (Association $record) => $record,
                     defaultEmail: fn (?Association $record) => $record?->email),
+                InvitationActions::invite('inviteEditor', Role::AssocEditor, association: fn (Association $record) => $record),
+                InvitationActions::invite('inviteUser', null, association: fn (Association $record) => $record), // Invitations "+": role chosen in the form
             ]);
     }
 

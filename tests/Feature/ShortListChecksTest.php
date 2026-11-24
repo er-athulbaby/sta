@@ -166,3 +166,11 @@ it('blocks submitting a Short List while the Long List is not submitted', functi
     expect(fn () => app(SubmissionWorkflow::class)->submit($p4->fresh(), User::factory()->assocAdmin($this->assoc)->create()))
         ->toThrow(ValidationException::class, ShortListChecks::LONG_LIST_FIRST);
 });
+
+it('refuses a person deactivated after the Long List was submitted', function () {
+    $p4 = Submission::for($this->game, $this->assoc, 4);
+    $this->ali->update(['is_active' => false]);
+
+    expect(app(ShortListChecks::class)->errors($p4, [$this->m60->id => [(string) $this->ali->id]], []))
+        ->toBe(["athletes.{$this->m60->id}" => 'Ali Hasan is inactive.']);
+});

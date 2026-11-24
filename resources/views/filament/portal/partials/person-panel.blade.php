@@ -31,7 +31,14 @@
             <label style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; background: var(--sta-bg-surface, #FFFFFF)">
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="stroke: var(--sta-fg-muted, #475569)"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                 <span class="sta-sr-only">Search registry</span>
-                <input type="search" wire:model.live.debounce.300ms="panelSearch" placeholder="Search by name, code or CPR" style="flex: 1; min-width: 0; border: 0; outline: none; font: 14px Inter, sans-serif; background: transparent">
+                <input type="search" wire:model.live.debounce.300ms="panelSearch" placeholder="Search by name, code, CPR or passport" style="flex: 1; min-width: 0; border: 0; outline: none; font: 14px Inter, sans-serif; background: transparent">
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600">Show
+                <select wire:model.live="panelStatus" style="{{ $input }}">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="">All</option>
+                </select>
             </label>
             <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
                 @forelse ($picks as $p)
@@ -42,13 +49,19 @@
                             : $events->filter(fn ($e) => \App\Services\Phases\LongListChecks::genderMatches($p->gender, $e['ge']->event->gender))->map(fn ($e) => ['id' => $e['ge']->id, 'label' => $e['label']])->values();
                         $call = $isOfficial ? 'addOfficialChip' : 'addAthleteChip';
                     @endphp
-                    <li wire:key="pick-{{ $p->id }}" x-data="{ ask: false }" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; background: var(--sta-bg-surface, #FFFFFF); border: 1px solid var(--sta-bd-line, #E2E8F0)">
-                        <div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+                    <li wire:key="pick-{{ $p->id }}" x-data="{ ask: false }" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; background: {{ $p->is_active ? 'var(--sta-bg-surface, #FFFFFF)' : 'var(--sta-bg-subtle, #F1F5F9)' }}; border: 1px solid var(--sta-bd-line, #E2E8F0)">
+                        <div style="display: flex; flex-direction: column; flex: 1; min-width: 0{{ $p->is_active ? '' : '; color: var(--sta-fg-muted, #475569)' }}">
                             <span style="font-weight: 600">{{ $p->fullName() }}</span>
                             <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $p->code }} · {{ $isOfficial ? $p->function : $p->gender?->label().' · '.$p->dob?->format('Y') }}</span>
                         </div>
+                        @if (! $p->is_active)
+                            {{-- Inactive people can't go on any list (LongListChecks / ShortListChecks refuse them too). --}}
+                            <span style="{{ $pill }}background: var(--sta-bg-subtle, #F1F5F9); color: var(--sta-fg-muted, #475569); border: 1px solid var(--sta-bd-line-strong, #CBD5E1)">Inactive</span>
+                        @else
                         <span style="{{ $pill }}{{ $complete ? 'background: var(--sta-bg-green-100, #DCFCE7); color: var(--sta-fg-green-800, #166534)' : 'background: var(--sta-bg-orange-100, #FFEDD5); color: var(--sta-fg-orange-800, #9A3412)' }}">{{ $complete ? 'Complete' : 'Incomplete' }}</span>
-                        @if ($targets->count() === 1)
+                        @endif
+                        @if (! $p->is_active)
+                        @elseif ($targets->count() === 1)
                             <button type="button" wire:click="{{ $call }}({{ $targets[0]['id'] }}, {{ $p->id }})" aria-label="Add {{ $p->fullName() }}" style="{{ $addBtn }}">Add</button>
                         @else
                             <button type="button" x-show="! ask" x-on:click="ask = true; $nextTick(() => $refs.target.focus())" aria-label="Add {{ $p->fullName() }}" style="{{ $addBtn }}">Add</button>
@@ -61,7 +74,7 @@
                         @endif
                     </li>
                 @empty
-                    <li style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $panelSearch !== '' ? 'Nobody in your registry matches.' : 'Everyone who can be added is already on the list.' }}</li>
+                    <li style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $panelSearch !== '' || $panelStatus !== 'active' ? 'Nobody in your registry matches.' : 'Everyone who can be added is already on the list.' }}</li>
                 @endforelse
             </ul>
         </section>

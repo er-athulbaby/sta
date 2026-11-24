@@ -185,7 +185,7 @@ it('picks a registry athlete into the event from the side panel and adds a new o
         ->call('openPanel', 'athlete')
         ->assertSeeHtmlInOrder(['Add athlete', 'Judo · stays on the Long List page', 'Pick from your registry', 'Open registry',
             'Ali Hasan', 'Complete', 'Add', 'Or add a new athlete', 'Same fields and rules as the registry', 'Event', 'Cancel', 'Save as draft', 'Save and add to Long List'])
-        ->assertSeeHtml('placeholder="Search by name, code or CPR"')->assertDontSee('Coach Karim')
+        ->assertSeeHtml('placeholder="Search by name, code, CPR or passport"')->assertDontSee('Coach Karim')
         ->set('panelSearch', '040917332')->assertSee('Ali Hasan')->assertDontSee('Omar Saleh')
         ->set('panelSearch', '')
         ->call('addAthleteChip', $this->m60->id, $this->ali->id)
@@ -336,4 +336,20 @@ it('names only the gaps the short form can fill, sends the rest to the registry,
         ->assertSee('me.jpg')->assertSeeHtml('aria-label="View the photo"')->assertDontSeeHtml('aria-label="Remove the photo"')
         ->call('viewUpload', 'newPersonPhoto')->assertFileDownloaded('me.jpg');
     expect($page->instance()->viewUpload('panel'))->toBeNull();
+});
+
+it('shows only active people in the picker by default; inactive ones greyed with no Add, and never added', function () {
+    $this->omar->update(['is_active' => false]);
+    $this->ali->update(['passport_no' => 'BH7654321']);
+
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('openPanel', 'athlete')
+        ->assertSee('Ali Hasan')->assertDontSee('Omar Saleh')
+        ->set('panelSearch', 'bh 7654321')->assertSee('Ali Hasan')
+        ->set('panelSearch', 'ali hasan')->assertSee('Ali Hasan')
+        ->set('panelSearch', '')->set('panelStatus', 'inactive')
+        ->assertSee('Omar Saleh')->assertSee('Inactive')->assertDontSeeHtml('aria-label="Add Omar Saleh"')->assertDontSee('Ali Hasan')
+        ->set('panelStatus', '')->assertSee('Omar Saleh')->assertSeeHtml('aria-label="Add Ali Hasan"')
+        ->call('addAthleteChip', $this->m60->id, $this->omar->id);
+    expect((array) $page->get("athletes.{$this->m60->id}"))->not->toContain((string) $this->omar->id);
 });

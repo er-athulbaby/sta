@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Invitation extends Model
 {
-    protected $fillable = ['association_id', 'email', 'role', 'token_hash', 'invited_by', 'expires_at', 'accepted_at', 'revoked_at'];
+    protected $fillable = ['association_id', 'email', 'name', 'role', 'token_hash', 'invited_by', 'expires_at', 'accepted_at', 'revoked_at'];
 
     protected $hidden = ['token_hash'];
 

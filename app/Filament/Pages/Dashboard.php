@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
 
 /**
- * Admin home, canvas AdminDashboard.dc.html: active games, what needs attention, registry health, associations and recent
+ * Admin home, canvas AdminDashboard.dc.html: active games, what needs attention, registry status, associations and recent
  * activity. Each band shows only with the permission that guards its data, and the page runs a fixed number of queries.
  */
 class Dashboard extends BaseDashboard
@@ -200,7 +200,7 @@ class Dashboard extends BaseDashboard
     }
 
     /**
-     * Registry health in one aggregate query (ruling U7): totals, complete (same rule as Person::missingFields()), passports
+     * Registry status in one aggregate query (ruling U7): totals, complete (same rule as Person::missingFields()), passports
      * expiring within 6 months, and complete / total per association.
      *
      * @return array{athletes: int, officials: int, complete: int, incomplete: int, expiring: int, perAssociation: Collection, top: Collection}|null

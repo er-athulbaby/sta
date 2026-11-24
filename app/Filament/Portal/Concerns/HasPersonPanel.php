@@ -40,6 +40,9 @@ trait HasPersonPanel
 
     public string $panelSearch = '';
 
+    /** 'active' | 'inactive' | '' (all) */
+    public string $panelStatus = 'active';
+
     /** @var array<string, mixed> the short form (SHORT_FORM_FIELDS and sizes) */
     public array $newPerson = [];
 
@@ -66,6 +69,7 @@ trait HasPersonPanel
         $this->panel = $type;
         $this->panelSport = $sports->contains('id', $gameSportId) ? $gameSportId : ($sports->count() === 1 ? $sports->first()->id : null);
         $this->panelSearch = '';
+        $this->panelStatus = 'active';
         $this->resetShortForm();
     }
 
@@ -97,20 +101,22 @@ trait HasPersonPanel
         return $this->panelSport ? $sports->where('id', $this->panelSport)->values() : $sports;
     }
 
-    /** Registry people for "Pick from your registry": active, this type, not on the list yet; athletes need an event of the panel's sports. */
+    /**
+     * Registry people for "Pick from your registry": this type, status filter (Active by default; inactive ones show greyed
+     * with no Add, and candidates() refuses them anyway), not on the list yet; athletes need an event of the panel's sports.
+     */
     #[Unexposed]
     public function panelCandidates(): Collection
     {
         $type = $this->panelType();
         $on = collect($type === PersonType::Athlete ? $this->athletes : $this->officials)->flatten()->map(fn ($id) => (int) $id)->all();
         $events = $this->panelSports()->flatMap->gameEvents;
-        $q = mb_strtolower(trim($this->panelSearch));
-        $cprHash = $q === '' ? null : Person::blindIndex($q);
 
-        return $this->candidates($type)->load('fieldValues')
+        return Person::withoutGlobalScopes()->with('fieldValues')->where('association_id', $this->association()->getKey())->where('type', $type)
+            ->when(in_array($this->panelStatus, ['active', 'inactive'], true), fn ($q) => $q->where('is_active', $this->panelStatus === 'active'))
+            ->searchTerm($this->panelSearch)->orderBy('last_name')->orderBy('first_name')->get()
             ->reject(fn (Person $p) => in_array($p->id, $on, true))
             ->filter(fn (Person $p) => $type === PersonType::Official || $p->gender !== null && $events->contains(fn ($ge) => LongListChecks::genderMatches($p->gender, $ge->event->gender)))
-            ->filter(fn (Person $p) => $q === '' || str_contains(mb_strtolower($p->fullName().' '.$p->code), $q) || $p->cpr_no_hash === $cprHash)
             ->values();
     }
 

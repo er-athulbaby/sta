@@ -79,11 +79,17 @@ final class ShortListChecks
     public function errors(Submission $s, array $athletes, array $officials): array
     {
         [$allowedAthletes, $allowedOfficials] = $this->allowed($s);
+        // Someone deactivated after the Long List was submitted can't go on the Short List either (same message as LongListChecks).
+        $inactive = Person::withoutGlobalScopes()->where('association_id', $s->association_id)->where('is_active', false)
+            ->whereKey(collect([...array_values($athletes), ...array_values($officials)])->flatten()->map(fn ($id) => (int) $id)->unique()->all())
+            ->get()->keyBy('id');
         $errors = [];
         foreach (['athletes' => [$athletes, $allowedAthletes], 'officials' => [$officials, $allowedOfficials]] as $kind => [$picked, $allowed]) {
             foreach ($picked as $slot => $ids) {
                 if (array_diff(array_map('strval', (array) $ids), $allowed[(int) $slot] ?? [])) {
                     $errors["$kind.$slot"] = self::NOT_ON_LONG_LIST;
+                } elseif ($p = collect((array) $ids)->map(fn ($id) => $inactive->get((int) $id))->filter()->first()) {
+                    $errors["$kind.$slot"] = "{$p->fullName()} is inactive.";
                 }
             }
         }
