@@ -62,13 +62,14 @@ it('renders the expected content', function () {
         'gameSport' => GameSport::factory()->make(['entry_policy' => 'Max 1 per category']), 'sportName' => 'Weightlifting',
         'rows' => [['event' => 'Men 61kg', 'gender' => 'men', 'count' => 1], ['event' => 'Team', 'gender' => 'mixed', 'count' => 2]],
         'totals' => ['men' => 1, 'women' => 0, 'total' => 3],
-        'participants' => ['male' => 3, 'female' => 0], 'medals' => ['gold' => 1, 'silver' => null, 'bronze' => 2],
+        'participants' => ['male' => 3, 'female' => 0], 'medals' => ['gold' => 1, 'silver' => null, 'bronze' => 2], 'achievement' => 'Reach the semi-final',
         'referenceNo' => 'BWF-G001-P2-R1', 'declaration' => 'I confirm.', 'nocLogo' => 'data:image/png;base64,AA==', 'gameLogo' => null,
     ])->render();
 
     expect($html)->toContain('Entry by Event')->toContain('Men 61kg')->toContain('Max 1 per category')
         ->toContain('BWF-G001-P2-R1')->toContain('I confirm.')->toContain('Stamp')->toContain('(mixed)')->toContain('All events (incl. mixed)')->toContain('max-height:60px')
-        ->toContain('Total number of participants')->toContain('Expected medals')->toContain('Gold')->toContain('Bronze');
+        ->toContain('Total number of participants')->toContain('Expected medals')->toContain('Gold')->toContain('Bronze')
+        ->toContain('Expected achievement')->toContain('Reach the semi-final');
 });
 
 it('passes the sport participants and medals to the view', function () {

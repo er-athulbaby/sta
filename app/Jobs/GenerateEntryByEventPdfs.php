@@ -44,6 +44,7 @@ class GenerateEntryByEventPdfs implements ShouldQueue
                 'rows' => $rows, 'totals' => $totals, 'referenceNo' => $s->reference_no,
                 'participants' => ['male' => $t?->male, 'female' => $t?->female],
                 'medals' => ['gold' => $t?->gold, 'silver' => $t?->silver, 'bronze' => $t?->bronze],
+                'achievement' => $t?->expected_achievement,
                 'declaration' => Setting::declaration($s->phase),
                 ...$context,
             ])->render();

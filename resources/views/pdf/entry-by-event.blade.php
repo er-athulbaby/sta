@@ -65,6 +65,8 @@
         </table>
     </td>
 </tr></table>
+<div class="cap" style="margin-top: 16px">Expected achievement</div>
+<div class="pbox" style="font-size: 12px; line-height: 1.5em">{{ ($achievement ?? null) ?: '–' }}</div>
 <div class="note" style="margin-top: 16px">Participants are different athletes (one athlete can enter several events); the sport limits apply to these totals. Medals are not linked to an athlete or event.</div>
 <table style="width: 100%; margin-top: 16px"><tr>
     <td class="pbox">

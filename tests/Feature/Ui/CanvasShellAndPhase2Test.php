@@ -106,7 +106,7 @@ it('lays out Phase 2 in the Phase2.dc.html order and wording', function () {
             'Weightlifting', 'Enter how many athletes you plan to send to each event',
             'Total number of participants', 'Different athletes — one athlete can enter several events', 'Male', 'Female', 'Total',
             'Event', 'Male', 'Female', '60kg', 'Up to 2 athletes', 'Fewer athletes in 60kg', 'More athletes in 60kg', 'Event entries',
-            'Expected medals', 'Optional · not linked to an athlete or event', 'Gold', 'Silver', 'Bronze',
+            'Expected medals', 'Required (0 if none) · not linked to an athlete or event', 'Gold', 'Silver', 'Bronze', 'Expected achievement',
             'Weightlifting limits', 'Checked against the total number of participants', 'Male participants', 'Female participants', 'Total participants',
             'Entry policy', 'Each event shows how many athletes it allows.',
             'Save as draft', 'Submit to association admin', 'A saved draft is never submitted.', 'Ahmed Saleh (association admin)', 'Entry by Event PDF'])

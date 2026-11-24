@@ -20,7 +20,7 @@ trait EditsPhase2
     /** @var array<int|string, int|string|null> game_event_id => count */
     public array $counts = [];
 
-    /** @var array<int|string, array<string, int|string|null>> game_sport_id => Phase2SportTotal::DIGITS field => value */
+    /** @var array<int|string, array<string, int|string|null>> game_sport_id => Phase2SportTotal::DIGITS field or expected_achievement => value */
     public array $totals = [];
 
     /** @var array<string, string> */
@@ -32,7 +32,7 @@ trait EditsPhase2
     {
         $this->counts = $this->submission->numbers()->pluck('count', 'game_event_id')->all();
         $this->totals = $this->submission->sportTotals()->get()
-            ->mapWithKeys(fn (Phase2SportTotal $t) => [$t->game_sport_id => $t->only(array_keys(Phase2SportTotal::DIGITS))])->all();
+            ->mapWithKeys(fn (Phase2SportTotal $t) => [$t->game_sport_id => $t->only([...array_keys(Phase2SportTotal::DIGITS), 'expected_achievement'])])->all();
     }
 
     /** @return Collection<int, GameSport> */
@@ -68,6 +68,9 @@ trait EditsPhase2
                     continue;
                 }
                 $totals[$field] = (int) $raw;
+            }
+            if (mb_strlen(trim((string) ($this->totals[$gs->id]['expected_achievement'] ?? ''))) > Phase2SportTotal::ACHIEVEMENT_MAX) {
+                $errors["totals.{$gs->id}.expected_achievement"] = "{$gs->sport->name} expected achievement: use at most ".Phase2SportTotal::ACHIEVEMENT_MAX.' characters.';
             }
             foreach (app(Phase2Limits::class)->errors($gs, $valid, $totals) as $key => $message) {
                 $errors[str_starts_with($key, 'event.') ? 'counts.'.substr($key, 6) : "sport.{$gs->id}.".substr($key, 6)] ??= $message;
@@ -119,7 +122,8 @@ trait EditsPhase2
                 foreach ($this->totals as $gameSportId => $row) {
                     if (in_array((int) $gameSportId, $allowedSports, true)) {
                         Phase2SportTotal::updateOrCreate(['submission_id' => $this->submission->id, 'game_sport_id' => $gameSportId],
-                            collect(Phase2SportTotal::DIGITS)->map(fn ($digits, $field) => blank($row[$field] ?? null) ? null : (int) $row[$field])->all());
+                            [...collect(Phase2SportTotal::DIGITS)->map(fn ($digits, $field) => blank($row[$field] ?? null) ? null : (int) $row[$field])->all(),
+                                'expected_achievement' => trim((string) ($row['expected_achievement'] ?? '')) ?: null]);
                     }
                 }
                 // lock_version already bumped by claimOrHalt()

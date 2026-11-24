@@ -60,7 +60,8 @@ it('shows limit messages live while typing', function () {
 
 it('submits directly as association admin and generates the PDF job', function () {
     livewire(Phase2Entry::class, ['game' => $this->game->id])->set("counts.{$this->m60->id}", 1)
-        ->set("totals.{$this->judo->id}.male", '1')->set("totals.{$this->judo->id}.female", '0')->callAction('submit');
+        ->set("totals.{$this->judo->id}.male", '1')->set("totals.{$this->judo->id}.female", '0')
+        ->set("totals.{$this->judo->id}.gold", '1')->set("totals.{$this->judo->id}.silver", '0')->set("totals.{$this->judo->id}.bronze", '0')->callAction('submit');
     expect(Submission::sole()->status)->toBe(SubmissionStatus::Submitted);
     Bus::assertDispatched(GenerateEntryByEventPdfs::class);
 });
@@ -179,4 +180,33 @@ it('saves as draft from the header without submitting', function () {
         ->set("counts.{$this->m60->id}", 1)->callAction('saveDraft')->assertNotified('Saved');
 
     expect(NumberEntry::sole()->count)->toBe(1)->and(Submission::sole()->status)->toBe(SubmissionStatus::Draft);
+});
+
+it('requires expected medals on submit but not on save as draft', function () {
+    $page = livewire(Phase2Entry::class, ['game' => $this->game->id])->set("counts.{$this->m60->id}", 1)
+        ->set("totals.{$this->judo->id}.male", '1')->set("totals.{$this->judo->id}.female", '0')
+        ->call('save')->assertHasNoErrors();
+    expect(Phase2SportTotal::sole()->gold)->toBeNull();
+
+    $page->callAction('submit')->assertNotified('Judo: enter expected medals (0 if none).');
+    expect(Submission::sole()->status)->toBe(SubmissionStatus::Draft);
+});
+
+it('requires the expected achievement when no medal is expected, then submits with it', function () {
+    $page = livewire(Phase2Entry::class, ['game' => $this->game->id])->set("counts.{$this->m60->id}", 1)
+        ->set("totals.{$this->judo->id}.male", '1')->set("totals.{$this->judo->id}.female", '0')
+        ->set("totals.{$this->judo->id}.gold", '0')->set("totals.{$this->judo->id}.silver", '0')->set("totals.{$this->judo->id}.bronze", '0')
+        ->callAction('submit')->assertNotified('Judo: describe the expected achievement when no medal is expected.');
+    expect(Submission::sole()->status)->toBe(SubmissionStatus::Draft);
+
+    $page->set("totals.{$this->judo->id}.expected_achievement", '  Reach the semi-final ')->callAction('submit');
+    expect(Submission::sole()->status)->toBe(SubmissionStatus::Submitted)
+        ->and(Phase2SportTotal::sole()->expected_achievement)->toBe('Reach the semi-final');
+});
+
+it('limits the expected achievement to 500 characters', function () {
+    livewire(Phase2Entry::class, ['game' => $this->game->id])
+        ->set("totals.{$this->judo->id}.expected_achievement", str_repeat('a', 501))->call('save')
+        ->assertHasErrors(["totals.{$this->judo->id}.expected_achievement"]);
+    expect(Phase2SportTotal::count())->toBe(0);
 });

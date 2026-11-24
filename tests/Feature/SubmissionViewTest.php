@@ -94,8 +94,9 @@ it('logs the long list detail in the trail without policy number or vaccinations
 
 it('shows phase 2 participants and expected medals', function () {
     $p2 = Submission::for($this->game, $this->assoc, 2);
-    $p2->sportTotals()->create(['game_sport_id' => $this->m60->game_sport_id, 'male' => 7, 'female' => 5, 'silver' => 2]);
+    $p2->sportTotals()->create(['game_sport_id' => $this->m60->game_sport_id, 'male' => 7, 'female' => 5, 'silver' => 2, 'expected_achievement' => 'Reach the semi-final']);
     actingInAdmin($this->viewer);
     livewire(SubmissionView::class, ['record' => $this->game->getRouteKey(), 'submission' => $p2])
-        ->assertSee('Participants and expected medals')->assertSeeHtml('<td class="py-1">7</td>')->assertSeeHtml('<td class="py-1">5</td>');
+        ->assertSee('Participants and expected medals')->assertSeeHtml('<td class="py-1">7</td>')->assertSeeHtml('<td class="py-1">5</td>')
+        ->assertSee('Expected achievement')->assertSee('Reach the semi-final');
 });

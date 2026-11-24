@@ -52,7 +52,7 @@ beforeEach(function () {
     $sub(1)->answers()->create(['game_sport_id' => $judo->id, 'answer' => 'yes']);
     $p2 = $sub(2);
     $p2->numbers()->create(['game_event_id' => $m60->id, 'count' => 2]);
-    $p2->sportTotals()->create(['game_sport_id' => $judo->id, 'male' => 2, 'female' => 0, 'gold' => 1, 'silver' => null, 'bronze' => 1]);
+    $p2->sportTotals()->create(['game_sport_id' => $judo->id, 'male' => 2, 'female' => 0, 'gold' => 1, 'silver' => null, 'bronze' => 1, 'expected_achievement' => 'Reach the final']);
     $p3 = $sub(3);
     $athlete($p3, $this->ali);
     $athlete($p3, $omar);
@@ -140,8 +140,8 @@ it('reports phase 1 answers, phase 2 numbers and phase 2 sport totals', function
         ->and(shown(runSubject('phase2_numbers', $this->game->id), 'sport', 'event', 'gender', 'count'))
         ->toBe([['Judo', 'Men -60kg', 'Male', 2]])
         ->and(shown(runSubject('phase2_sport_totals', $this->game->id),
-            'game', 'association', 'sport', 'status', 'male', 'female', 'gold', 'silver', 'bronze'))
-        ->toBe([['Asian Indoor Games', 'Bahrain Judo Federation', 'Judo', 'Draft', 2, 0, 1, null, 1]])
+            'game', 'association', 'sport', 'status', 'male', 'female', 'gold', 'silver', 'bronze', 'expected_achievement'))
+        ->toBe([['Asian Indoor Games', 'Bahrain Judo Federation', 'Judo', 'Draft', 2, 0, 1, null, 1, 'Reach the final']])
         ->and(runSubject('phase2_sport_totals', $this->otherGame->id)->rowCount)->toBe(0);
 });
 

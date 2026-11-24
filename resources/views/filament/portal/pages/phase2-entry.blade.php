@@ -105,7 +105,7 @@
                 <fieldset wire:key="medals-{{ $gs->id }}" style="margin: 0; border: 0; border-top: 1px solid var(--sta-bd-line, #E2E8F0); padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px">
                     <legend style="float: left; padding: 0; display: flex; flex-direction: column; gap: 2px; margin-right: 8px">
                         <span style="{{ $legendTitle }}">Expected medals</span>
-                        <span style="font-size: 12px; color: var(--sta-fg-muted, #475569); font-weight: 400">Optional · not linked to an athlete or event</span>
+                        <span style="font-size: 12px; color: var(--sta-fg-muted, #475569); font-weight: 400">Required (0 if none) · not linked to an athlete or event</span>
                     </legend>
                     @foreach (['gold' => ['Gold', 'var(--sta-bg-yellow-600, #CA8A04)'], 'silver' => ['Silver', 'var(--sta-bg-faint, #94A3B8)'], 'bronze' => ['Bronze', 'var(--sta-bg-amber-700, #B45309)']] as $field => [$label, $dot])
                         <label style="display: flex; align-items: center; gap: 8px; font-weight: 600">
@@ -115,6 +115,13 @@
                         </label>
                         @if ($m = $msg("totals.{$gs->id}.{$field}"))<p class="sta-error">{{ $m }}</p>@endif
                     @endforeach
+                    <label for="totals-{{ $gs->id }}-achievement" style="flex: 1 1 100%; display: flex; flex-direction: column; gap: 4px; font-weight: 600">
+                        <span>Expected achievement <span style="font-size: 12px; font-weight: 400; color: var(--sta-fg-muted, #475569)">Required when no medal is expected · e.g. "Reach the semi-final"</span></span>
+                        <textarea id="totals-{{ $gs->id }}-achievement" rows="2" maxlength="{{ \App\Models\Phase2SportTotal::ACHIEVEMENT_MAX }}"
+                            wire:model.blur="totals.{{ $gs->id }}.expected_achievement" @disabled($readOnlyReason)
+                            style="padding: 10px 12px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; font: 400 14px/1.5 Inter, sans-serif; resize: vertical; background: var(--sta-bg-surface, #FFFFFF)"></textarea>
+                    </label>
+                    @if ($m = $msg("totals.{$gs->id}.expected_achievement"))<p class="sta-error">{{ $m }}</p>@endif
                 </fieldset>
 
                 @if ($submitted && isset($paths[$gs->id]))

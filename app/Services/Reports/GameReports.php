@@ -90,14 +90,14 @@ final class GameReports
                 foreach ($gs->gameEvents->sortBy('event.name') as $ge) {
                     $n = (int) ($counts[$ge->id] ?? 0);
                     $total += $n;
-                    $rows[] = [$s->association->name, $gs->sport->name, $ge->event->name, $ge->event->gender->label(), $n, null, null, null, null, null];
+                    $rows[] = [$s->association->name, $gs->sport->name, $ge->event->name, $ge->event->gender->label(), $n, null, null, null, null, null, null];
                 }
                 $t = $totals->get($gs->id);
-                $rows[] = [$s->association->name, $gs->sport->name, 'Total', null, $total, $t?->male, $t?->female, $t?->gold, $t?->silver, $t?->bronze];
+                $rows[] = [$s->association->name, $gs->sport->name, 'Total', null, $total, $t?->male, $t?->female, $t?->gold, $t?->silver, $t?->bronze, $t?->expected_achievement];
             }
         }
 
-        return ['headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count', 'Male participants', 'Female participants', 'Gold', 'Silver', 'Bronze'], 'rows' => $rows];
+        return ['headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count', 'Male participants', 'Female participants', 'Gold', 'Silver', 'Bronze', 'Expected achievement'], 'rows' => $rows];
     }
 
     public function longList(Game $game): array

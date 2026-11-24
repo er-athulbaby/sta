@@ -94,7 +94,7 @@ function overLimit($t): GameSport
     ]);
     $ge = GameEvent::factory()->create(['game_id' => $t->game->id, 'game_sport_id' => $gs->id, 'p2_max_athletes' => null]);
     $t->sub->numbers()->create(['game_event_id' => $ge->id, 'count' => 2]);
-    $t->sub->sportTotals()->create(['game_sport_id' => $gs->id, 'male' => 2, 'female' => 0]);
+    $t->sub->sportTotals()->create(['game_sport_id' => $gs->id, 'male' => 2, 'female' => 0, 'gold' => 0, 'silver' => 0, 'bronze' => 0, 'expected_achievement' => 'Reach the final']);
 
     return $gs;
 }

@@ -91,11 +91,11 @@ it('totals phase 2 numbers per event and per sport with participants and medals'
         ->sportTotals()->create(['game_sport_id' => $this->judo->id, 'male' => 2, 'female' => 0, 'gold' => 1]);
 
     expect($this->reports->phase2Totals($this->game))->toBe([
-        'headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count', 'Male participants', 'Female participants', 'Gold', 'Silver', 'Bronze'],
+        'headings' => ['Association', 'Sport', 'Event', 'Gender', 'Count', 'Male participants', 'Female participants', 'Gold', 'Silver', 'Bronze', 'Expected achievement'],
         'rows' => [
-            ['Bahrain Judo Federation', 'Judo', 'Men -60kg', 'Male', 2, null, null, null, null, null],
-            ['Bahrain Judo Federation', 'Judo', 'Women -52kg', 'Female', 0, null, null, null, null, null],
-            ['Bahrain Judo Federation', 'Judo', 'Total', null, 2, 2, 0, 1, null, null],
+            ['Bahrain Judo Federation', 'Judo', 'Men -60kg', 'Male', 2, null, null, null, null, null, null],
+            ['Bahrain Judo Federation', 'Judo', 'Women -52kg', 'Female', 0, null, null, null, null, null, null],
+            ['Bahrain Judo Federation', 'Judo', 'Total', null, 2, 2, 0, 1, null, null, null],
         ],
     ]);
 });

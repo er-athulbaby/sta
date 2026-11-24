@@ -62,10 +62,10 @@
         <x-sta.card heading="Participants and expected medals">
             <div class="sta-scroll">
                 <table class="sta-table w-full text-sm">
-                    <thead><tr><th class="py-1">Sport</th><th class="py-1">Male</th><th class="py-1">Female</th><th class="py-1">Gold</th><th class="py-1">Silver</th><th class="py-1">Bronze</th></tr></thead>
+                    <thead><tr><th class="py-1">Sport</th><th class="py-1">Male</th><th class="py-1">Female</th><th class="py-1">Gold</th><th class="py-1">Silver</th><th class="py-1">Bronze</th><th class="py-1">Expected achievement</th></tr></thead>
                     <tbody>
                         @foreach ($this->phase2SportTotals() as $r)
-                            <tr><td class="py-1">{{ $r['sport'] }}</td>@foreach (['male', 'female', 'gold', 'silver', 'bronze'] as $f)<td class="py-1">{{ $r[$f] ?? '–' }}</td>@endforeach</tr>
+                            <tr><td class="py-1">{{ $r['sport'] }}</td>@foreach (['male', 'female', 'gold', 'silver', 'bronze'] as $f)<td class="py-1">{{ $r[$f] ?? '–' }}</td>@endforeach<td class="py-1">{{ $r['expected_achievement'] ?? '–' }}</td></tr>
                         @endforeach
                     </tbody>
                 </table>

@@ -155,7 +155,7 @@
                                         <td style="padding: 10px 12px">
                                             <div style="display: flex; flex-direction: column; font-size: 13px">
                                                 @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport" />@else<span style="{{ $missingStyle }}">Passport missing</span>@endif
-                                                @if ($p->cpr_front_path)<span>CPR · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR missing</span>@endif
+                                                @if ($p->cpr_front_path)<span>CPR · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="color: var(--sta-fg-muted, #475569)">No CPR</span>@endif
                                                 @include('filament.portal.partials.travel-cell')
                                             </div>
                                         </td>
@@ -212,7 +212,7 @@
                                 @endif
                                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px">
                                     @if ($p->passport_scan_path)<x-sta.passport-links :person="$p" label="Passport scan" />@else<span style="{{ $missingStyle }}">Passport scan missing</span>@endif
-                                    @if ($p->cpr_front_path)<span>CPR scan · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="{{ $missingStyle }}">CPR scan missing</span>@endif
+                                    @if ($p->cpr_front_path)<span>CPR scan · <a href="{{ $url($p->cpr_front_path) }}" target="_blank" aria-label="View CPR scan of {{ $p->fullName() }}" style="font-weight: 600">View</a></span>@else<span style="color: var(--sta-fg-muted, #475569)">No CPR</span>@endif
                                     @include('filament.portal.partials.travel-cell')
                                 </div>
                                 @if ($flagged($row))

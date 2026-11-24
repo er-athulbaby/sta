@@ -87,7 +87,6 @@ it('warns about expiring documents, missing scans, age range and missing sizes',
         'Passport expires before the games end (05 Mar 2027).',
         'CPR expires before the games end (09 Mar 2027).',
         'Passport scan missing.',
-        'CPR scan missing.',
         'Date of birth is outside the Judo age range.',
         'T-Shirt size missing.',
     ]);

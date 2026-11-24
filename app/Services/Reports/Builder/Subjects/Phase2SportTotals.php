@@ -40,7 +40,7 @@ final class Phase2SportTotals extends Subject
 
     public function defaultColumns(): array
     {
-        return ['association', 'sport', 'male', 'female', 'gold', 'silver', 'bronze'];
+        return ['association', 'sport', 'male', 'female', 'gold', 'silver', 'bronze', 'expected_achievement'];
     }
 
     protected function define(): array
@@ -54,6 +54,7 @@ final class Phase2SportTotals extends Subject
         foreach (Phase2SportTotal::LABELS as $column => $label) {
             $fields[] = Field::number($column, $label, 'Totals', "phase2_sport_totals.{$column}");
         }
+        $fields[] = Field::text('expected_achievement', 'Expected achievement', 'Totals', 'phase2_sport_totals.expected_achievement');
 
         return $fields;
     }

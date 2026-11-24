@@ -96,7 +96,8 @@ it('shows completeness and warnings per person', function () {
 
     livewire(Phase3Entry::class, ['game' => $this->game->id])
         ->set("athletes.{$this->m60->id}", [(string) $yusuf->id])
-        ->assertSee('Incomplete')->assertSee('Missing: Full name')->assertSee('Passport scan missing.');
+        ->assertSee('Incomplete')->assertSee('Missing: Full name')->assertSee('Passport scan missing.')
+        ->assertSee('No CPR')->assertDontSee('CPR scan missing')->assertDontSee('CPR missing');
 });
 
 it('saves travel and insurance details with a certificate named after the person', function () {

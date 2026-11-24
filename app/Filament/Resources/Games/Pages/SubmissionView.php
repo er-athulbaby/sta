@@ -73,13 +73,14 @@ class SubmissionView extends Page
             fn ($ge) => ['sport' => $gs->sport->name, 'event' => $ge->event->name, 'count' => (int) ($counts[$ge->id] ?? 0)]));
     }
 
-    /** @return Collection<int, array{sport: string, male: ?int, female: ?int, gold: ?int, silver: ?int, bronze: ?int}> */
+    /** @return Collection<int, array{sport: string, male: ?int, female: ?int, gold: ?int, silver: ?int, bronze: ?int, expected_achievement: ?string}> */
     public function phase2SportTotals(): Collection
     {
         $totals = $this->submission->sportTotals()->get()->keyBy('game_sport_id');
 
         return $this->record->phase2SportsFor($this->submission->association)->map(fn ($gs) => ['sport' => $gs->sport->name,
-            ...collect(Phase2SportTotal::DIGITS)->map(fn ($digits, $field) => $totals->get($gs->id)?->{$field})->all()]);
+            ...collect(Phase2SportTotal::DIGITS)->map(fn ($digits, $field) => $totals->get($gs->id)?->{$field})->all(),
+            'expected_achievement' => $totals->get($gs->id)?->expected_achievement]);
     }
 
     /** @return list<string> e.g. "Judo: 2 male athletes (limit 1)" */

@@ -9,6 +9,7 @@ use App\Jobs\GenerateEntryByEventPdfs;
 use App\Jobs\GenerateEntryBySportPdf;
 use App\Jobs\GenerateLongListPdf;
 use App\Jobs\GenerateShortListPdf;
+use App\Models\Phase2SportTotal;
 use App\Models\Submission;
 use App\Models\User;
 use App\Notifications\DeadlineChanged;
@@ -199,6 +200,9 @@ final class SubmissionWorkflow
             // Totals are required on submit only, so entries already awaiting approval can still be approved.
             if ($requireTotals && ($t?->male === null || $t->female === null)) {
                 $this->fail("{$gs->sport->name}: enter the total number of male and female participants.");
+            }
+            if ($requireTotals && ($error = Phase2SportTotal::expectationError($gs->sport->name, $t))) {
+                $this->fail($error);
             }
             if ($errors = app(Phase2Limits::class)->errors($gs, $counts, ['male' => $t?->male, 'female' => $t?->female])) {
                 $this->fail(reset($errors));
