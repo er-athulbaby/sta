@@ -291,6 +291,17 @@
 .fi-main [style]:not([class*="fi-"]):not(button):not(select):not(table):not([type="checkbox"]):not([type="radio"]) { box-sizing: content-box; }
 @media (max-width: 640px) { .fi-main { padding: 16px; } }
 
+/* STA admin panel menu in BOC red (the association portal keeps the navy): hover and active steps are darker reds, and the
+   menu text is white, since the light grey-blue text the navy menu uses is too faint on red. */
+.fi-panel-admin {
+    --sta-nav: #F2675D;
+    --sta-nav-hover: #DE564C;
+    --sta-nav-active: #C9463D;
+    --sta-nav-text: #FFFFFF;
+    --sta-nav-muted: #FFF1EF;
+}
+.fi-panel-admin .fi-sidebar-item-btn { font-weight: 600; }
+
 /* Menu = canvas <nav> (Main.dc.html, Phase2.dc.html): navy, padding 24px 16px, 24px between brand, items and user block. */
 .fi-sidebar { background: var(--sta-nav); color: #E2E8F0; padding: 24px 16px; gap: 24px; box-sizing: border-box; }
 .fi-sidebar-header-ctn { overflow: visible; }
