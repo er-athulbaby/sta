@@ -2,6 +2,7 @@
 
 namespace App\Filament\Portal\Pages;
 
+use App\Filament\Shared\HasGeneralDashboard;
 use App\Models\Comment;
 use App\Notifications\NewComment;
 use Filament\Facades\Filament;
@@ -12,6 +13,8 @@ use Illuminate\Support\Collection;
 /** Portal home (canvas menu "Home"): "Remarks from STA" (when there are any), then the same game cards as the Games page. */
 class Home extends Dashboard
 {
+    use HasGeneralDashboard;
+
     protected string $view = 'filament.portal.pages.games';
 
     protected static ?string $title = 'Home';

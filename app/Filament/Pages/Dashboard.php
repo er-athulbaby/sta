@@ -10,6 +10,7 @@ use App\Filament\Resources\ActivityLogs\ActivityLogResource;
 use App\Filament\Resources\Associations\AssociationResource;
 use App\Filament\Resources\Associations\Tables\AssociationsTable;
 use App\Filament\Resources\Games\GameResource;
+use App\Filament\Shared\HasGeneralDashboard;
 use App\Models\Association;
 use App\Models\Comment;
 use App\Models\Game;
@@ -38,6 +39,8 @@ use Spatie\Activitylog\Models\Activity;
  */
 class Dashboard extends BaseDashboard
 {
+    use HasGeneralDashboard;
+
     protected string $view = 'filament.pages.dashboard';
 
     /** @var Collection<int, array{game: Game, progress: GameProgress, phase: ?GamePhase, closed: ?GamePhase, counts: ?array, open: Collection<int, GamePhase>}>|null */

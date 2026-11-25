@@ -8,12 +8,14 @@
 @use(App\Models\GamePhase)
 @use(App\Support\Sta)
 @php
-    $games = $this->activeGames();
-    $showGames = $this->allowed(StaArea::Submissions);
-    $showAssocs = $this->allowed(StaArea::Associations);
+    // The General dashboard tab replaces every band below (none of their queries run).
+    $general = $this->tab === 'general';
+    $showGames = ! $general && $this->allowed(StaArea::Submissions);
+    $games = $showGames ? $this->activeGames() : collect();
+    $showAssocs = ! $general && $this->allowed(StaArea::Associations);
     $showPeople = $this->allowed(StaArea::People);
     $attention = ($showGames || $showAssocs) ? $this->attention() : null;
-    $registry = $this->registry();
+    $registry = $general ? null : $this->registry();
     $phaseColours = [1 => ['var(--sta-bg-sky-100, #E0F2FE)', 'var(--sta-fg-sky-800, #075985)', 'var(--sta-bg-sky-700, #0369A1)'], 2 => ['var(--sta-bg-teal-100, #CCFBF1)', 'var(--sta-fg-teal-800, #115E59)', 'var(--sta-bg-teal-700, #0F766E)'], 3 => ['var(--sta-bg-amber-100, #FEF3C7)', 'var(--sta-fg-amber-800, #92400E)', 'var(--sta-bg-amber-700, #B45309)'], 4 => ['var(--sta-bg-violet-100, #EDE9FE)', 'var(--sta-fg-violet-800, #5B21B6)', 'var(--sta-bg-violet-700, #6D28D9)']];
     $chip = fn (int $p, string $label) => '<span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: '.$phaseColours[$p][0].'; color: '.$phaseColours[$p][1].'; white-space: nowrap"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: '.$phaseColours[$p][2].'; flex-shrink: 0"></span>'.e($label).'</span>';
     $pill = fn (string $bg, string $fg, ?string $ring = null) => 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: '.$bg.'; color: '.$fg.($ring ? '; box-shadow: inset 0 0 0 1px '.$ring : '');
@@ -30,6 +32,10 @@
     $linkStyle = 'display: inline-flex; align-items: center; min-height: 44px; font-weight: 600';
 @endphp
 <x-filament-panels::page>
+    @include('filament.shared.dashboard-tabs')
+    @if ($general)
+        @include('filament.shared.general-dashboard')
+    @endif
 
     @if ($showGames)
         <section aria-labelledby="games-title" style="display: flex; flex-direction: column; gap: 12px">
@@ -280,7 +286,7 @@
         </section>
     @endif
 
-    @if ($this->allowed(StaArea::AuditLog))
+    @if (! $general && $this->allowed(StaArea::AuditLog))
         <section aria-labelledby="log-title" style="background: var(--sta-bg-surface-alt, #F8FAFC); border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 14px; display: flex; flex-direction: column">
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-subtle, #F1F5F9); border-radius: 13px 13px 0 0">
                 <div style="display: flex; flex-direction: column; gap: 2px">

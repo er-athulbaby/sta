@@ -1,6 +1,14 @@
 <x-filament-panels::page>
+    {{-- Home only: the Games dashboard / General dashboard tabs; the General one replaces the remarks and game cards. --}}
+    @php $home = $this instanceof \App\Filament\Portal\Pages\Home; @endphp
+    @if ($home)
+        @include('filament.shared.dashboard-tabs')
+    @endif
+    @if ($home && $this->tab === 'general')
+        @include('filament.shared.general-dashboard')
+    @else
     {{-- Home only (M6): the latest STA remarks, unread ones marked; each opens its phase page (where the association replies). --}}
-    @if ($this instanceof \App\Filament\Portal\Pages\Home && ($remarks = $this->remarks())->isNotEmpty())
+    @if ($home && ($remarks = $this->remarks())->isNotEmpty())
         @php $unread = $remarks->where('unread', true)->count(); @endphp
         <x-sta.card heading="Remarks from STA" :description="$unread ? $unread.' unread' : 'Latest remarks'">
             <ul class="sta-list">
@@ -40,4 +48,5 @@
     @empty
         <p class="sta-muted">No games yet.</p>
     @endforelse
+    @endif
 </x-filament-panels::page>
