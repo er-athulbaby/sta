@@ -15,6 +15,16 @@
         <label for="name">Your full name</label>
         <input id="name" name="name" value="{{ old('name', $invitation->name) }}" required autocomplete="name">
         @error('name')<p class="error">{{ $message }}</p>@enderror
+        <label for="phone">Mobile (optional)</label>
+        <div class="phone">
+            <select name="phone_cc" aria-label="Mobile country code">
+                @foreach (array_keys(config('phone_codes')) as $cc)
+                    <option value="{{ $cc }}" @selected(old('phone_cc', '+973') === $cc)>{{ $cc }}</option>
+                @endforeach
+            </select>
+            <input id="phone" type="tel" name="phone" value="{{ old('phone') }}" maxlength="20" pattern="[0-9 ]{4,20}" autocomplete="tel-national">
+        </div>
+        @error('phone')<p class="error">{{ $message }}</p>@enderror
         <label for="password">Password (at least 12 characters)</label>
         <input id="password" type="password" name="password" required autocomplete="new-password">
         @error('password')<p class="error">{{ $message }}</p>@enderror

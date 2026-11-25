@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Shared\EditUserProfile;
 use App\Support\InitialsAvatarProvider;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Enums\DatabaseNotificationsPosition;
@@ -33,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->passwordReset()
-            ->profile()
+            ->profile(EditUserProfile::class)
             ->multiFactorAuthentication([AppAuthentication::make()])
             // Canvas shell: no top bar on desktop, so notifications live in the menu and there is no global search.
             ->databaseNotifications(position: DatabaseNotificationsPosition::Sidebar)

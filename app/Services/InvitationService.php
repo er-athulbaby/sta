@@ -66,9 +66,9 @@ final class InvitationService
         return Invitation::pending()->where('token_hash', hash('sha256', $token))->first();
     }
 
-    public function accept(string $token, string $name, string $password): User
+    public function accept(string $token, string $name, string $password, ?string $phoneCc = null, ?string $phone = null): User
     {
-        return DB::transaction(function () use ($token, $name, $password) {
+        return DB::transaction(function () use ($token, $name, $password, $phoneCc, $phone) {
             $invitation = Invitation::pending()->where('token_hash', hash('sha256', $token))->lockForUpdate()->first();
             if (! $invitation) {
                 throw ValidationException::withMessages(['token' => 'This invitation is invalid or has expired.']);
@@ -88,6 +88,8 @@ final class InvitationService
                 'role' => $invitation->role,
                 'association_id' => $invitation->association_id,
                 'is_active' => true,
+                'phone_cc' => $phoneCc ?? '+973',
+                'phone' => $phone,
             ]);
             $user->forceFill(['email_verified_at' => now()])->save();
             $invitation->update(['accepted_at' => now()]);

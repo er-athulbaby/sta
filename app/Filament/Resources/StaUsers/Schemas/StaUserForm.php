@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StaUsers\Schemas;
 
 use App\Enums\Role;
+use App\Filament\Shared\UserFields;
 use App\Models\StaGroup;
 use App\Models\User;
 use Closure;
@@ -17,8 +18,10 @@ class StaUserForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            UserFields::photo(),
             TextInput::make('name')->required()->maxLength(255),
             TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
+            UserFields::mobile(),
             TextInput::make('password')->password()->revealable()
                 ->required(fn (string $operation) => $operation === 'create')
                 ->minLength(12)

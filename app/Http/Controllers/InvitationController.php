@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class InvitationController extends Controller
@@ -28,9 +29,11 @@ class InvitationController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Password::min(12)],
+            'phone_cc' => ['nullable', Rule::in(array_keys(config('phone_codes')))],
+            'phone' => ['nullable', 'regex:/^[0-9 ]{4,20}$/', 'max:20'],
         ]);
 
-        $user = $this->invitations->accept($token, $data['name'], $data['password']);
+        $user = $this->invitations->accept($token, $data['name'], $data['password'], $data['phone_cc'] ?? null, $data['phone'] ?? null);
         Auth::login($user);
         $request->session()->regenerate();
 

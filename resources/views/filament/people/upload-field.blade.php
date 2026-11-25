@@ -40,7 +40,11 @@
     $files = $isList ? $values->map($describe)->filter() : collect();
     $meta = $file['meta'] ?? null;
     $accept = implode(',', $field->getAcceptedFileTypes() ?? []);
-    $person = $field->getRecord();
+    // The record is a Person, or a User for the account photo ($removable: a Remove button beside Replace).
+    $record = $field->getRecord();
+    $ownerName = $record instanceof \App\Models\Person ? $record->fullName() : $record?->name;
+    $removable ??= false;
+    $valueKey = $values->search($value);
     $btn = 'min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); font: 600 13px Inter, sans-serif; display: inline-flex; align-items: center; cursor: pointer; box-sizing: border-box';
     $link = 'display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 600; font-size: 13px';
 @endphp
@@ -92,9 +96,9 @@
             @endunless
         @elseif ($variant === 'photo')
             @if ($file && $file['preview'])
-                <img src="{{ $file['preview'] }}" alt="Photo preview: {{ $person?->fullName() }}" style="width: 160px; height: 200px; border-radius: 12px; object-fit: cover; background: var(--sta-bg-selected, #E8EEF6)">
+                <img src="{{ $file['preview'] }}" alt="Photo preview: {{ $ownerName }}" style="width: 160px; height: 200px; border-radius: 12px; object-fit: cover; background: var(--sta-bg-selected, #E8EEF6)">
             @else
-                <div role="img" aria-label="Photo preview: {{ $person?->fullName() ?? 'no photo yet' }}" style="width: 160px; height: 200px; border-radius: 12px; background: var(--sta-bg-selected, #E8EEF6); color: var(--sta-fg-brand, #1F3A5F); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 40px">{{ $person ? \App\Support\Sta::initials($person->fullName()) : '' }}</div>
+                <div role="img" aria-label="Photo preview: {{ $ownerName ?? 'no photo yet' }}" style="width: 160px; height: 200px; border-radius: 12px; background: var(--sta-bg-selected, #E8EEF6); color: var(--sta-fg-brand, #1F3A5F); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 40px">{{ $ownerName ? \App\Support\Sta::initials($ownerName) : '' }}</div>
             @endif
             @if ($file)
                 <span style="font-size: 12px; color: var(--sta-fg-strong, #334155); overflow-wrap: anywhere">{{ $file['name'] }}@if ($file['size']) · {{ $file['size'] }}@endif</span>
@@ -105,6 +109,9 @@
                 @endif
                 @unless ($disabled)
                     <label for="{{ $inputId }}" tabindex="0" role="button" class="sta-upload" x-on:keydown.enter.prevent="$el.click()" x-on:keydown.space.prevent="$el.click()" style="{{ $btn }}">{{ $file ? 'Replace' : 'Upload' }}<span class="sta-sr-only"> photo</span></label>
+                    @if ($removable && $file)
+                        <button type="button" x-on:click="$wire.callSchemaComponentMethod(@js($getKey()), 'removeUploadedFile', { fileKey: @js($valueKey) }).then(() => $wire.$refresh())" style="{{ $btn }}">Remove<span class="sta-sr-only"> photo</span></button>
+                    @endif
                 @endunless
             </div>
         @elseif ($file)

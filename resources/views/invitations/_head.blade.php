@@ -12,8 +12,10 @@
     h1{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.01em;margin:0 0 8px}
     p{color:#475569;line-height:1.55}
     label{display:block;margin-top:14px;font-weight:600;font-size:13px}
-    input{width:100%;min-height:44px;padding:0 12px;margin-top:6px;border:1px solid #CBD5E1;border-radius:10px;box-sizing:border-box;font:14px Inter,sans-serif;color:#0F172A}
-    input:focus-visible,button:focus-visible{outline:2px solid #1F3A5F;outline-offset:2px}
+    input,select{width:100%;min-height:44px;padding:0 12px;margin-top:6px;border:1px solid #CBD5E1;border-radius:10px;box-sizing:border-box;font:14px Inter,sans-serif;color:#0F172A}
+    input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid #1F3A5F;outline-offset:2px}
     button{margin-top:20px;width:100%;min-height:44px;background:#1F3A5F;color:#fff;border:0;border-radius:10px;font:600 14px Inter,sans-serif;cursor:pointer}
+    .phone{display:flex;gap:8px}
+    .phone select{width:110px;flex-shrink:0}
     .error{color:#B91C1C;font-size:13px;font-weight:600;margin:6px 0 0}
 </style>

@@ -90,9 +90,10 @@
                 <ul style="list-style: none; margin: 0; padding: 0">
                     @foreach ($sel->users as $u)
                         <li wire:key="assoc-user-{{ $u->id }}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 20px; border-top: 1px solid var(--sta-bd-row, #EEF2F6)">
+                            <img src="{{ filament()->getUserAvatarUrl($u) }}" alt="" width="36" height="36" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0">
                             <span style="display: flex; flex-direction: column; flex: 1 1 150px; min-width: 0">
                                 <span style="font-weight: 600">{{ $u->name }}</span>
-                                <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $roleLabel($u->role) }} · {{ $u->email }}</span>
+                                <span style="font-size: 12px; color: var(--sta-fg-muted, #475569)">{{ $roleLabel($u->role) }} · {{ $u->email }}@if ($u->mobile()) · {{ $u->mobile() }}@endif</span>
                             </span>
                             <span style="{{ $u->is_active ? $pills['active'] : $pills['off'] }}">{{ $u->is_active ? 'Active' : 'Deactivated' }}</span>
                             @if ($u->id !== auth()->id())
