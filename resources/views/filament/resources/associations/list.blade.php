@@ -125,7 +125,11 @@
                             <span style="display: flex; gap: 8px">
                                 <input x-ref="link" readonly value="{{ $link ?? url('/invitations').'/••••••' }}" style="flex: 1; min-width: 0; min-height: 40px; padding: 0 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; font: 13px Inter, sans-serif; color: var(--sta-fg-strong, #334155); background: var(--sta-bg-surface-alt, #F8FAFC)">
                                 @if ($link)
-                                    <button type="button" x-on:click="navigator.clipboard.writeText($refs.link.value); $el.textContent = 'Copied'" style="{{ $small }}">Copy</button>
+                                    <button type="button" x-on:click.prevent="
+                                        {{-- navigator.clipboard exists only on https pages; on plain http fall back to selecting the link and execCommand('copy'). --}}
+                                        const done = () => { $el.textContent = 'Copied'; setTimeout(() => $el.textContent = 'Copy', 2000) };
+                                        const fallback = () => { $refs.link.select(); $refs.link.setSelectionRange(0, 99999); document.execCommand('copy') ? done() : ($el.textContent = 'Press Ctrl+C') };
+                                        window.isSecureContext && navigator.clipboard ? navigator.clipboard.writeText($refs.link.value).then(done, fallback) : fallback()" style="{{ $small }}">Copy</button>
                                 @else
                                     <button type="button" disabled title="The link is shown only on the page that sent it. Resend email for a new link." style="{{ $small }}; color: var(--sta-fg-faint, #94A3B8); cursor: not-allowed">Copy</button>
                                 @endif
