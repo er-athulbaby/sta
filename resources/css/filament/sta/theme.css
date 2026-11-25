@@ -294,9 +294,9 @@
 /* STA admin panel menu in BOC red (the association portal keeps the navy): hover and active steps are darker reds, and the
    menu text is white, since the light grey-blue text the navy menu uses is too faint on red. */
 .fi-panel-admin {
-    --sta-nav: #F2675D;
-    --sta-nav-hover: #DE564C;
-    --sta-nav-active: #C9463D;
+    --sta-nav: #EF4135;
+    --sta-nav-hover: #D93427;
+    --sta-nav-active: #BF2A1F;
     --sta-nav-text: #FFFFFF;
     --sta-nav-muted: #FFF1EF;
 }
