@@ -168,7 +168,7 @@
                                             {{ $warnText($row) }}
                                         </td>
                                         @unless ($readOnlyReason)
-                                            <td style="padding: 10px 20px; text-align: right"><button type="button" wire:click="removeFromList({{ $p->id }})" wire:confirm="{{ $removeConfirm($p) }}" aria-label="Remove {{ $p->fullName() }} from the Long List" style="{{ $removeStyle }}">Remove</button></td>
+                                            <td style="padding: 10px 20px; text-align: right; white-space: nowrap">@if ($p->type === \App\Enums\PersonType::Athlete)<button type="button" wire:click="openAdd({{ $p->id }})" aria-label="Events of {{ $p->fullName() }}" style="{{ $removeStyle }}; color: var(--sta-fg-brand, #1F3A5F); border-color: var(--sta-bd-line-strong, #CBD5E1)">Events</button> @endif<button type="button" wire:click="removeFromList({{ $p->id }})" wire:confirm="{{ $removeConfirm($p) }}" aria-label="Remove {{ $p->fullName() }} from the Long List" style="{{ $removeStyle }}">Remove</button></td>
                                         @endunless
                                     </tr>
                                 @endforeach
@@ -230,7 +230,7 @@
                                     </div>
                                 @endif
                                 @unless ($readOnlyReason)
-                                    <div style="margin-top: auto; display: flex; justify-content: flex-end"><button type="button" wire:click="removeFromList({{ $p->id }})" wire:confirm="{{ $removeConfirm($p) }}" aria-label="Remove {{ $p->fullName() }} from the Long List" style="{{ $removeStyle }}">Remove</button></div>
+                                    <div style="margin-top: auto; display: flex; justify-content: flex-end; gap: 8px">@if ($p->type === \App\Enums\PersonType::Athlete)<button type="button" wire:click="openAdd({{ $p->id }})" aria-label="Events of {{ $p->fullName() }}" style="{{ $removeStyle }}; color: var(--sta-fg-brand, #1F3A5F); border-color: var(--sta-bd-line-strong, #CBD5E1)">Events</button> @endif<button type="button" wire:click="removeFromList({{ $p->id }})" wire:confirm="{{ $removeConfirm($p) }}" aria-label="Remove {{ $p->fullName() }} from the Long List" style="{{ $removeStyle }}">Remove</button></div>
                                 @endunless
                             </article></div>
                         @empty

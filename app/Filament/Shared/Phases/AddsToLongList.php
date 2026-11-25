@@ -26,7 +26,7 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
  */
 trait AddsToLongList
 {
-    /** @var array{person: int, target: string, function: ?string, passport_no: ?string, passport_expiry: ?string, sizes: array<int|string, ?string>, confirmed: bool}|null */
+    /** @var array{person: int, target: string, events: list<string>, function: ?string, passport_no: ?string, passport_expiry: ?string, sizes: array<int|string, ?string>, confirmed: bool}|null */
     public ?array $adding = null;
 
     /** @var TemporaryUploadedFile|null "Upload latest passport" */
@@ -54,6 +54,10 @@ trait AddsToLongList
         $this->adding = [
             'person' => $p->id,
             'target' => (string) ($targets->contains('id', $target) ? $target : ($targets->count() === 1 ? $targets->first()['id'] : '')),
+            // Athletes: every event they are already in on this list, plus the one the Add came from (or the only one).
+            'events' => $p->type === PersonType::Official ? [] : $targets->pluck('id')
+                ->filter(fn ($id) => in_array($p->id, array_map('intval', $this->athletes[$id] ?? []), true) || $id === $target || $targets->count() === 1)
+                ->map(fn ($id) => (string) $id)->values()->all(),
             'function' => $p->function,
             'passport_no' => $p->passport_no,
             'passport_expiry' => $p->passport_expiry?->toDateString(),
@@ -107,13 +111,18 @@ trait AddsToLongList
             fn ($key) => in_array($key, ['adding.passport_no', 'adding.passport_expiry', 'addingPassportScan'], true) || str_starts_with($key, 'adding.sizes.'),
             ARRAY_FILTER_USE_KEY);
         $this->validate([
-            'adding.target' => ['required', Rule::in($this->addTargets($p)->pluck('id')->map(fn ($id) => (string) $id)->all())],
+            ...($official
+                ? ['adding.target' => ['required', Rule::in($allowed = $this->addTargets($p)->pluck('id')->map(fn ($id) => (string) $id)->all())]]
+                : ['adding.events' => ['required', 'array', 'min:1'], 'adding.events.*' => [Rule::in($this->addTargets($p)->pluck('id')->map(fn ($id) => (string) $id)->all())]]),
             'adding.function' => $official ? ['required', Rule::in(PersonForm::FUNCTIONS)] : [],
             ...$registry,
             'adding.confirmed' => ['accepted'],
         ], [
             'adding.target.required' => $official ? 'Choose the sport.' : 'Choose the event.',
-            'adding.target.in' => $official ? 'Choose the sport.' : 'Choose an event that matches the athlete\'s gender.',
+            'adding.target.in' => 'Choose the sport.',
+            'adding.events.required' => 'Tick at least one event.',
+            'adding.events.min' => 'Tick at least one event.',
+            'adding.events.*.in' => 'Choose events that match the athlete\'s gender.',
             'adding.confirmed.accepted' => 'Confirm that the passport shown is the latest one.',
         ], ['adding.function' => 'function in this game', 'adding.passport_no' => 'passport number', 'adding.passport_expiry' => 'passport expiry',
             'addingPassportScan' => 'passport scan']);
@@ -134,14 +143,27 @@ trait AddsToLongList
             throw $e;
         }
 
-        $target = (int) $this->adding['target'];
-        $official ? $this->addOfficialChip($target, $p->id) : $this->addAthleteChip($target, $p->id);
-        $gameSportId = $official ? $target : (int) $this->visibleSports()->flatMap->gameEvents->firstWhere('id', $target)->game_sport_id;
-        $this->entryMeta[$p->id.'-'.($official ? 0 : $target).'-'.$gameSportId] = [
-            'person_id' => $p->id, 'game_event_id' => $official ? null : $target, 'game_sport_id' => $gameSportId,
+        $meta = fn (?int $eventId, int $gameSportId) => $this->entryMeta[$p->id.'-'.($eventId ?? 0).'-'.$gameSportId] = [
+            'person_id' => $p->id, 'game_event_id' => $eventId, 'game_sport_id' => $gameSportId,
             'values' => ['function' => $official ? $this->adding['function'] : null,
                 'passport_confirmed_at' => now()->toDateTimeString(), 'passport_confirmed_by' => auth()->id()],
         ];
+        if ($official) {
+            $this->addOfficialChip($target = (int) $this->adding['target'], $p->id);
+            $meta(null, $target);
+        } else {
+            // The ticks are the athlete's events on this list: ticked ones are added, unticked ones removed.
+            $ticked = array_map('intval', $this->adding['events']);
+            $events = $this->visibleSports()->flatMap->gameEvents;
+            foreach ($this->addTargets($p)->pluck('id') as $id) {
+                if (in_array($id, $ticked, true)) {
+                    $this->addAthleteChip($id, $p->id);
+                    $meta($id, (int) $events->firstWhere('id', $id)->game_sport_id);
+                } else {
+                    $this->removeAthleteChip($id, $p->id);
+                }
+            }
+        }
         // Closed first, so a Long List error below shows on the page instead of a filled pop-up that would only add the chip again.
         $this->closeAdd();
         try {

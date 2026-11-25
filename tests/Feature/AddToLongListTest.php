@@ -61,13 +61,13 @@ it('opens the pop-up from Add with the athlete\'s events only and puts them on t
         ->call('openAdd', $this->ali->id)
         ->assertSee('Add Ali Hasan to Gulf Games')->assertSee('Men -60kg')->assertDontSee('Women -52kg')
         ->assertSee('The passport shown is the latest one')->assertSee('Upload latest passport')
-        ->assertSet('adding.target', (string) $this->m60->id)
+        ->assertSet('adding.events', [(string) $this->m60->id])
         ->call('confirmAdd')->assertHasErrors(['adding.confirmed'])
-        ->set('adding.target', (string) $this->w52->id)->set('adding.confirmed', true)
-        ->call('confirmAdd')->assertHasErrors(['adding.target']);
+        ->set('adding.events', [(string) $this->w52->id])->set('adding.confirmed', true)
+        ->call('confirmAdd')->assertHasErrors(['adding.events.0']);
     expect(Entry::count())->toBe(0);
 
-    $page->set('adding.target', (string) $this->m60->id)->set("adding.sizes.{$this->shirt->id}", 'L')
+    $page->set('adding.events', [(string) $this->m60->id])->set("adding.sizes.{$this->shirt->id}", 'L')
         ->call('confirmAdd')->assertHasNoErrors()->assertSet('adding', null);
 
     $entry = Entry::sole();
@@ -154,4 +154,19 @@ it('uses the same pop-up when STA edits the Long List', function () {
         ->call('confirmAdd')->assertHasNoErrors();
 
     expect(Entry::sole()->function)->toBe('Team Manager');
+});
+
+it('enters an athlete in several events at once, and "Events" on the list changes them later', function () {
+    $m66 = GameEvent::factory()->create(['game_id' => $this->game->id, 'game_sport_id' => $this->judo->id,
+        'event_id' => Event::factory()->create(['sport_id' => $this->judo->sport_id, 'name' => 'Men -66kg', 'gender' => EventGender::Men])->id]);
+    $page = livewire(Phase3Entry::class, ['game' => $this->game->id])
+        ->call('openAdd', $this->ali->id)->assertSee('tick one or more')->assertSet('adding.events', [])
+        ->set('adding.confirmed', true)->call('confirmAdd')->assertHasErrors(['adding.events'])
+        ->set('adding.events', [(string) $this->m60->id, (string) $m66->id])->call('confirmAdd')->assertHasNoErrors();
+    expect(Entry::where('person_id', $this->ali->id)->pluck('game_event_id')->sort()->values()->all())->toBe([$this->m60->id, $m66->id]);
+
+    $page->assertSee('Events of Ali Hasan')->call('openAdd', $this->ali->id)
+        ->assertSee('Events of Ali Hasan in Gulf Games')->assertSet('adding.events', [(string) $this->m60->id, (string) $m66->id])
+        ->set('adding.events', [(string) $m66->id])->set('adding.confirmed', true)->call('confirmAdd')->assertHasNoErrors();
+    expect(Entry::where('person_id', $this->ali->id)->pluck('game_event_id')->all())->toBe([$m66->id]);
 });

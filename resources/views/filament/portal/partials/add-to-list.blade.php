@@ -11,6 +11,8 @@
         $h3 = 'margin: 0; font-size: 15px; font-weight: 700';
         $err = fn (string $key) => $errors->first($key);
         $sizeItems = \App\Filament\Shared\PersonForm::sizeItems($ap->type);
+        // An athlete already on the list reopens the pop-up from "Events" to change their events.
+        $listed = ! $isOfficial && collect($this->athletes)->flatten()->map(fn ($id) => (int) $id)->contains($ap->id);
     @endphp
     <div wire:key="add-to-list-{{ $ap->id }}" x-data x-on:keydown.escape.window="$wire.closeAdd()"
         style="position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15,36,64,0.45)">
@@ -18,7 +20,7 @@
             style="width: 560px; max-width: 100%; max-height: calc(100vh - 32px); box-sizing: border-box; overflow-y: auto; background: var(--sta-bg-surface, #FFFFFF); border-radius: 14px; box-shadow: 0 24px 48px rgba(15,36,64,0.25); display: flex; flex-direction: column">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--sta-bd-line, #E2E8F0)">
                 <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
-                    <h2 id="add-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">Add {{ $ap->fullName() }} to {{ $this->gameModel->name }}</h2>
+                    <h2 id="add-title" style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{ $listed ? 'Events of '.$ap->fullName().' in ' : 'Add '.$ap->fullName().' to ' }}{{ $this->gameModel->name }}</h2>
                     <span style="font-size: 13px; color: var(--sta-fg-muted, #475569)">{{ $ap->code }} · {{ $isOfficial ? 'Team official'.(filled($ap->function) ? ' · '.$ap->function : '') : 'Athlete · '.$ap->gender?->label() }}</span>
                 </div>
                 <button type="button" aria-label="Close" wire:click="closeAdd" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A); display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg></button>
@@ -27,8 +29,19 @@
             <div style="padding: 18px 24px; display: flex; flex-direction: column; gap: 18px">
                 @if ($m = $err('adding.person'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
                 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px">
-                    @if (! $isOfficial || $targets->count() > 1)
-                        <label style="grid-column: 1 / -1; {{ $lbl }}">{{ $isOfficial ? 'Sport' : 'Event' }}
+                    @if (! $isOfficial)
+                        <fieldset style="grid-column: 1 / -1; margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 6px">
+                            <legend style="padding: 0; margin-bottom: 6px; font-size: 13px; font-weight: 600">Events <span style="font-weight: 400; color: var(--sta-fg-muted, #475569)">· tick one or more</span></legend>
+                            @foreach ($targets as $t)
+                                <label wire:key="add-event-{{ $t['id'] }}" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 1px solid var(--sta-bd-line-strong, #CBD5E1); border-radius: 10px; font-size: 14px; cursor: pointer">
+                                    <input type="checkbox" wire:model="adding.events" value="{{ $t['id'] }}" style="width: 20px; height: 20px; accent-color: var(--sta-bd-brand, #1F3A5F); flex-shrink: 0">
+                                    {{ $t['label'] }}
+                                </label>
+                            @endforeach
+                            @if ($m = $err('adding.events') ?: $errors->first('adding.events.*'))<span role="alert" style="{{ $errStyle }}">{{ $m }}</span>@endif
+                        </fieldset>
+                    @elseif ($targets->count() > 1)
+                        <label style="grid-column: 1 / -1; {{ $lbl }}">Sport
                             <select wire:model="adding.target" style="{{ $field }}; padding: 0 10px">
                                 <option value="">Choose…</option>
                                 @foreach ($targets as $t)<option value="{{ $t['id'] }}">{{ $t['label'] }}</option>@endforeach
@@ -107,7 +120,7 @@
 
             <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--sta-bd-line, #E2E8F0)">
                 <button type="button" wire:click="closeAdd" style="{{ $btn }}border: 1px solid var(--sta-bd-line-strong, #CBD5E1); background: var(--sta-bg-surface, #FFFFFF); color: var(--sta-fg-text, #0F172A)">Cancel</button>
-                <button type="button" wire:click="confirmAdd" wire:loading.attr="disabled" style="{{ $btn }}padding: 0 16px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF)">Add to Long List</button>
+                <button type="button" wire:click="confirmAdd" wire:loading.attr="disabled" style="{{ $btn }}padding: 0 16px; border: 0; background: var(--sta-bg-brand, #1F3A5F); color: var(--sta-fg-on-brand, #FFFFFF)">{{ $listed ? 'Save events' : 'Add to Long List' }}</button>
             </div>
         </div>
     </div>
