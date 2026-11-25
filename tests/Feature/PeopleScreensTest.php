@@ -190,3 +190,9 @@ it('labels the person form button Save as draft and saves an incomplete person',
     expect($p->missingFields())->not->toBeEmpty();
     livewire(EditPerson::class, ['record' => $p->getRouteKey()])->assertSee('Save as draft');
 });
+
+it('wires both Save as draft buttons (header and bottom) to saveDraft, not a form submit', function () {
+    $html = livewire(CreatePerson::class)->html();
+    expect(substr_count($html, 'wire:click="saveDraft"'))->toBe(2)
+        ->and($html)->not->toContain('type="submit" wire:loading.attr="disabled"');
+});
