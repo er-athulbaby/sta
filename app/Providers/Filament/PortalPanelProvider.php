@@ -63,6 +63,7 @@ class PortalPanelProvider extends PanelProvider
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.sidebar-role'))
+            ->renderHook(PanelsRenderHook::SIDEBAR_FOOTER, fn () => view('filament.app-version'))
             ->renderHook(PanelsRenderHook::SIDEBAR_LOGO_AFTER, fn () => view('filament.sidebar-association'))
             ->navigationItems([
                 NavigationItem::make('Association profile')

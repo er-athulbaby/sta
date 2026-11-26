@@ -60,6 +60,7 @@ class AdminPanelProvider extends PanelProvider
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => view('filament.sidebar-role'))
+            ->renderHook(PanelsRenderHook::SIDEBAR_FOOTER, fn () => view('filament.app-version'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             // Discovers App\Filament\Pages\Dashboard, the canvas admin home.
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

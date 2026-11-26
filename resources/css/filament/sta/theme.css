@@ -340,6 +340,8 @@
 .fi-sidebar .fi-user-menu-trigger > .fi-icon { display: none; }
 .fi-sidebar .fi-user-menu-trigger .fi-avatar { width: 36px; height: 36px; }
 .fi-sidebar .fi-user-menu-trigger .fi-user-menu-trigger-text { color: #FFFFFF; font-weight: 600; font-size: 13px; line-height: 18px; padding-bottom: 16px; }
+.sta-app-version { padding: 0 16px 10px; font-size: 11px; line-height: 16px; color: var(--sta-nav-muted); }
+.fi-sidebar:not(.fi-sidebar-open) .sta-app-version { display: none; }
 .sta-user-role { position: absolute; left: 54px; bottom: 17px; font-size: 12px; line-height: 16px; color: var(--sta-nav-muted); pointer-events: none; }
 .fi-sidebar .fi-sidebar-database-notifications-btn { justify-content: flex-start; min-height: var(--sta-target); padding: 0 12px; border-radius: var(--sta-radius-ctl); color: var(--sta-nav-text); }
 .fi-sidebar .fi-sidebar-database-notifications-btn:hover { background: var(--sta-nav-hover); }

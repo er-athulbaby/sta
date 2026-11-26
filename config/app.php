@@ -16,6 +16,28 @@ return [
     'name' => env('APP_NAME', 'Laravel'),
 
     /*
+    | Shown under the sidebar user block: "Version 1.0 · 5a15bd8". `build` is the deployed git commit, read from .git
+    | (php artisan optimize in the deploy caches it); APP_BUILD overrides it where there is no .git.
+    */
+
+    'version' => env('APP_VERSION', '1.0'),
+
+    'build' => env('APP_BUILD', (function () {
+        $git = dirname(__DIR__).'/.git';
+        $head = trim((string) @file_get_contents("$git/HEAD"));
+        if (! str_starts_with($head, 'ref: ')) {
+            return substr($head, 0, 7);
+        }
+        $ref = substr($head, 5);
+        $sha = @file_get_contents("$git/$ref");
+        if ($sha === false && preg_match('/^(\w+) '.preg_quote($ref, '/').'$/m', (string) @file_get_contents("$git/packed-refs"), $m)) {
+            $sha = $m[1];
+        }
+
+        return substr(trim((string) $sha), 0, 7);
+    })()),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
